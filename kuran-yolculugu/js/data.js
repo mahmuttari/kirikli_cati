@@ -1,18 +1,20 @@
 /*
  * Kur'an Yolculuğu - Müfredat Verisi
- * Çocuklar için Elif-Ba öğretimi.
- * Her "durak" (station) bir öğrenme etkinliği içerir.
+ * TAM Elif-Ba müfredatı: 7 aşama, her aşamada birden çok oyun modeli.
  *
  * Durak tipleri (type):
- *   'lesson' -> öğrenme kartları + çoktan seçmeli mini test
- *   'match'  -> eşleştirme oyunu (harf <-> isim)
- *   'listen' -> dinle ve doğru harfi bul
- *   'memory' -> hafıza kartları (aynı çifti bul)
- *   'trace'  -> harf izi (parmakla/fareyle harfin üzerinden geç)
- *   'sure'   -> kısa sure okuma (kelime kelime)
+ *   'lesson'    -> öğrenme kartları (+ varsa mini test)
+ *   'quiz'      -> sadece çoktan seçmeli sınav
+ *   'match'     -> eşleştirme (harf <-> isim)
+ *   'listen'    -> dinle ve doğru harfi bul
+ *   'memory'    -> hafıza kartları
+ *   'trace'     -> harf izi (çizme)
+ *   'balloon'   -> balon patlatma (hedef harfi patlat)
+ *   'mole'      -> köstebek (çıkan hedef harfe vur)
+ *   'truefalse' -> doğru mu? (hızlı doğru/yanlış)
+ *   'sure'      -> kısa sure okuma (kelime kelime)
  */
 
-// Arap harfleri: glyph (harf), name (Türkçe okunuşu), hint (ipucu/benzetme)
 const HARFLER = [
   { glyph: "ا", name: "Elif", hint: "Dümdüz ayakta duran çubuk gibi" },
   { glyph: "ب", name: "Be",   hint: "Altında bir nokta olan kayık" },
@@ -44,14 +46,12 @@ const HARFLER = [
   { glyph: "ي", name: "Ye",   hint: "Altında iki nokta olan kuyruk" },
 ];
 
-// Harekeler (sesli işaretler)
 const HAREKELER = [
   { glyph: "بَ", name: "Üstün (e/a)", hint: "Harfin üstünde küçük çizgi: 'e' sesi" },
   { glyph: "بِ", name: "Esre (i)",    hint: "Harfin altında küçük çizgi: 'i' sesi" },
   { glyph: "بُ", name: "Ötre (u)",    hint: "Harfin üstünde küçük vav: 'u' sesi" },
 ];
 
-// Harflerin başta/ortada/sonda aldığı şekiller
 const HARF_SEKILLERI = [
   { name: "Be",  glyph: "ب", bas: "بـ", orta: "ـبـ", son: "ـب" },
   { name: "Sin", glyph: "س", bas: "سـ", orta: "ـسـ", son: "ـس" },
@@ -61,7 +61,6 @@ const HARF_SEKILLERI = [
   { name: "Kef", glyph: "ك", bas: "كـ", orta: "ـكـ", son: "ـك" },
 ];
 
-// Arapça rakamlar
 const RAKAMLAR = [
   { glyph: "٠", name: "Sıfır", hint: "0" },
   { glyph: "١", name: "Bir",   hint: "1" },
@@ -75,11 +74,9 @@ const RAKAMLAR = [
   { glyph: "٩", name: "Dokuz", hint: "9" },
 ];
 
-// Kısa sureler (kelime kelime okunuş)
 const SURELER = {
   ihlas: {
-    ad: "İhlâs Sûresi",
-    bilgi: "Allah'ın bir ve tek olduğunu anlatır.",
+    ad: "İhlâs Sûresi", bilgi: "Allah'ın bir ve tek olduğunu anlatır.",
     ayetler: [
       { glyph: "قُلْ هُوَ اللّٰهُ اَحَدٌ", okunus: "Kul hüvallâhü ehad", meal: "De ki: O Allah birdir." },
       { glyph: "اَللّٰهُ الصَّمَدُ", okunus: "Allâhü's-samed", meal: "Allah hiçbir şeye muhtaç değildir." },
@@ -88,8 +85,7 @@ const SURELER = {
     ],
   },
   kevser: {
-    ad: "Kevser Sûresi",
-    bilgi: "Kur'an'ın en kısa suresidir.",
+    ad: "Kevser Sûresi", bilgi: "Kur'an'ın en kısa suresidir.",
     ayetler: [
       { glyph: "اِنَّٓا اَعْطَيْنَاكَ الْكَوْثَرَ", okunus: "İnnâ a'taynâ ke'l-kevser", meal: "Biz sana Kevser'i verdik." },
       { glyph: "فَصَلِّ لِرَبِّكَ وَانْحَرْ", okunus: "Fe salli li rabbike venhar", meal: "Öyleyse Rabbin için namaz kıl ve kurban kes." },
@@ -97,8 +93,7 @@ const SURELER = {
     ],
   },
   nas: {
-    ad: "Nâs Sûresi",
-    bilgi: "Kötülüklerden Allah'a sığınmayı öğretir.",
+    ad: "Nâs Sûresi", bilgi: "Kötülüklerden Allah'a sığınmayı öğretir.",
     ayetler: [
       { glyph: "قُلْ اَعُوذُ بِرَبِّ النَّاسِ", okunus: "Kul eûzü bi rabbi'n-nâs", meal: "De ki: İnsanların Rabbine sığınırım." },
       { glyph: "مَلِكِ النَّاسِ", okunus: "Meliki'n-nâs", meal: "İnsanların hükümdarına." },
@@ -107,222 +102,221 @@ const SURELER = {
   },
 };
 
-// Dualar
 const DUALAR = [
-  { glyph: "بِسْمِ اللّٰهِ", okunus: "Bismillah", anlam: "Allah'ın adıyla (başlarım)", emoji: "🌟" },
-  { glyph: "اَلْحَمْدُ لِلّٰهِ", okunus: "Elhamdülillah", anlam: "Hamd (övgü) Allah'a aittir", emoji: "🤲" },
-  { glyph: "اَللّٰهُ اَكْبَرُ", okunus: "Allâhü Ekber", anlam: "Allah en büyüktür", emoji: "✨" },
-  { glyph: "سُبْحَانَ اللّٰهِ", okunus: "Sübhânallah", anlam: "Allah'ı tüm eksikliklerden tenzih ederim", emoji: "💫" },
+  { glyph: "بِسْمِ اللّٰهِ", okunus: "Bismillah", anlam: "Allah'ın adıyla (başlarım)" },
+  { glyph: "اَلْحَمْدُ لِلّٰهِ", okunus: "Elhamdülillah", anlam: "Hamd (övgü) Allah'a aittir" },
+  { glyph: "اَللّٰهُ اَكْبَرُ", okunus: "Allâhü Ekber", anlam: "Allah en büyüktür" },
+  { glyph: "سُبْحَانَ اللّٰهِ", okunus: "Sübhânallah", anlam: "Allah'ı tüm eksikliklerden tenzih ederim" },
 ];
 
-// Esmaü'l-Hüsna (Allah'ın güzel isimlerinden bazıları)
 const ESMA = [
-  { glyph: "اَلرَّحْمٰنُ", okunus: "Er-Rahmân", anlam: "Çok merhamet eden", emoji: "💗" },
-  { glyph: "اَلرَّحِيمُ", okunus: "Er-Rahîm", anlam: "Çok bağışlayan", emoji: "💝" },
-  { glyph: "اَلْمَلِكُ", okunus: "El-Melik", anlam: "Her şeyin sahibi", emoji: "👑" },
-  { glyph: "اَلْخَالِقُ", okunus: "El-Hâlik", anlam: "Yaratan", emoji: "🌍" },
-  { glyph: "اَلرَّزَّاقُ", okunus: "Er-Razzâk", anlam: "Rızık veren", emoji: "🍎" },
+  { glyph: "اَلرَّحْمٰنُ", okunus: "Er-Rahmân", anlam: "Çok merhamet eden" },
+  { glyph: "اَلرَّحِيمُ", okunus: "Er-Rahîm", anlam: "Çok bağışlayan" },
+  { glyph: "اَلْمَلِكُ", okunus: "El-Melik", anlam: "Her şeyin sahibi" },
+  { glyph: "اَلْخَالِقُ", okunus: "El-Hâlik", anlam: "Yaratan" },
+  { glyph: "اَلرَّزَّاقُ", okunus: "Er-Razzâk", anlam: "Rızık veren" },
 ];
 
-/*
- * Bölgeler (harita üzerindeki ana bölümler) ve duraklar.
- */
-const BOLGELER = [
+/* ---------- Elif-Ba aşamaları (otomatik üretim) ---------- */
+
+// 28 harfi 7 aşamaya böl
+const ELIFBA_GRUPLARI = [
+  HARFLER.slice(0, 4),    // ا ب ت ث
+  HARFLER.slice(4, 7),    // ج ح خ
+  HARFLER.slice(7, 11),   // د ذ ر ز
+  HARFLER.slice(11, 15),  // س ش ص ض
+  HARFLER.slice(15, 19),  // ط ظ ع غ
+  HARFLER.slice(19, 23),  // ف ق ك ل
+  HARFLER.slice(23, 28),  // م ن ه و ي
+];
+
+const ASAMA_RENK = ["#4ade80", "#22d3ee", "#fbbf24", "#fb923c", "#f472b6", "#a78bfa", "#34d399"];
+
+// Aşamalarda dönüşümlü kullanılacak arcade oyunları
+const ARCADE = {
+  balloon:   { title: "Balon Patlat", emoji: "🎈" },
+  mole:      { title: "Köstebek",     emoji: "🐹" },
+  truefalse: { title: "Doğru mu?",    emoji: "⚡" },
+  memory:    { title: "Hafıza",       emoji: "🃏" },
+};
+const ARCADE_SIRA = ["balloon", "mole", "truefalse", "memory"];
+
+function arcadeDurak(sid, model, grup) {
+  const m = ARCADE[model];
+  return {
+    id: `${sid}_${model}`, title: m.title, emoji: m.emoji, type: model,
+    letters: grup, pairs: grup, pool: HARFLER,
+  };
+}
+
+// Her aşama için oyun duraklarını üretir (en az 5 farklı oyun modeli)
+function elifBaBolgeleri() {
+  return ELIFBA_GRUPLARI.map((grup, i) => {
+    const sid = `a${i + 1}`;
+    // bu aşamanın 3 arcade oyunu (dönüşümlü -> aşamalar arası çeşitlilik)
+    const arc = [
+      ARCADE_SIRA[i % 4],
+      ARCADE_SIRA[(i + 1) % 4],
+      ARCADE_SIRA[(i + 2) % 4],
+    ];
+    const harfStr = grup.map((h) => h.glyph).join(" ");
+    const duraklar = [
+      { id: `${sid}_ogren`, title: "Öğren",       emoji: "📖", type: "lesson", cards: grup },
+      { id: `${sid}_esles`, title: "Eşleştir",    emoji: "🧩", type: "match",  pairs: grup },
+      arcadeDurak(sid, arc[0], grup),
+      { id: `${sid}_dinle`, title: "Dinle & Bul", emoji: "👂", type: "listen", items: grup, pool: HARFLER },
+      arcadeDurak(sid, arc[1], grup),
+      arcadeDurak(sid, arc[2], grup),
+      { id: `${sid}_sinav`, title: "Sınav",       emoji: "🏅", type: "quiz",   quiz: makeLetterQuiz(grup, HARFLER) },
+    ];
+    return {
+      id: `bolge_${sid}`,
+      name: `${i + 1}. Aşama   ${harfStr}`,
+      color: ASAMA_RENK[i],
+      duraklar,
+    };
+  });
+}
+
+/* ---------- İleri konular (harekeler, şekiller, rakamlar, sureler...) ---------- */
+
+const ILERI_BOLGELER = [
   {
-    id: "bolge1",
-    name: "Harf Adası 🏝️",
-    color: "#4ade80",
+    id: "bolgeSekil", name: "Şekil Atölyesi 🔤", color: "#fb7185",
     duraklar: [
-      { id: "d1", title: "İlk Harfler", emoji: "🌱", type: "lesson",
-        cards: HARFLER.slice(0, 4), quiz: makeLetterQuiz(HARFLER.slice(0, 4), HARFLER) },
-      { id: "d2", title: "Kanca Harfler", emoji: "🪝", type: "lesson",
-        cards: HARFLER.slice(4, 9), quiz: makeLetterQuiz(HARFLER.slice(4, 9), HARFLER) },
-      { id: "d2b", title: "Eşleştirme Oyunu", emoji: "🧩", type: "match",
-        pairs: HARFLER.slice(0, 9) },
-      { id: "d3", title: "Kuyruklu Harfler", emoji: "🐉", type: "lesson",
-        cards: HARFLER.slice(9, 13), quiz: makeLetterQuiz(HARFLER.slice(9, 13), HARFLER) },
-    ],
-  },
-  {
-    id: "bolge2",
-    name: "Çöl Vadisi 🏜️",
-    color: "#fbbf24",
-    duraklar: [
-      { id: "d4", title: "Kalın Harfler", emoji: "🐪", type: "lesson",
-        cards: HARFLER.slice(13, 19), quiz: makeLetterQuiz(HARFLER.slice(13, 19), HARFLER) },
-      { id: "d5", title: "Son Harfler", emoji: "⭐", type: "lesson",
-        cards: HARFLER.slice(19, 28), quiz: makeLetterQuiz(HARFLER.slice(19, 28), HARFLER) },
-      { id: "d5b", title: "Dinle ve Bul", emoji: "👂", type: "listen",
-        items: HARFLER.slice(13, 28) },
-      { id: "d6", title: "Tüm Harfler Sınavı", emoji: "🏆", type: "lesson",
-        cards: HARFLER, quiz: makeLetterQuiz(HARFLER, HARFLER, 8) },
-    ],
-  },
-  {
-    id: "bolgeSekil",
-    name: "Şekil Atölyesi 🔤",
-    color: "#fb923c",
-    duraklar: [
-      { id: "ds1", title: "Harf Şekilleri", emoji: "✏️", type: "lesson",
+      { id: "s1", title: "Harf Şekilleri", emoji: "✏️", type: "lesson",
         cards: HARF_SEKILLERI.slice(0, 3).map(sekilKart), quiz: makeSekilQuiz(HARF_SEKILLERI.slice(0, 3)) },
-      { id: "ds2", title: "Daha Çok Şekil", emoji: "🖌️", type: "lesson",
+      { id: "s2", title: "Daha Çok Şekil", emoji: "🖌️", type: "lesson",
         cards: HARF_SEKILLERI.slice(3, 6).map(sekilKart), quiz: makeSekilQuiz(HARF_SEKILLERI.slice(3, 6)) },
-      { id: "ds3", title: "Harf İzi (Çizme)", emoji: "🖊️", type: "trace",
-        cards: HARFLER.slice(0, 6) },
+      { id: "s3", title: "Harf İzi (Çizme)", emoji: "🖊️", type: "trace", cards: HARFLER.slice(0, 6) },
     ],
   },
   {
-    id: "bolge3",
-    name: "Sihirli Orman 🌳",
-    color: "#34d399",
+    id: "bolgeHareke", name: "Hareke Ormanı 🌳", color: "#34d399",
     duraklar: [
-      { id: "d7", title: "Üstün - Esre - Ötre", emoji: "✨", type: "lesson",
+      { id: "h1", title: "Üstün-Esre-Ötre", emoji: "✨", type: "lesson",
         cards: HAREKELER, quiz: [
-          { q: "Harfin ÜSTÜNDE çizgi varsa hangi ses çıkar?", a: "e", options: ["e", "i", "u"] },
-          { q: "Harfin ALTINDA çizgi varsa hangi ses çıkar?",  a: "i", options: ["e", "i", "u"] },
-          { q: "Harfin üstünde küçük 'vav' varsa hangi ses çıkar?", a: "u", options: ["e", "i", "u"] },
+          { q: "Harfin ÜSTÜNDE çizgi -> hangi ses?", a: "e", options: ["e", "i", "u"] },
+          { q: "Harfin ALTINDA çizgi -> hangi ses?", a: "i", options: ["e", "i", "u"] },
+          { q: "Üstünde küçük 'vav' -> hangi ses?", a: "u", options: ["e", "i", "u"] },
           { q: "'بَ' nasıl okunur?", a: "Be", options: ["Bi", "Be", "Bu"] },
-          { q: "'بِ' nasıl okunur?", a: "Bi", options: ["Bi", "Be", "Bu"] },
           { q: "'بُ' nasıl okunur?", a: "Bu", options: ["Bi", "Be", "Bu"] },
         ] },
-      { id: "d8", title: "Heceler Köprüsü", emoji: "🌉", type: "lesson",
+      { id: "h2", title: "Heceler", emoji: "🌉", type: "lesson",
         cards: [
-          { glyph: "بَ", name: "Be", hint: "B + e" },
-          { glyph: "تِ", name: "Ti", hint: "T + i" },
-          { glyph: "نُ", name: "Nu", hint: "N + u" },
-          { glyph: "مَ", name: "Me", hint: "M + e" },
+          { glyph: "بَ", name: "Be", hint: "B + e" }, { glyph: "تِ", name: "Ti", hint: "T + i" },
+          { glyph: "نُ", name: "Nu", hint: "N + u" }, { glyph: "مَ", name: "Me", hint: "M + e" },
           { glyph: "لِ", name: "Li", hint: "L + i" },
         ],
         quiz: [
-          { q: "'بَ' hecesi nasıl okunur?", a: "Be", options: ["Be", "Bi", "Bu"] },
-          { q: "'تِ' hecesi nasıl okunur?", a: "Ti", options: ["Te", "Ti", "Tu"] },
-          { q: "'نُ' hecesi nasıl okunur?", a: "Nu", options: ["Ne", "Ni", "Nu"] },
-          { q: "'مَ' hecesi nasıl okunur?", a: "Me", options: ["Me", "Mi", "Mu"] },
-          { q: "'لِ' hecesi nasıl okunur?", a: "Li", options: ["Le", "Li", "Lu"] },
+          { q: "'بَ' nasıl okunur?", a: "Be", options: ["Be", "Bi", "Bu"] },
+          { q: "'تِ' nasıl okunur?", a: "Ti", options: ["Te", "Ti", "Tu"] },
+          { q: "'نُ' nasıl okunur?", a: "Nu", options: ["Ne", "Ni", "Nu"] },
+          { q: "'مَ' nasıl okunur?", a: "Me", options: ["Me", "Mi", "Mu"] },
         ] },
-      { id: "d8b", title: "Hafıza Oyunu", emoji: "🃏", type: "memory",
-        pairs: HARFLER.slice(0, 6) },
+      { id: "h3", title: "Hece Eşleştir", emoji: "🧩", type: "match",
+        pairs: [
+          { glyph: "بَ", name: "Be" }, { glyph: "تِ", name: "Ti" }, { glyph: "نُ", name: "Nu" },
+          { glyph: "مَ", name: "Me" }, { glyph: "لِ", name: "Li" },
+        ] },
     ],
   },
   {
-    id: "bolgeRakam",
-    name: "Rakamlar Diyarı 🔢",
-    color: "#22d3ee",
+    id: "bolgeRakam", name: "Rakamlar Diyarı 🔢", color: "#06b6d4",
     duraklar: [
-      { id: "dr1", title: "Arapça Rakamlar 0-4", emoji: "🔢", type: "lesson",
+      { id: "r1", title: "Rakamlar 0-4", emoji: "🔢", type: "lesson",
         cards: RAKAMLAR.slice(0, 5), quiz: makeLetterQuiz(RAKAMLAR.slice(0, 5), RAKAMLAR) },
-      { id: "dr2", title: "Arapça Rakamlar 5-9", emoji: "🧮", type: "lesson",
+      { id: "r2", title: "Rakamlar 5-9", emoji: "🧮", type: "lesson",
         cards: RAKAMLAR.slice(5, 10), quiz: makeLetterQuiz(RAKAMLAR.slice(5, 10), RAKAMLAR) },
-      { id: "dr3", title: "Rakam Eşleştirme", emoji: "🎯", type: "match",
-        pairs: RAKAMLAR },
+      { id: "r3", title: "Rakam Köstebek", emoji: "🐹", type: "mole", letters: RAKAMLAR, pool: RAKAMLAR },
+      { id: "r4", title: "Rakam Eşleştir", emoji: "🎯", type: "match", pairs: RAKAMLAR },
     ],
   },
   {
-    id: "bolge4",
-    name: "Yıldız Şehri 🌟",
-    color: "#a78bfa",
+    id: "bolgeYildiz", name: "Yıldız Şehri 🌟", color: "#a78bfa",
     duraklar: [
-      { id: "d9", title: "Cezm (Durak İşareti)", emoji: "🛑", type: "lesson",
+      { id: "y1", title: "Cezm", emoji: "🛑", type: "lesson",
         cards: [
-          { glyph: "بْ", name: "Cezm", hint: "Harfin üstünde küçük yuvarlak: ses durur (b)" },
-          { glyph: "أَبْ", name: "Eb", hint: "E + b" },
-          { glyph: "مِنْ", name: "Min", hint: "Mi + n" },
+          { glyph: "بْ", name: "Cezm", hint: "Üstünde küçük yuvarlak: ses durur" },
+          { glyph: "أَبْ", name: "Eb", hint: "E + b" }, { glyph: "مِنْ", name: "Min", hint: "Mi + n" },
         ],
         quiz: [
-          { q: "Cezm işareti ne yapar?", a: "Sesi durdurur", options: ["Sesi uzatır", "Sesi durdurur", "Sesi tekrarlar"] },
+          { q: "Cezm ne yapar?", a: "Sesi durdurur", options: ["Sesi uzatır", "Sesi durdurur", "Tekrarlar"] },
           { q: "'مِنْ' nasıl okunur?", a: "Min", options: ["Mine", "Min", "Mina"] },
-          { q: "Cezmin şekli nedir?", a: "Küçük yuvarlak/baş", options: ["Çizgi", "Küçük yuvarlak/baş", "Nokta"] },
         ] },
-      { id: "d10", title: "Şedde (İkileme)", emoji: "🔁", type: "lesson",
+      { id: "y2", title: "Şedde", emoji: "🔁", type: "lesson",
         cards: [
           { glyph: "بّ", name: "Şedde", hint: "Harf iki kere okunur (bb)" },
-          { glyph: "رَبّ", name: "Rabb", hint: "Ra + bb" },
-          { glyph: "جَنّ", name: "Cenn", hint: "Ce + nn" },
+          { glyph: "رَبّ", name: "Rabb", hint: "Ra + bb" }, { glyph: "جَنّ", name: "Cenn", hint: "Ce + nn" },
         ],
         quiz: [
-          { q: "Şedde ne yapar?", a: "Harfi iki kere okutur", options: ["Harfi siler", "Harfi iki kere okutur", "Harfi uzatır"] },
+          { q: "Şedde ne yapar?", a: "İki kere okutur", options: ["Siler", "İki kere okutur", "Uzatır"] },
           { q: "'رَبّ' nasıl okunur?", a: "Rabb", options: ["Rab", "Rabb", "Reb"] },
-          { q: "Şedde harfin neresindedir?", a: "Üstünde", options: ["Altında", "Üstünde", "Yanında"] },
         ] },
-      { id: "d11", title: "İlk Kelimeler", emoji: "📖", type: "lesson",
+      { id: "y3", title: "İlk Kelimeler", emoji: "📖", type: "lesson",
         cards: [
           { glyph: "اَللّٰه", name: "Allah", hint: "Yüce Allah'ın ismi" },
-          { glyph: "نُور", name: "Nur", hint: "Işık / aydınlık" },
-          { glyph: "نَبِيّ", name: "Nebi", hint: "Peygamber" },
+          { glyph: "نُور", name: "Nur", hint: "Işık" },
           { glyph: "كِتَاب", name: "Kitab", hint: "Kitap" },
+          { glyph: "نَبِيّ", name: "Nebi", hint: "Peygamber" },
         ],
         quiz: [
           { q: "'كِتَاب' ne demek?", a: "Kitap", options: ["Kalem", "Kitap", "Kapı"] },
           { q: "'نُور' ne demek?", a: "Işık", options: ["Su", "Işık", "Taş"] },
-          { q: "'نَبِيّ' ne demek?", a: "Peygamber", options: ["Melek", "Peygamber", "Kral"] },
         ] },
     ],
   },
   {
-    id: "bolgeDua",
-    name: "Dua Bahçesi 🤲",
-    color: "#f472b6",
+    id: "bolgeDua", name: "Dua Bahçesi 🤲", color: "#f472b6",
     duraklar: [
-      { id: "dd1", title: "Güzel Sözler", emoji: "🌸", type: "lesson",
+      { id: "u1", title: "Güzel Sözler", emoji: "🌸", type: "lesson",
         cards: DUALAR.map((d) => ({ glyph: d.glyph, name: d.okunus, hint: d.anlam })),
         quiz: [
           { q: "'Bismillah' ne demek?", a: "Allah'ın adıyla", options: ["Allah'ın adıyla", "Teşekkürler", "Günaydın"] },
-          { q: "'Elhamdülillah' ne zaman söylenir?", a: "Şükrederken", options: ["Şükrederken", "Uyurken", "Koşarken"] },
-          { q: "'Allâhü Ekber' ne demek?", a: "Allah en büyüktür", options: ["Allah en büyüktür", "Allah güzeldir", "Allah birdir"] },
+          { q: "'Elhamdülillah' ne der?", a: "Şükür", options: ["Şükür", "Üzgünüm", "Koşalım"] },
         ] },
-      { id: "dd2", title: "Esmaü'l-Hüsna", emoji: "💎", type: "lesson",
+      { id: "u2", title: "Esmaü'l-Hüsna", emoji: "💎", type: "lesson",
         cards: ESMA.map((e) => ({ glyph: e.glyph, name: e.okunus, hint: e.anlam })),
         quiz: [
           { q: "'Er-Rahmân' ne demek?", a: "Çok merhamet eden", options: ["Çok merhamet eden", "Yaratan", "Rızık veren"] },
           { q: "'El-Hâlik' ne demek?", a: "Yaratan", options: ["Yaratan", "Affeden", "Gören"] },
-          { q: "'Er-Razzâk' ne demek?", a: "Rızık veren", options: ["Rızık veren", "Koruyan", "Bilen"] },
         ] },
     ],
   },
   {
-    id: "bolgeSure",
-    name: "Sure Sarayı 📖",
-    color: "#818cf8",
+    id: "bolgeSure", name: "Sure Sarayı 📖", color: "#818cf8",
     duraklar: [
-      { id: "su1", title: "İhlâs Sûresi", emoji: "📜", type: "sure", sure: SURELER.ihlas },
-      { id: "su2", title: "Kevser Sûresi", emoji: "📃", type: "sure", sure: SURELER.kevser },
-      { id: "su3", title: "Nâs Sûresi", emoji: "📖", type: "sure", sure: SURELER.nas },
+      { id: "v1", title: "İhlâs Sûresi", emoji: "📜", type: "sure", sure: SURELER.ihlas },
+      { id: "v2", title: "Kevser Sûresi", emoji: "📃", type: "sure", sure: SURELER.kevser },
+      { id: "v3", title: "Nâs Sûresi", emoji: "📖", type: "sure", sure: SURELER.nas },
     ],
   },
 ];
 
-// Harf şekli kartı üretir (lesson kartı formatında)
+const BOLGELER = [...elifBaBolgeleri(), ...ILERI_BOLGELER];
+
+/* ---------- Yardımcılar ---------- */
+
 function sekilKart(s) {
   return {
-    glyph: `${s.bas}  ${s.orta}  ${s.son}`,
-    name: s.name,
+    glyph: `${s.bas}  ${s.orta}  ${s.son}`, name: s.name,
     hint: `Başta: ${s.bas} • Ortada: ${s.orta} • Sonda: ${s.son}`,
   };
 }
 
-// Harf şekilleri için mini test
 function makeSekilQuiz(grup) {
   return grup.map((s) => ({
-    q: `Bu hangi harfin başta hâlidir?  ${s.bas}`,
-    a: s.name,
+    q: `Bu hangi harftir?  ${s.bas}`, a: s.name, glyph: s.bas,
     options: shuffleArr([s.name, ...shuffleArr(HARF_SEKILLERI.filter((x) => x.name !== s.name)).slice(0, 2).map((x) => x.name)]),
-    glyph: s.bas,
   }));
 }
 
-// Bir harf grubundan çoktan seçmeli test üretir.
 function makeLetterQuiz(group, pool, limit) {
   const items = limit ? shuffleArr(group).slice(0, limit) : group;
   return items.map((item) => {
-    const wrongs = shuffleArr(pool.filter((h) => h.name !== item.name))
-      .slice(0, 2)
-      .map((h) => h.name);
-    return {
-      q: `Bu harfin adı nedir?  ${item.glyph}`,
-      a: item.name,
-      options: shuffleArr([item.name, ...wrongs]),
-      glyph: item.glyph,
-    };
+    const wrongs = shuffleArr(pool.filter((h) => h.name !== item.name)).slice(0, 2).map((h) => h.name);
+    return { q: `Bu harfin adı nedir?  ${item.glyph}`, a: item.name, glyph: item.glyph,
+      options: shuffleArr([item.name, ...wrongs]) };
   });
 }
 
@@ -335,7 +329,8 @@ function shuffleArr(arr) {
   return a;
 }
 
-// Tüm durakları sıralı tek listeye çevirir (harita için).
+function rastgele(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
 function tumDuraklar() {
   const list = [];
   BOLGELER.forEach((b) => b.duraklar.forEach((d) => list.push({ ...d, bolge: b })));

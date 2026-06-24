@@ -104,6 +104,7 @@ const sesBasari = () => tonCal([523, 659, 784, 1046], 0.15);
 const app = document.getElementById("app");
 
 function render() {
+  zamanlayicilariTemizle();
   ILERLEME = ilerlemeYukle();
   app.innerHTML = "";
   app.appendChild(haritaEkrani());
@@ -114,24 +115,42 @@ function toplamYildiz() {
   return Object.values(ILERLEME.yildiz).reduce((a, b) => a + b, 0);
 }
 
+// ---- Zamanlayıcı yönetimi (arcade oyunlarındaki interval/timeout'ları temizler) ----
+let _zamanlayicilar = [];
+function _ara(fn, ms) { const id = setInterval(fn, ms); _zamanlayicilar.push(id); return id; }
+function _gec(fn, ms) { const id = setTimeout(fn, ms); _zamanlayicilar.push(id); return id; }
+function zamanlayicilariTemizle() {
+  _zamanlayicilar.forEach((id) => { clearInterval(id); clearTimeout(id); });
+  _zamanlayicilar = [];
+}
+
+const RENKLER = ["#f87171", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa", "#f472b6", "#fb923c", "#22d3ee"];
+function rastgeleRenk() { return RENKLER[Math.floor(Math.random() * RENKLER.length)]; }
+
 // Durak tipine göre doğru ekranı açan dağıtıcı
 function durakAc(durak, index) {
+  zamanlayicilariTemizle();
   tonCal([440]);
   switch (durak.type) {
-    case "match":  return oyunMatch(durak, index);
-    case "listen": return oyunListen(durak, index);
-    case "memory": return oyunMemory(durak, index);
-    case "trace":  return oyunTrace(durak, index);
-    case "sure":   return sureEkrani(durak, index);
-    default:       return derseGir(durak, index);
+    case "match":     return oyunMatch(durak, index);
+    case "listen":    return oyunListen(durak, index);
+    case "memory":    return oyunMemory(durak, index);
+    case "trace":     return oyunTrace(durak, index);
+    case "balloon":   return oyunBalon(durak, index);
+    case "mole":      return oyunKostebek(durak, index);
+    case "truefalse": return oyunDogruYanlis(durak, index);
+    case "quiz":      return testeGir(durak, index);
+    case "sure":      return sureEkrani(durak, index);
+    default:          return derseGir(durak, index);
   }
 }
 
 // Durak tipine göre küçük etiket
 function tipEtiketi(type) {
   return {
-    lesson: "📚 Ders", match: "🧩 Eşleştir", listen: "👂 Dinle-Bul",
-    memory: "🃏 Hafıza", trace: "🖊️ Çizme", sure: "📖 Sure",
+    lesson: "📖 Öğren", quiz: "🏅 Sınav", match: "🧩 Eşleştir", listen: "👂 Dinle-Bul",
+    memory: "🃏 Hafıza", trace: "🖊️ Çizme", balloon: "🎈 Balon", mole: "🐹 Köstebek",
+    truefalse: "⚡ Doğru mu?", sure: "📖 Sure",
   }[type] || "📚 Ders";
 }
 
@@ -212,6 +231,7 @@ function ustBaslik(durak, geriFn) {
 
 // Bir durağı tamamlandı olarak işaretle + sonuç ekranı göster
 function tamamla(durak, index, yildiz, dogru, toplam, mesaj) {
+  zamanlayicilariTemizle();
   if (yildiz >= 1) {
     ILERLEME.tamamlanan[durak.id] = true;
     ILERLEME.yildiz[durak.id] = Math.max(ILERLEME.yildiz[durak.id] || 0, yildiz);
@@ -636,6 +656,204 @@ function sureEkrani(durak, index) {
       else tamamla(durak, index, 3, 0, 0, `${s.ad}'ni okudun! 📖🎉`);
     });
   }
+  ciz();
+  window.scrollTo(0, 0);
+}
+
+// ---- BALON PATLATMA (hedef harfi patlat) ----
+function oyunBalon(durak, index) {
+  const pool = durak.pool || durak.letters;
+  const hedefSira = shuffleArr(durak.letters);
+  const turSayisi = Math.max(5, durak.letters.length);
+  let tur = 0, basari = 0;
+
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const hedefBar = document.createElement("div");
+  hedefBar.className = "hedef-bar";
+  wrap.appendChild(hedefBar);
+  const gok = document.createElement("div");
+  gok.className = "gokyuzu";
+  wrap.appendChild(gok);
+  app.appendChild(wrap);
+
+  function dalga(hedef) {
+    gok.innerHTML = "";
+    let cozuldu = false;
+    const distract = shuffleArr(pool.filter((p) => p.name !== hedef.name)).slice(0, 4);
+    const balonlar = shuffleArr([hedef, ...distract]);
+    const n = balonlar.length;
+    balonlar.forEach((b, k) => {
+      const el = document.createElement("button");
+      el.className = "balon";
+      el.style.left = (5 + k * (90 / n) + Math.random() * 5) + "%";
+      el.style.background = rastgeleRenk();
+      el.style.animationDuration = (4.6 + Math.random() * 2) + "s";
+      el.innerHTML = `<span class="balon-ic">${b.glyph}</span><span class="balon-ip"></span>`;
+      el.addEventListener("click", () => {
+        if (cozuldu) return;
+        if (b.name === hedef.name) {
+          cozuldu = true;
+          el.classList.add("pat"); sesDogru(); basari++;
+          _gec(() => { tur++; tur >= turSayisi ? bitir() : sonraki(); }, 380);
+        } else {
+          sesYanlis(); el.classList.add("salla");
+          _gec(() => el.classList.remove("salla"), 400);
+        }
+      });
+      gok.appendChild(el);
+    });
+    // tüm balonlar kaçarsa hedefi yeniden gönder
+    _gec(() => { if (!cozuldu) dalga(hedef); }, 7000);
+  }
+
+  function sonraki() {
+    const hedef = hedefSira[tur % hedefSira.length];
+    hedefBar.innerHTML = `🎯 Patlat: <b>${hedef.name}</b> <button class="mini-dinle">🔊</button> <span class="sayac">${tur + 1}/${turSayisi}</span>`;
+    hedefBar.querySelector(".mini-dinle").addEventListener("click", () => seslendir(hedef.name));
+    seslendir(hedef.name);
+    dalga(hedef);
+  }
+
+  function bitir() {
+    const oran = basari / turSayisi;
+    tamamla(durak, index, oran >= 0.99 ? 3 : oran >= 0.6 ? 2 : 1, basari, turSayisi);
+  }
+
+  sonraki();
+  window.scrollTo(0, 0);
+}
+
+// ---- KÖSTEBEK (çıkan hedef harfe vur) ----
+function oyunKostebek(durak, index) {
+  const pool = durak.pool || durak.letters;
+  const harfler = durak.letters;
+  const hedefSayisi = Math.max(5, harfler.length);
+  let vurus = 0, yanlis = 0, hedef = rastgele(harfler);
+
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const hedefBar = document.createElement("div");
+  hedefBar.className = "hedef-bar";
+  wrap.appendChild(hedefBar);
+  const bahce = document.createElement("div");
+  bahce.className = "kostebek-bahce";
+  wrap.appendChild(bahce);
+  app.appendChild(wrap);
+
+  const delikler = [];
+  for (let i = 0; i < 6; i++) {
+    const d = document.createElement("button");
+    d.className = "delik";
+    d.innerHTML = `<span class="toprak"></span><span class="kostebek"></span>`;
+    d.addEventListener("click", () => vur(d));
+    bahce.appendChild(d);
+    delikler.push(d);
+  }
+
+  function yeniHedef() {
+    hedef = rastgele(harfler);
+    hedefBar.innerHTML = `🔨 Vur: <b>${hedef.name}</b> <button class="mini-dinle">🔊</button> <span class="sayac">${vurus}/${hedefSayisi}</span>`;
+    hedefBar.querySelector(".mini-dinle").addEventListener("click", () => seslendir(hedef.name));
+    seslendir(hedef.name);
+  }
+
+  function goster() {
+    const bos = delikler.filter((d) => !d.dataset.dolu);
+    if (!bos.length) return;
+    const d = rastgele(bos);
+    const harf = Math.random() < 0.55 ? hedef : rastgele(pool);
+    d.dataset.dolu = "1"; d.dataset.name = harf.name;
+    d.querySelector(".kostebek").textContent = harf.glyph;
+    d.classList.add("cik");
+    _gec(() => { d.classList.remove("cik"); delete d.dataset.dolu; delete d.dataset.name; }, 1150);
+  }
+
+  function vur(d) {
+    if (!d.dataset.dolu) return;
+    if (d.dataset.name === hedef.name) {
+      sesDogru(); vurus++;
+      d.classList.add("vuruldu");
+      _gec(() => d.classList.remove("vuruldu"), 300);
+      d.classList.remove("cik"); delete d.dataset.dolu; delete d.dataset.name;
+      if (vurus >= hedefSayisi) { bitir(); return; }
+      yeniHedef();
+    } else {
+      sesYanlis(); yanlis++;
+      d.classList.add("ah"); _gec(() => d.classList.remove("ah"), 300);
+    }
+  }
+
+  function bitir() {
+    tamamla(durak, index, yanlis <= 1 ? 3 : yanlis <= 4 ? 2 : 1, vurus, hedefSayisi);
+  }
+
+  yeniHedef();
+  _ara(goster, 800);
+  window.scrollTo(0, 0);
+}
+
+// ---- DOĞRU MU? (hızlı doğru/yanlış) ----
+function oyunDogruYanlis(durak, index) {
+  const pool = durak.pool || durak.letters;
+  const harfler = durak.letters;
+  const turSayisi = Math.max(5, harfler.length + 1);
+  const turlar = [];
+  for (let i = 0; i < turSayisi; i++) {
+    const h = rastgele(harfler);
+    const dogruMu = Math.random() < 0.5;
+    const iddia = dogruMu ? h.name : rastgele(pool.filter((p) => p.name !== h.name)).name;
+    turlar.push({ glyph: h.glyph, iddia, dogruMu, gercek: h.name });
+  }
+  let turNo = 0, dogru = 0;
+
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "test-wrap";
+  app.appendChild(wrap);
+
+  function ciz() {
+    const t = turlar[turNo];
+    wrap.innerHTML = `
+      <div class="test-ust">
+        <button class="geri">← Çık</button>
+        <div class="ilerleme-cubuk"><div style="width:${(turNo / turSayisi) * 100}%"></div></div>
+        <span>${turNo + 1}/${turSayisi}</span>
+      </div>
+      <p class="oyun-aciklama">Bu eşleşme doğru mu?</p>
+      <div class="dy-kart"><span class="dy-harf">${t.glyph}</span><span class="dy-esit">=</span><span class="dy-ad">${t.iddia}</span></div>
+      <div class="dy-butonlar">
+        <button class="dy-btn dogru-btn">✓ Doğru</button>
+        <button class="dy-btn yanlis-btn">✗ Yanlış</button>
+      </div>
+      <div class="geri-bildirim"></div>`;
+    wrap.querySelector(".geri").addEventListener("click", render);
+    seslendir(t.glyph === t.iddia ? t.iddia : t.gercek);
+    wrap.querySelector(".dogru-btn").addEventListener("click", () => cevap(true, t));
+    wrap.querySelector(".yanlis-btn").addEventListener("click", () => cevap(false, t));
+  }
+
+  function cevap(secim, t) {
+    wrap.querySelectorAll(".dy-btn").forEach((b) => (b.disabled = true));
+    const gb = wrap.querySelector(".geri-bildirim");
+    const doruMu = secim === t.dogruMu;
+    if (doruMu) { dogru++; sesDogru(); gb.innerHTML = `<span class="iyi">Aferin! 🎉</span>`; }
+    else { sesYanlis(); gb.innerHTML = `<span class="kotu">Doğrusu: ${t.glyph} = <b>${t.gercek}</b></span>`; }
+    const ileri = document.createElement("button");
+    ileri.className = "devam";
+    ileri.textContent = turNo === turSayisi - 1 ? "Bitir 🏁" : "Devam ▶";
+    ileri.addEventListener("click", () => {
+      turNo++;
+      if (turNo < turSayisi) ciz();
+      else { const o = dogru / turSayisi; tamamla(durak, index, o >= 0.99 ? 3 : o >= 0.7 ? 2 : o >= 0.5 ? 1 : 0, dogru, turSayisi); }
+    });
+    gb.appendChild(ileri);
+  }
+
   ciz();
   window.scrollTo(0, 0);
 }
