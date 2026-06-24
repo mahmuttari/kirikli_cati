@@ -178,122 +178,188 @@ function elifBaBolgeleri() {
   });
 }
 
-/* ---------- İleri konular (harekeler, şekiller, rakamlar, sureler...) ---------- */
+/* ---------- Pekiştirme (checkpoint) bölgeleri ---------- */
+// Aşamalar arasına serpiştirilen, o ana kadar öğrenilen TÜM harfleri karıştıran tekrar durağı.
+function pekistirmeBolge(no, harfler, renk, buyuk) {
+  const sid = `pk${no}`;
+  const d = [
+    { id: `${sid}_bilmece`,  title: "Bilmece",     emoji: "🧠", type: "riddle",   letters: harfler, pool: HARFLER },
+    { id: `${sid}_balon`,    title: "Balon",       emoji: "🎈", type: "balloon",  letters: harfler, pool: HARFLER },
+    { id: `${sid}_kostebek`, title: "Köstebek",    emoji: "🐹", type: "mole",     letters: harfler, pool: HARFLER },
+    { id: `${sid}_dinle`,    title: "Dinle & Bul", emoji: "👂", type: "listen",   items: harfler,   pool: HARFLER },
+    { id: `${sid}_sinav`,    title: "Sınav",       emoji: "🏅", type: "quiz",     quiz: makeLetterQuiz(harfler, HARFLER, buyuk ? 10 : 8) },
+  ];
+  if (buyuk) d.splice(4, 0, { id: `${sid}_hafiza`, title: "Hafıza", emoji: "🃏", type: "memory", pairs: harfler.slice(0, 6) });
+  return {
+    id: `bolge_${sid}`,
+    name: `🎯 Pekiştirme ${no}${buyuk ? " · Büyük Tekrar" : ""}  (${harfler.length} harf)`,
+    color: renk, duraklar: d,
+  };
+}
 
-const ILERI_BOLGELER = [
-  {
-    id: "bolgeSekil", name: "Şekil Atölyesi 🔤", color: "#fb7185",
-    duraklar: [
-      { id: "s1", title: "Harf Şekilleri", emoji: "✏️", type: "lesson",
-        cards: HARF_SEKILLERI.slice(0, 3).map(sekilKart), quiz: makeSekilQuiz(HARF_SEKILLERI.slice(0, 3)) },
-      { id: "s2", title: "Daha Çok Şekil", emoji: "🖌️", type: "lesson",
-        cards: HARF_SEKILLERI.slice(3, 6).map(sekilKart), quiz: makeSekilQuiz(HARF_SEKILLERI.slice(3, 6)) },
-      { id: "s3", title: "Harf İzi (Çizme)", emoji: "🖊️", type: "trace", cards: HARFLER.slice(0, 6) },
+/* ---------- Heceler (Elif-Ba gibi çok oyunlu) ---------- */
+// Net Kuran okuma için: ünsüz + hareke = hece (Be, Bi, Bu ...)
+const HECE_BASE = [
+  { glyph: "ب", c: "b" }, { glyph: "ت", c: "t" }, { glyph: "ج", c: "c" },
+  { glyph: "د", c: "d" }, { glyph: "ر", c: "r" }, { glyph: "س", c: "s" },
+  { glyph: "ل", c: "l" }, { glyph: "م", c: "m" }, { glyph: "ن", c: "n" },
+];
+const USTUN_MARK = "َ", ESRE_MARK = "ِ", OTRE_MARK = "ُ";
+function buyukHarf(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function heceUret(base, mark, ses) {
+  return { glyph: base.glyph + mark, name: buyukHarf(base.c + ses), hint: `${base.c.toUpperCase()} + ${ses}` };
+}
+const HECE_USTUN = HECE_BASE.map((b) => heceUret(b, USTUN_MARK, "e"));
+const HECE_ESRE  = HECE_BASE.map((b) => heceUret(b, ESRE_MARK,  "i"));
+const HECE_OTRE  = HECE_BASE.map((b) => heceUret(b, OTRE_MARK,  "u"));
+const HECE_HEPSI = [...HECE_USTUN, ...HECE_ESRE, ...HECE_OTRE];
+const HECE_KARISIK = shuffleArr(HECE_HEPSI).slice(0, 9);
+
+// Boşluk doldurma verisi: ünsüz sabit, doğru hareke seçilir
+function heceFill(bases) {
+  const V = [["e", USTUN_MARK], ["i", ESRE_MARK], ["u", OTRE_MARK]];
+  return shuffleArr(bases).slice(0, 6).map((b, i) => {
+    const [ses] = V[i % 3];
+    return {
+      govde: b.glyph, dogruSes: ses, hedefHece: buyukHarf(b.c + ses),
+      secenekler: V.map(([s, m]) => ({ hece: b.glyph + m, ses: s, oku: buyukHarf(b.c + s) })),
+    };
+  });
+}
+
+function heceBolge(no, ad, renk, seti) {
+  const sid = `hc${no}`;
+  return {
+    id: `bolge_${sid}`, name: ad, color: renk, duraklar: [
+      { id: `${sid}_ogren`,  title: "Öğren",        emoji: "📖", type: "lesson", cards: seti },
+      { id: `${sid}_dinle`,  title: "Dinle & Bul",  emoji: "👂", type: "listen", items: seti, pool: HECE_HEPSI },
+      { id: `${sid}_esles`,  title: "Eşleştir",     emoji: "🧩", type: "match",  pairs: seti },
+      { id: `${sid}_balon`,  title: "Balon",        emoji: "🎈", type: "balloon", letters: seti, pool: HECE_HEPSI },
+      { id: `${sid}_bosluk`, title: "Boşluk Doldur", emoji: "📝", type: "fill",  fill: heceFill(HECE_BASE) },
+      { id: `${sid}_sinav`,  title: "Sınav",        emoji: "🏅", type: "quiz",   quiz: makeLetterQuiz(seti, HECE_HEPSI, 6, "Bu hece nasıl okunur?") },
     ],
-  },
-  {
-    id: "bolgeHareke", name: "Hareke Ormanı 🌳", color: "#34d399",
-    duraklar: [
-      { id: "h1", title: "Üstün-Esre-Ötre", emoji: "✨", type: "lesson",
-        cards: HAREKELER, quiz: [
-          { q: "Harfin ÜSTÜNDE çizgi -> hangi ses?", a: "e", options: ["e", "i", "u"] },
-          { q: "Harfin ALTINDA çizgi -> hangi ses?", a: "i", options: ["e", "i", "u"] },
-          { q: "Üstünde küçük 'vav' -> hangi ses?", a: "u", options: ["e", "i", "u"] },
-          { q: "'بَ' nasıl okunur?", a: "Be", options: ["Bi", "Be", "Bu"] },
-          { q: "'بُ' nasıl okunur?", a: "Bu", options: ["Bi", "Be", "Bu"] },
-        ] },
-      { id: "h2", title: "Heceler", emoji: "🌉", type: "lesson",
-        cards: [
-          { glyph: "بَ", name: "Be", hint: "B + e" }, { glyph: "تِ", name: "Ti", hint: "T + i" },
-          { glyph: "نُ", name: "Nu", hint: "N + u" }, { glyph: "مَ", name: "Me", hint: "M + e" },
-          { glyph: "لِ", name: "Li", hint: "L + i" },
-        ],
-        quiz: [
-          { q: "'بَ' nasıl okunur?", a: "Be", options: ["Be", "Bi", "Bu"] },
-          { q: "'تِ' nasıl okunur?", a: "Ti", options: ["Te", "Ti", "Tu"] },
-          { q: "'نُ' nasıl okunur?", a: "Nu", options: ["Ne", "Ni", "Nu"] },
-          { q: "'مَ' nasıl okunur?", a: "Me", options: ["Me", "Mi", "Mu"] },
-        ] },
-      { id: "h3", title: "Hece Eşleştir", emoji: "🧩", type: "match",
-        pairs: [
-          { glyph: "بَ", name: "Be" }, { glyph: "تِ", name: "Ti" }, { glyph: "نُ", name: "Nu" },
-          { glyph: "مَ", name: "Me" }, { glyph: "لِ", name: "Li" },
-        ] },
-    ],
-  },
-  {
-    id: "bolgeRakam", name: "Rakamlar Diyarı 🔢", color: "#06b6d4",
-    duraklar: [
-      { id: "r1", title: "Rakamlar 0-4", emoji: "🔢", type: "lesson",
-        cards: RAKAMLAR.slice(0, 5), quiz: makeLetterQuiz(RAKAMLAR.slice(0, 5), RAKAMLAR) },
-      { id: "r2", title: "Rakamlar 5-9", emoji: "🧮", type: "lesson",
-        cards: RAKAMLAR.slice(5, 10), quiz: makeLetterQuiz(RAKAMLAR.slice(5, 10), RAKAMLAR) },
-      { id: "r3", title: "Rakam Köstebek", emoji: "🐹", type: "mole", letters: RAKAMLAR, pool: RAKAMLAR },
-      { id: "r4", title: "Rakam Eşleştir", emoji: "🎯", type: "match", pairs: RAKAMLAR },
-    ],
-  },
-  {
-    id: "bolgeYildiz", name: "Yıldız Şehri 🌟", color: "#a78bfa",
-    duraklar: [
-      { id: "y1", title: "Cezm", emoji: "🛑", type: "lesson",
-        cards: [
-          { glyph: "بْ", name: "Cezm", hint: "Üstünde küçük yuvarlak: ses durur" },
-          { glyph: "أَبْ", name: "Eb", hint: "E + b" }, { glyph: "مِنْ", name: "Min", hint: "Mi + n" },
-        ],
-        quiz: [
-          { q: "Cezm ne yapar?", a: "Sesi durdurur", options: ["Sesi uzatır", "Sesi durdurur", "Tekrarlar"] },
-          { q: "'مِنْ' nasıl okunur?", a: "Min", options: ["Mine", "Min", "Mina"] },
-        ] },
-      { id: "y2", title: "Şedde", emoji: "🔁", type: "lesson",
-        cards: [
-          { glyph: "بّ", name: "Şedde", hint: "Harf iki kere okunur (bb)" },
-          { glyph: "رَبّ", name: "Rabb", hint: "Ra + bb" }, { glyph: "جَنّ", name: "Cenn", hint: "Ce + nn" },
-        ],
-        quiz: [
-          { q: "Şedde ne yapar?", a: "İki kere okutur", options: ["Siler", "İki kere okutur", "Uzatır"] },
-          { q: "'رَبّ' nasıl okunur?", a: "Rabb", options: ["Rab", "Rabb", "Reb"] },
-        ] },
-      { id: "y3", title: "İlk Kelimeler", emoji: "📖", type: "lesson",
-        cards: [
-          { glyph: "اَللّٰه", name: "Allah", hint: "Yüce Allah'ın ismi" },
-          { glyph: "نُور", name: "Nur", hint: "Işık" },
-          { glyph: "كِتَاب", name: "Kitab", hint: "Kitap" },
-          { glyph: "نَبِيّ", name: "Nebi", hint: "Peygamber" },
-        ],
-        quiz: [
-          { q: "'كِتَاب' ne demek?", a: "Kitap", options: ["Kalem", "Kitap", "Kapı"] },
-          { q: "'نُور' ne demek?", a: "Işık", options: ["Su", "Işık", "Taş"] },
-        ] },
-    ],
-  },
-  {
-    id: "bolgeDua", name: "Dua Bahçesi 🤲", color: "#f472b6",
-    duraklar: [
-      { id: "u1", title: "Güzel Sözler", emoji: "🌸", type: "lesson",
-        cards: DUALAR.map((d) => ({ glyph: d.glyph, name: d.okunus, hint: d.anlam })),
-        quiz: [
-          { q: "'Bismillah' ne demek?", a: "Allah'ın adıyla", options: ["Allah'ın adıyla", "Teşekkürler", "Günaydın"] },
-          { q: "'Elhamdülillah' ne der?", a: "Şükür", options: ["Şükür", "Üzgünüm", "Koşalım"] },
-        ] },
-      { id: "u2", title: "Esmaü'l-Hüsna", emoji: "💎", type: "lesson",
-        cards: ESMA.map((e) => ({ glyph: e.glyph, name: e.okunus, hint: e.anlam })),
-        quiz: [
-          { q: "'Er-Rahmân' ne demek?", a: "Çok merhamet eden", options: ["Çok merhamet eden", "Yaratan", "Rızık veren"] },
-          { q: "'El-Hâlik' ne demek?", a: "Yaratan", options: ["Yaratan", "Affeden", "Gören"] },
-        ] },
-    ],
-  },
-  {
-    id: "bolgeSure", name: "Sure Sarayı 📖", color: "#818cf8",
-    duraklar: [
-      { id: "v1", title: "İhlâs Sûresi", emoji: "📜", type: "sure", sure: SURELER.ihlas },
-      { id: "v2", title: "Kevser Sûresi", emoji: "📃", type: "sure", sure: SURELER.kevser },
-      { id: "v3", title: "Nâs Sûresi", emoji: "📖", type: "sure", sure: SURELER.nas },
-    ],
-  },
+  };
+}
+
+const HECE_INTRO = {
+  id: "bolge_hcint", name: "Harekeler 🍃", color: "#a3e635",
+  duraklar: [
+    { id: "hcint_ogren", title: "Üstün-Esre-Ötre", emoji: "✨", type: "lesson",
+      cards: HAREKELER, quiz: [
+        { q: "Harfin ÜSTÜNDE çizgi -> hangi ses?", a: "e", options: ["e", "i", "u"] },
+        { q: "Harfin ALTINDA çizgi -> hangi ses?", a: "i", options: ["e", "i", "u"] },
+        { q: "Üstünde küçük 'vav' -> hangi ses?", a: "u", options: ["e", "i", "u"] },
+        { q: "'بَ' nasıl okunur?", a: "Be", options: ["Bi", "Be", "Bu"] },
+        { q: "'بُ' nasıl okunur?", a: "Bu", options: ["Bi", "Be", "Bu"] },
+      ] },
+    { id: "hcint_esles", title: "Eşleştir", emoji: "🧩", type: "match", pairs: HAREKELER },
+    { id: "hcint_bosluk", title: "Boşluk Doldur", emoji: "📝", type: "fill", fill: heceFill(HECE_BASE) },
+  ],
+};
+
+const HECE_BOLGELERI = [
+  HECE_INTRO,
+  heceBolge(1, "Üstün Hecesi (e) 🟢", "#86efac", HECE_USTUN),
+  heceBolge(2, "Esre Hecesi (i) 🔵",  "#7dd3fc", HECE_ESRE),
+  heceBolge(3, "Ötre Hecesi (u) 🟣",  "#c4b5fd", HECE_OTRE),
+  heceBolge(4, "Karışık Heceler 🌈",   "#fda4af", HECE_KARISIK),
 ];
 
-const BOLGELER = [...elifBaBolgeleri(), ...ILERI_BOLGELER];
+/* ---------- Diğer ileri konular ---------- */
+const SEKIL_BOLGE = {
+  id: "bolgeSekil", name: "Şekil Atölyesi 🔤", color: "#fb7185",
+  duraklar: [
+    { id: "s1", title: "Harf Şekilleri", emoji: "✏️", type: "lesson",
+      cards: HARF_SEKILLERI.slice(0, 3).map(sekilKart), quiz: makeSekilQuiz(HARF_SEKILLERI.slice(0, 3)) },
+    { id: "s2", title: "Daha Çok Şekil", emoji: "🖌️", type: "lesson",
+      cards: HARF_SEKILLERI.slice(3, 6).map(sekilKart), quiz: makeSekilQuiz(HARF_SEKILLERI.slice(3, 6)) },
+    { id: "s3", title: "Harf İzi (Çizme)", emoji: "🖊️", type: "trace", cards: HARFLER.slice(0, 6) },
+  ],
+};
+const RAKAM_BOLGE = {
+  id: "bolgeRakam", name: "Rakamlar Diyarı 🔢", color: "#06b6d4",
+  duraklar: [
+    { id: "r1", title: "Rakamlar 0-4", emoji: "🔢", type: "lesson",
+      cards: RAKAMLAR.slice(0, 5), quiz: makeLetterQuiz(RAKAMLAR.slice(0, 5), RAKAMLAR) },
+    { id: "r2", title: "Rakamlar 5-9", emoji: "🧮", type: "lesson",
+      cards: RAKAMLAR.slice(5, 10), quiz: makeLetterQuiz(RAKAMLAR.slice(5, 10), RAKAMLAR) },
+    { id: "r3", title: "Rakam Köstebek", emoji: "🐹", type: "mole", letters: RAKAMLAR, pool: RAKAMLAR },
+    { id: "r4", title: "Rakam Eşleştir", emoji: "🎯", type: "match", pairs: RAKAMLAR },
+  ],
+};
+const YILDIZ_BOLGE = {
+  id: "bolgeYildiz", name: "Yıldız Şehri 🌟", color: "#a78bfa",
+  duraklar: [
+    { id: "y1", title: "Cezm", emoji: "🛑", type: "lesson",
+      cards: [
+        { glyph: "بْ", name: "Cezm", hint: "Üstünde küçük yuvarlak: ses durur" },
+        { glyph: "أَبْ", name: "Eb", hint: "E + b" }, { glyph: "مِنْ", name: "Min", hint: "Mi + n" },
+      ],
+      quiz: [
+        { q: "Cezm ne yapar?", a: "Sesi durdurur", options: ["Sesi uzatır", "Sesi durdurur", "Tekrarlar"] },
+        { q: "'مِنْ' nasıl okunur?", a: "Min", options: ["Mine", "Min", "Mina"] },
+      ] },
+    { id: "y2", title: "Şedde", emoji: "🔁", type: "lesson",
+      cards: [
+        { glyph: "بّ", name: "Şedde", hint: "Harf iki kere okunur (bb)" },
+        { glyph: "رَبّ", name: "Rabb", hint: "Ra + bb" }, { glyph: "جَنّ", name: "Cenn", hint: "Ce + nn" },
+      ],
+      quiz: [
+        { q: "Şedde ne yapar?", a: "İki kere okutur", options: ["Siler", "İki kere okutur", "Uzatır"] },
+        { q: "'رَبّ' nasıl okunur?", a: "Rabb", options: ["Rab", "Rabb", "Reb"] },
+      ] },
+    { id: "y3", title: "İlk Kelimeler", emoji: "📖", type: "lesson",
+      cards: [
+        { glyph: "اَللّٰه", name: "Allah", hint: "Yüce Allah'ın ismi" },
+        { glyph: "نُور", name: "Nur", hint: "Işık" },
+        { glyph: "كِتَاب", name: "Kitab", hint: "Kitap" },
+        { glyph: "نَبِيّ", name: "Nebi", hint: "Peygamber" },
+      ],
+      quiz: [
+        { q: "'كِتَاب' ne demek?", a: "Kitap", options: ["Kalem", "Kitap", "Kapı"] },
+        { q: "'نُور' ne demek?", a: "Işık", options: ["Su", "Işık", "Taş"] },
+      ] },
+  ],
+};
+const DUA_BOLGE = {
+  id: "bolgeDua", name: "Dua Bahçesi 🤲", color: "#f472b6",
+  duraklar: [
+    { id: "u1", title: "Güzel Sözler", emoji: "🌸", type: "lesson",
+      cards: DUALAR.map((d) => ({ glyph: d.glyph, name: d.okunus, hint: d.anlam })),
+      quiz: [
+        { q: "'Bismillah' ne demek?", a: "Allah'ın adıyla", options: ["Allah'ın adıyla", "Teşekkürler", "Günaydın"] },
+        { q: "'Elhamdülillah' ne der?", a: "Şükür", options: ["Şükür", "Üzgünüm", "Koşalım"] },
+      ] },
+    { id: "u2", title: "Esmaü'l-Hüsna", emoji: "💎", type: "lesson",
+      cards: ESMA.map((e) => ({ glyph: e.glyph, name: e.okunus, hint: e.anlam })),
+      quiz: [
+        { q: "'Er-Rahmân' ne demek?", a: "Çok merhamet eden", options: ["Çok merhamet eden", "Yaratan", "Rızık veren"] },
+        { q: "'El-Hâlik' ne demek?", a: "Yaratan", options: ["Yaratan", "Affeden", "Gören"] },
+      ] },
+  ],
+};
+const SURE_BOLGE = {
+  id: "bolgeSure", name: "Sure Sarayı 📖", color: "#818cf8",
+  duraklar: [
+    { id: "v1", title: "İhlâs Sûresi", emoji: "📜", type: "sure", sure: SURELER.ihlas },
+    { id: "v2", title: "Kevser Sûresi", emoji: "📃", type: "sure", sure: SURELER.kevser },
+    { id: "v3", title: "Nâs Sûresi", emoji: "📖", type: "sure", sure: SURELER.nas },
+  ],
+};
+
+/* ---------- Tüm bölgeleri sırala (aşamalar + araya pekiştirme) ---------- */
+function tumBolgeler() {
+  const a = elifBaBolgeleri();
+  const out = [];
+  out.push(a[0], a[1], pekistirmeBolge(1, HARFLER.slice(0, 7), "#facc15"));
+  out.push(a[2], a[3], pekistirmeBolge(2, HARFLER.slice(0, 15), "#fbbf24"));
+  out.push(a[4], a[5], pekistirmeBolge(3, HARFLER.slice(0, 23), "#f59e0b"));
+  out.push(a[6], pekistirmeBolge(4, HARFLER, "#f97316", true));
+  out.push(SEKIL_BOLGE, ...HECE_BOLGELERI, RAKAM_BOLGE, YILDIZ_BOLGE, DUA_BOLGE, SURE_BOLGE);
+  return out;
+}
+
+const BOLGELER = tumBolgeler();
 
 /* ---------- Yardımcılar ---------- */
 
@@ -311,11 +377,12 @@ function makeSekilQuiz(grup) {
   }));
 }
 
-function makeLetterQuiz(group, pool, limit) {
+function makeLetterQuiz(group, pool, limit, soruMetni) {
+  const metin = soruMetni || "Bu harfin adı nedir?";
   const items = limit ? shuffleArr(group).slice(0, limit) : group;
   return items.map((item) => {
     const wrongs = shuffleArr(pool.filter((h) => h.name !== item.name)).slice(0, 2).map((h) => h.name);
-    return { q: `Bu harfin adı nedir?  ${item.glyph}`, a: item.name, glyph: item.glyph,
+    return { q: `${metin}  ${item.glyph}`, a: item.name, glyph: item.glyph,
       options: shuffleArr([item.name, ...wrongs]) };
   });
 }
