@@ -40,6 +40,25 @@ jobs:
           mkdir -p mobile/www
           cp -r kuran-yolculugu/* mobile/www/
 
+      - name: Tilavet seslerini indir (APK'ya offline göm)
+        continue-on-error: true
+        run: |
+          OUT=mobile/www/audio/sure
+          mkdir -p "$OUT"
+          BASE="https://everyayah.com/data/Husary_128kbps"
+          # sure_no:ayet_sayisi  (Fâtiha, İhlâs, Felak, Nâs, Asr, Kevser)
+          for pair in 1:7 112:4 113:5 114:6 103:3 108:3; do
+            sure="${pair%%:*}"; adet="${pair##*:}"
+            ss=$(printf "%03d" "$sure")
+            for a in $(seq 1 "$adet"); do
+              aa=$(printf "%03d" "$a")
+              curl -fsSL --retry 3 --retry-delay 2 -o "$OUT/$ss$aa.mp3" "$BASE/$ss$aa.mp3" \
+                || echo "ATLANDI: $ss$aa"
+            done
+          done
+          echo "İndirilen ses sayısı: $(ls -1 "$OUT" 2>/dev/null | wc -l)"
+          ls -lh "$OUT" || true
+
       - name: Capacitor bağımlılıklarını yükle
         working-directory: mobile
         run: npm install

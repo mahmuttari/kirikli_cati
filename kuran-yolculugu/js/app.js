@@ -693,15 +693,21 @@ function tilavetCal(sureNo, ayetNo, okunusYedek) {
   if (!sureNo) { seslendir(okunusYedek); return; }
   const ss = String(sureNo).padStart(3, "0");
   const aa = String(ayetNo).padStart(3, "0");
-  try {
-    const ses = new Audio(`https://everyayah.com/data/${TILAVET_KARI}/${ss}${aa}.mp3`);
+  // 1) APK'ya gömülü yerel ses  2) internetten akış  3) TTS okunuş
+  const kaynaklar = [
+    `audio/sure/${ss}${aa}.mp3`,
+    `https://everyayah.com/data/${TILAVET_KARI}/${ss}${aa}.mp3`,
+  ];
+  let i = 0;
+  function dene() {
+    if (i >= kaynaklar.length) { seslendir(okunusYedek); return; }
+    const ses = new Audio(kaynaklar[i++]);
     _tilavetSes = ses;
-    let yedek = false;
-    const yedekCal = () => { if (!yedek) { yedek = true; seslendir(okunusYedek); } };
-    ses.addEventListener("error", yedekCal);
+    ses.addEventListener("error", dene);       // kaynak yüklenemezse sonrakini dene
     const p = ses.play();
-    if (p && p.catch) p.catch(() => {}); // otomatik oynatma engellenirse sessizce geç (buton çalışır)
-  } catch { seslendir(okunusYedek); }
+    if (p && p.catch) p.catch(() => {});        // otomatik oynatma engeli -> sessizce geç (buton çalışır)
+  }
+  dene();
 }
 
 function sureEkrani(durak, index) {

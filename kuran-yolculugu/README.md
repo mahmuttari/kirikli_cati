@@ -59,8 +59,9 @@ Saf HTML + CSS + JavaScript. `index.html`, `css/style.css`, `js/data.js` (müfre
 ## Ses / Tilavet
 
 - **Harf / hece / kelime okunuşları:** cihazın Türkçe seslendirme (TTS) motoruyla okunur.
-- **Sure tilaveti:** Sure ekranlarında, âyetler **gerçek hâfız tilavetiyle** seslendirilir.
-  Ses, cihazın internetiyle [everyayah.com](https://everyayah.com) üzerinden **Mahmud Halil
-  el-Husary (murattal)** kaydından akıtılır. İnternet yoksa otomatik olarak TTS okunuşa düşer.
+- **Sure tilaveti:** Sure ekranlarında âyetler **gerçek hâfız tilavetiyle** (Mahmud Halil
+  el-Husary, murattal) seslendirilir. APK derlenirken bu sesler [everyayah.com](https://everyayah.com)
+  kaynağından indirilip **uygulamanın içine gömülür** (`audio/sure/`), böylece **çevrimdışı** çalışır.
+  Ses sırası: 1) gömülü yerel dosya → 2) internetten akış → 3) TTS okunuş yedeği.
 - Tilavet kaydı, eğitim/kişisel kullanım için serbestçe dağıtılan bir kayıttır; hak sahibi
   kāridir. Tümüyle çevrimdışı ve kendi ses dosyalarınızla bir sürüm istenirse entegre edilebilir.
