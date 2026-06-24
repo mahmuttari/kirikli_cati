@@ -141,6 +141,7 @@ function durakAc(durak, index) {
     case "truefalse": return oyunDogruYanlis(durak, index);
     case "riddle":    return oyunBilmece(durak, index);
     case "fill":      return oyunBosluk(durak, index);
+    case "kelime":    return oyunKelime(durak, index);
     case "quiz":      return testeGir(durak, index);
     case "sure":      return sureEkrani(durak, index);
     default:          return derseGir(durak, index);
@@ -152,7 +153,8 @@ function tipEtiketi(type) {
   return {
     lesson: "📖 Öğren", quiz: "🏅 Sınav", match: "🧩 Eşleştir", listen: "👂 Dinle-Bul",
     memory: "🃏 Hafıza", trace: "🖊️ Çizme", balloon: "🎈 Balon", mole: "🐹 Köstebek",
-    truefalse: "⚡ Doğru mu?", riddle: "🧠 Bilmece", fill: "📝 Boşluk", sure: "📖 Sure",
+    truefalse: "⚡ Doğru mu?", riddle: "🧠 Bilmece", fill: "📝 Boşluk", kelime: "🏙️ Kelime",
+    sure: "📖 Sure",
   }[type] || "📚 Ders";
 }
 
@@ -164,9 +166,11 @@ function haritaEkrani() {
   const bar = document.createElement("div");
   bar.className = "topbar";
   bar.innerHTML = `
+    <button class="profil-btn">👤 ${ILERLEME.isim ? ILERLEME.isim : "Profil"}</button>
     <div class="logo">🕌 Kur'an Yolculuğu</div>
     <div class="yildiz-sayac">⭐ <span>${toplamYildiz()}</span></div>
   `;
+  bar.querySelector(".profil-btn").addEventListener("click", profilEkrani);
   wrap.appendChild(bar);
 
   const intro = document.createElement("p");
@@ -559,60 +563,115 @@ function oyunMemory(durak, index) {
   window.scrollTo(0, 0);
 }
 
-// ---- HARF İZİ (parmakla/fareyle çizme) ----
+// ---- HARF İZİ (parmakla/fareyle çizme + GERÇEK doğrulama) ----
 function oyunTrace(durak, index) {
+  const BOY = 300;
   let kartNo = 0;
+  const kapsamalar = [];
+
   app.innerHTML = "";
   const wrap = document.createElement("div");
   wrap.className = "ders-wrap";
   wrap.appendChild(ustBaslik(durak));
   const aciklama = document.createElement("p");
   aciklama.className = "oyun-aciklama";
-  aciklama.textContent = "Harfin üzerinden parmağınla (veya fareyle) geçerek çiz! ✏️";
+  aciklama.textContent = "Soluk harfin üzerinden geçerek çiz, sonra ✓ Kontrol Et! ✏️";
   wrap.appendChild(aciklama);
   const alan = document.createElement("div");
   wrap.appendChild(alan);
   app.appendChild(wrap);
 
+  // Harfi kılavuz/maske olarak çizer
+  function harfCiz(c, glyph, renk) {
+    c.clearRect(0, 0, BOY, BOY);
+    c.fillStyle = renk;
+    c.textAlign = "center"; c.textBaseline = "middle";
+    c.font = '200px "Amiri", serif';
+    c.fillText(glyph, BOY / 2, BOY / 2 + 6);
+  }
+
   function ciz() {
     const k = durak.cards[kartNo];
     alan.innerHTML = `
       <div class="trace-kutu">
-        <div class="trace-harf">${k.glyph}</div>
-        <canvas class="trace-canvas" width="300" height="300"></canvas>
+        <canvas class="trace-guide" width="${BOY}" height="${BOY}"></canvas>
+        <canvas class="trace-canvas" width="${BOY}" height="${BOY}"></canvas>
       </div>
       <div class="trace-ad">${k.name} <button class="dinle-mini">🔊</button></div>
+      <div class="geri-bildirim trace-geri"></div>
       <div class="kart-nav">
         <button class="temizle">🧽 Temizle</button>
         <span class="kart-sayac">${kartNo + 1} / ${durak.cards.length}</span>
-        <button class="sonraki">${kartNo === durak.cards.length - 1 ? "Bitir 🏁" : "Sonraki ▶"}</button>
+        <button class="kontrol">✓ Kontrol Et</button>
       </div>`;
     alan.querySelector(".dinle-mini").addEventListener("click", () => seslendir(k.name));
     seslendir(k.name);
 
+    // kılavuz harf (soluk) + maske
+    const guide = alan.querySelector(".trace-guide");
+    const gctx = guide.getContext("2d");
+    harfCiz(gctx, k.glyph, "#dbe4ee");
+    const gd = gctx.getImageData(0, 0, BOY, BOY).data;
+    const maske = new Uint8Array(BOY * BOY);
+    let harfPiksel = 0;
+    for (let p = 0; p < BOY * BOY; p++) { if (gd[p * 4 + 3] > 40) { maske[p] = 1; harfPiksel++; } }
+
+    // çizim katmanı
     const canvas = alan.querySelector(".trace-canvas");
     const ctx = canvas.getContext("2d");
-    ctx.lineWidth = 14; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#38bdf8";
-    let ciziyor = false;
+    ctx.lineWidth = 16; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#38bdf8";
+    let ciziyor = false, cizildi = false;
     const nokta = (e) => {
       const r = canvas.getBoundingClientRect();
       const t = e.touches ? e.touches[0] : e;
-      return { x: (t.clientX - r.left) * (canvas.width / r.width), y: (t.clientY - r.top) * (canvas.height / r.height) };
+      return { x: (t.clientX - r.left) * (BOY / r.width), y: (t.clientY - r.top) * (BOY / r.height) };
     };
-    const basla = (e) => { e.preventDefault(); ciziyor = true; const p = nokta(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+    const basla = (e) => { e.preventDefault(); ciziyor = true; cizildi = true; const p = nokta(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
     const devam = (e) => { if (!ciziyor) return; e.preventDefault(); const p = nokta(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
-    const bitir = () => { ciziyor = false; };
+    const dur = () => { ciziyor = false; };
     canvas.addEventListener("mousedown", basla); canvas.addEventListener("mousemove", devam);
-    window.addEventListener("mouseup", bitir);
+    window.addEventListener("mouseup", dur);
     canvas.addEventListener("touchstart", basla, { passive: false });
     canvas.addEventListener("touchmove", devam, { passive: false });
-    canvas.addEventListener("touchend", bitir);
+    canvas.addEventListener("touchend", dur);
 
-    alan.querySelector(".temizle").addEventListener("click", () => ctx.clearRect(0, 0, canvas.width, canvas.height));
-    alan.querySelector(".sonraki").addEventListener("click", () => {
-      tonCal([523]);
-      if (kartNo < durak.cards.length - 1) { kartNo++; ciz(); }
-      else tamamla(durak, index, 3, 0, 0, "Tüm harfleri çizdin! ✏️🎉");
+    const gb = alan.querySelector(".trace-geri");
+    alan.querySelector(".temizle").addEventListener("click", () => { ctx.clearRect(0, 0, BOY, BOY); cizildi = false; gb.innerHTML = ""; });
+
+    alan.querySelector(".kontrol").addEventListener("click", () => {
+      // çizimi maske ile karşılaştır
+      const ud = ctx.getImageData(0, 0, BOY, BOY).data;
+      let cizim = 0, ortak = 0;
+      for (let p = 0; p < BOY * BOY; p++) {
+        const a = ud[p * 4 + 3] > 40;
+        if (a) { cizim++; if (maske[p]) ortak++; }
+      }
+      const kapsama = harfPiksel ? ortak / harfPiksel : 0;  // harfin ne kadarı çizildi
+      const isabet = cizim ? ortak / cizim : 0;             // çiziminin ne kadarı harf üstünde
+
+      if (!cizildi || cizim < 700) {
+        sesYanlis(); gb.innerHTML = `<span class="kotu">Biraz daha çiz ✏️</span>`; return;
+      }
+      if (isabet < 0.45 || kapsama < 0.3) {
+        sesYanlis();
+        gb.innerHTML = `<span class="kotu">Harfin üzerinden geçmeye çalış 🎯 (tekrar dene)</span>`;
+        return;
+      }
+      // başarılı
+      sesDogru();
+      kapsamalar.push(kapsama);
+      gb.innerHTML = `<span class="iyi">Harika çizdin! ✨</span>`;
+      const ileri = document.createElement("button");
+      ileri.className = "devam";
+      ileri.textContent = kartNo === durak.cards.length - 1 ? "Bitir 🏁" : "Sonraki ▶";
+      ileri.addEventListener("click", () => {
+        if (kartNo < durak.cards.length - 1) { kartNo++; ciz(); }
+        else {
+          const ort = kapsamalar.reduce((a, b) => a + b, 0) / kapsamalar.length;
+          tamamla(durak, index, ort >= 0.55 ? 3 : ort >= 0.4 ? 2 : 1, 0, 0, "Tüm harfleri çizdin! ✏️🎉");
+        }
+      });
+      gb.appendChild(ileri);
     });
   }
   ciz();
@@ -987,6 +1046,136 @@ function oyunBosluk(durak, index) {
     gb.appendChild(ileri);
   }
   ciz();
+  window.scrollTo(0, 0);
+}
+
+// ---- KELİME BOŞLUK DOLDURMA (kelimedeki eksik harfi bul) ----
+function oyunKelime(durak, index) {
+  const tur = shuffleArr(durak.kelimeler);
+  const pool = durak.pool || HARFLER;
+  let turNo = 0, dogru = 0;
+
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  app.appendChild(wrap);
+  const alan = document.createElement("div");
+  wrap.appendChild(alan);
+
+  function ciz() {
+    const k = tur[turNo];
+    const idx = Math.floor(Math.random() * k.harfler.length);
+    const dogruGlyph = k.harfler[idx];
+    const yanlis = shuffleArr(pool.filter((h) => h.glyph !== dogruGlyph)).slice(0, 2).map((h) => h.glyph);
+    const secenekler = shuffleArr([dogruGlyph, ...yanlis]);
+    const parcalar = k.harfler.map((h, i) =>
+      i === idx ? `<span class="kelime-kutu">?</span>` : `<span class="kelime-harf">${h}</span>`).join("");
+    alan.innerHTML = `
+      <div class="test-ust">
+        <div class="ilerleme-cubuk"><div style="width:${(turNo / tur.length) * 100}%"></div></div>
+        <span>${turNo + 1}/${tur.length}</span>
+      </div>
+      <p class="oyun-aciklama">Eksik harfi bul: <b>“${k.okunus}”</b> (${k.anlam})
+        <button class="mini-dinle">🔊</button></p>
+      <div class="kelime-satir">${parcalar}</div>
+      <div class="listen-grid kelime-secenekler"></div>
+      <div class="geri-bildirim"></div>`;
+    alan.querySelector(".mini-dinle").addEventListener("click", () => seslendir(k.okunus));
+    seslendir(k.okunus);
+    const grid = alan.querySelector(".kelime-secenekler");
+    secenekler.forEach((g) => {
+      const b = document.createElement("button");
+      b.className = "listen-hucre"; b.textContent = g;
+      b.addEventListener("click", () => cevap(b, g, dogruGlyph, k));
+      grid.appendChild(b);
+    });
+  }
+  function cevap(btn, g, dogruGlyph, k) {
+    alan.querySelectorAll(".listen-hucre").forEach((b) => (b.disabled = true));
+    const kutu = alan.querySelector(".kelime-kutu");
+    const gb = alan.querySelector(".geri-bildirim");
+    if (g === dogruGlyph) {
+      btn.classList.add("dogru"); dogru++; sesDogru();
+      kutu.textContent = dogruGlyph; kutu.classList.add("dolu");
+      seslendir(k.okunus);
+      gb.innerHTML = `<span class="iyi">${k.tam} = ${k.okunus} 🎉</span>`;
+    } else {
+      btn.classList.add("yanlis"); sesYanlis();
+      alan.querySelectorAll(".listen-hucre").forEach((b) => { if (b.textContent === dogruGlyph) b.classList.add("dogru"); });
+      gb.innerHTML = `<span class="kotu">Doğru harf: <b>${dogruGlyph}</b> → ${k.tam}</span>`;
+    }
+    const ileri = document.createElement("button");
+    ileri.className = "devam";
+    ileri.textContent = turNo === tur.length - 1 ? "Bitir 🏁" : "Devam ▶";
+    ileri.addEventListener("click", () => {
+      turNo++;
+      if (turNo < tur.length) ciz();
+      else { const o = dogru / tur.length; tamamla(durak, index, o >= 0.99 ? 3 : o >= 0.7 ? 2 : o >= 0.5 ? 1 : 0, dogru, tur.length); }
+    });
+    gb.appendChild(ileri);
+  }
+  ciz();
+  window.scrollTo(0, 0);
+}
+
+// ---- PROFİL & ROZETLER ----
+function hepsiTamam(filterFn) {
+  const ds = DURAKLAR.filter(filterFn);
+  return ds.length > 0 && ds.every((d) => ILERLEME.tamamlanan[d.id]);
+}
+function rozetler() {
+  const ts = toplamYildiz();
+  return [
+    { emoji: "🔤", ad: "Harf Ustası",     aciklama: "Tüm Elif-Ba aşamaları", acik: hepsiTamam((d) => d.bolge.id.startsWith("bolge_a")) },
+    { emoji: "🎯", ad: "Pekiştirmeci",    aciklama: "Tüm pekiştirme durakları", acik: hepsiTamam((d) => d.bolge.id.indexOf("pk") >= 0) },
+    { emoji: "🍃", ad: "Hece Kahramanı",  aciklama: "Tüm hece bölümleri", acik: hepsiTamam((d) => d.bolge.id.indexOf("hc") >= 0) },
+    { emoji: "〰️", ad: "Med Uzmanı",      aciklama: "Med Vadisi", acik: hepsiTamam((d) => d.bolge.id === "bolgeMed") },
+    { emoji: "⛰️", ad: "Tenvin Kâşifi",   aciklama: "Tenvin Tepesi", acik: hepsiTamam((d) => d.bolge.id === "bolgeTenvin") },
+    { emoji: "🏙️", ad: "Kelime Dostu",    aciklama: "Kelime Şehri", acik: hepsiTamam((d) => d.bolge.id === "bolgeKelime") },
+    { emoji: "📖", ad: "Sure Hâfızı",     aciklama: "Tüm sureler", acik: hepsiTamam((d) => d.bolge.id === "bolgeSure") },
+    { emoji: "⭐", ad: "25 Yıldız",        aciklama: "25 yıldız topla", acik: ts >= 25 },
+    { emoji: "🌟", ad: "75 Yıldız",        aciklama: "75 yıldız topla", acik: ts >= 75 },
+    { emoji: "👑", ad: "Kur'an Yolcusu",  aciklama: "Tüm haritayı bitir", acik: hepsiTamam(() => true) },
+  ];
+}
+
+function profilEkrani() {
+  zamanlayicilariTemizle();
+  ILERLEME = ilerlemeYukle();
+  const ts = toplamYildiz();
+  const rs = rozetler();
+  const kazanilan = rs.filter((r) => r.acik).length;
+  const tamamSay = DURAKLAR.filter((d) => ILERLEME.tamamlanan[d.id]).length;
+  const isim = (ILERLEME.isim || "").replace(/"/g, "&quot;");
+
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.innerHTML = `
+    <div class="ders-ust"><button class="geri">← Harita</button><h2>👤 Profilim</h2></div>
+    <div class="profil-kart">
+      <div class="profil-avatar">🧒</div>
+      <input class="profil-isim" placeholder="Adını yaz..." value="${isim}" maxlength="14" />
+      <div class="profil-istat">
+        <div><b>${ts}</b><span>⭐ Puan</span></div>
+        <div><b>${tamamSay}/${DURAKLAR.length}</b><span>Durak</span></div>
+        <div><b>${kazanilan}/${rs.length}</b><span>🏅 Rozet</span></div>
+      </div>
+    </div>
+    <h3 class="rozet-baslik">🏅 Rozetlerim</h3>
+    <div class="rozet-grid"></div>`;
+  wrap.querySelector(".geri").addEventListener("click", render);
+  const inp = wrap.querySelector(".profil-isim");
+  inp.addEventListener("change", () => { ILERLEME.isim = inp.value.trim(); ilerlemeKaydet(ILERLEME); });
+  const grid = wrap.querySelector(".rozet-grid");
+  rs.forEach((r) => {
+    const el = document.createElement("div");
+    el.className = "rozet " + (r.acik ? "acik" : "kilitli");
+    el.innerHTML = `<div class="rozet-emoji">${r.acik ? r.emoji : "🔒"}</div><div class="rozet-ad">${r.ad}</div><div class="rozet-acik">${r.aciklama}</div>`;
+    grid.appendChild(el);
+  });
+  app.appendChild(wrap);
   window.scrollTo(0, 0);
 }
 

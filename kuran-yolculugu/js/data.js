@@ -347,6 +347,75 @@ const SURE_BOLGE = {
   ],
 };
 
+/* ---------- Med (uzatma) ---------- */
+const MEDLER = [
+  { glyph: "بَا", name: "Bââ", hint: "Be sesini UZAT (elif med)" },
+  { glyph: "بُو", name: "Bûû", hint: "Bu sesini UZAT (vav med)" },
+  { glyph: "بِي", name: "Bîî", hint: "Bi sesini UZAT (ye med)" },
+  { glyph: "تَا", name: "Tââ", hint: "Te sesini uzat" },
+  { glyph: "نُو", name: "Nûû", hint: "Nu sesini uzat" },
+  { glyph: "سِي", name: "Sîî", hint: "Si sesini uzat" },
+];
+const MED_BOLGE = {
+  id: "bolgeMed", name: "Med Vadisi 〰️", color: "#2dd4bf",
+  duraklar: [
+    { id: "md1", title: "Uzatmalar", emoji: "〰️", type: "lesson", cards: MEDLER,
+      quiz: [
+        { q: "Med ne demek?", a: "Sesi uzatmak", options: ["Sesi uzatmak", "Sesi kesmek", "Susmak"] },
+        { q: "'بَا' nasıl okunur?", a: "Bââ (uzun)", options: ["Be (kısa)", "Bââ (uzun)", "Bi"] },
+        { q: "Elif med hangi sesi uzatır?", a: "e/a", options: ["e/a", "i", "u"] },
+      ] },
+    { id: "md2", title: "Med Dinle", emoji: "👂", type: "listen", items: MEDLER, pool: MEDLER },
+    { id: "md3", title: "Med Eşleştir", emoji: "🧩", type: "match", pairs: MEDLER },
+    { id: "md4", title: "Med Balon", emoji: "🎈", type: "balloon", letters: MEDLER, pool: MEDLER },
+    { id: "md5", title: "Med Sınav", emoji: "🏅", type: "quiz", quiz: makeLetterQuiz(MEDLER, MEDLER, 5, "Bu nasıl okunur?") },
+  ],
+};
+
+/* ---------- Tenvin ---------- */
+const TENVINLER = [
+  { glyph: "بًا", name: "Ben", hint: "İki üstün: 'en' sesi" },
+  { glyph: "بٍ", name: "Bin", hint: "İki esre: 'in' sesi" },
+  { glyph: "بٌ", name: "Bun", hint: "İki ötre: 'un' sesi" },
+  { glyph: "تًا", name: "Ten", hint: "'en' ile biter" },
+  { glyph: "سٌ", name: "Sun", hint: "'un' ile biter" },
+];
+const TENVIN_BOLGE = {
+  id: "bolgeTenvin", name: "Tenvin Tepesi ⛰️", color: "#c084fc",
+  duraklar: [
+    { id: "tn1", title: "Tenvin Nedir?", emoji: "⛰️", type: "lesson", cards: TENVINLER,
+      quiz: [
+        { q: "İki üstün (tenvin) hangi ses?", a: "en", options: ["en", "in", "un"] },
+        { q: "İki esre hangi ses?", a: "in", options: ["en", "in", "un"] },
+        { q: "İki ötre hangi ses?", a: "un", options: ["en", "in", "un"] },
+      ] },
+    { id: "tn2", title: "Tenvin Dinle", emoji: "👂", type: "listen", items: TENVINLER, pool: TENVINLER },
+    { id: "tn3", title: "Tenvin Eşleştir", emoji: "🧩", type: "match", pairs: TENVINLER },
+    { id: "tn4", title: "Tenvin Sınav", emoji: "🏅", type: "quiz", quiz: makeLetterQuiz(TENVINLER, TENVINLER, 5, "Bu nasıl okunur?") },
+  ],
+};
+
+/* ---------- Kelimeler (kelime düzeyinde boşluk doldurma) ---------- */
+const KELIMELER = [
+  { tam: "اَب",    harfler: ["ا", "ب"],            okunus: "Eb",    anlam: "Baba" },
+  { tam: "بَاب",   harfler: ["ب", "ا", "ب"],        okunus: "Bâb",   anlam: "Kapı" },
+  { tam: "نُور",   harfler: ["ن", "و", "ر"],        okunus: "Nûr",   anlam: "Işık" },
+  { tam: "قَلَم",  harfler: ["ق", "ل", "م"],        okunus: "Kalem", anlam: "Kalem" },
+  { tam: "دِين",   harfler: ["د", "ي", "ن"],        okunus: "Dîn",   anlam: "Din" },
+  { tam: "كِتَاب", harfler: ["ك", "ت", "ا", "ب"],   okunus: "Kitâb", anlam: "Kitap" },
+];
+const KELIME_BOLGE = {
+  id: "bolgeKelime", name: "Kelime Şehri 🏙️", color: "#fb7185",
+  duraklar: [
+    { id: "kl1", title: "Kelime Tanı", emoji: "📖", type: "lesson",
+      cards: KELIMELER.map((k) => ({ glyph: k.tam, name: k.okunus, hint: k.anlam })) },
+    { id: "kl2", title: "Boşluğu Doldur", emoji: "📝", type: "kelime", kelimeler: KELIMELER.slice(0, 4), pool: HARFLER },
+    { id: "kl3", title: "Zor Kelimeler", emoji: "🧩", type: "kelime", kelimeler: KELIMELER.slice(2, 6), pool: HARFLER },
+    { id: "kl4", title: "Kelime Eşleştir", emoji: "🔗", type: "match",
+      pairs: KELIMELER.map((k) => ({ glyph: k.tam, name: k.okunus })) },
+  ],
+};
+
 /* ---------- Tüm bölgeleri sırala (aşamalar + araya pekiştirme) ---------- */
 function tumBolgeler() {
   const a = elifBaBolgeleri();
@@ -355,7 +424,7 @@ function tumBolgeler() {
   out.push(a[2], a[3], pekistirmeBolge(2, HARFLER.slice(0, 15), "#fbbf24"));
   out.push(a[4], a[5], pekistirmeBolge(3, HARFLER.slice(0, 23), "#f59e0b"));
   out.push(a[6], pekistirmeBolge(4, HARFLER, "#f97316", true));
-  out.push(SEKIL_BOLGE, ...HECE_BOLGELERI, RAKAM_BOLGE, YILDIZ_BOLGE, DUA_BOLGE, SURE_BOLGE);
+  out.push(SEKIL_BOLGE, ...HECE_BOLGELERI, MED_BOLGE, TENVIN_BOLGE, YILDIZ_BOLGE, KELIME_BOLGE, RAKAM_BOLGE, DUA_BOLGE, SURE_BOLGE);
   return out;
 }
 
