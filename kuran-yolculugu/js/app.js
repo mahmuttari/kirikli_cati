@@ -78,11 +78,14 @@ function seslendir(metin, dil) {
 // İngilizce-Latin hatalarını önler); aksi halde Türkçe okunuşu söyler.
 function arapcaAcik() { return ILERLEME.arapca !== false; } // varsayılan: açık
 function idArapca(id) {
-  // Çekirdek "okuma" bölgeleri (harf/hece/kelime) -> Arapça; kavram/sayı/dua/sure -> Türkçe
+  // SINAVLA ATLA havuzu için çekirdek "okuma" bölgeleri (harf/hece/kelime)
   return !/bolgeRakam|bolgeDua|bolgeSure|bolgeVakif|bolgeMim|bolgeNun|bolgeMedC|bolgeIncelik|bolgeSekil|bolge_hcint/.test(id || "");
 }
 function durakArapcaMi(d) {
-  return idArapca((d && d.bolge && d.bolge.id) || "");
+  // SESLENDİRME: ileri okuma örnekleri de Arapça okunsun.
+  // Arapça okunMAyacaklar: sayılar, vakıf sembolleri, şekil birleşmeleri, hareke tanıtım, sure (tilavetle okunur).
+  const id = (d && d.bolge && d.bolge.id) || "";
+  return !/bolgeRakam|bolgeVakif|bolgeSekil|bolge_hcint|bolgeSure/.test(id);
 }
 function konus(item) {
   const arap = AKTIF_DURAK && durakArapcaMi(AKTIF_DURAK) && arapcaAcik() && item && item.glyph;
@@ -343,14 +346,21 @@ function derseGir(durak, index) {
 
   function kartCiz() {
     const k = durak.cards[kartNo];
+    // İleri Arapça okuma bölgelerinde, kural/Türkçe adı için ikinci buton göster
+    const ikiDil = durakArapcaMi(durak) && arapcaAcik() && k.name && k.name !== k.glyph;
     kartAlan.innerHTML = `
       <div class="flashcard">
         <div class="harf-buyuk">${k.glyph}</div>
         <div class="harf-ad">${k.name}</div>
         <div class="harf-ipucu">${k.hint || ""}</div>
-        <button class="dinle">🔊 Dinle</button>
+        <div class="dinle-grup">
+          <button class="dinle">🔊 ${ikiDil ? "Arapça oku" : "Dinle"}</button>
+          ${ikiDil ? `<button class="dinle-tr">🔤 ${k.name}</button>` : ""}
+        </div>
       </div>`;
     kartAlan.querySelector(".dinle").addEventListener("click", () => konus(k));
+    const trBtn = kartAlan.querySelector(".dinle-tr");
+    if (trBtn) trBtn.addEventListener("click", () => seslendir(k.name));
     konus(k);
     altBar.querySelector(".kart-sayac").textContent = `${kartNo + 1} / ${durak.cards.length}`;
     altBar.querySelector(".onceki").disabled = kartNo === 0;

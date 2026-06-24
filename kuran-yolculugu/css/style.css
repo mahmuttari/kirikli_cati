@@ -521,3 +521,12 @@ body {
 }
 .tren-tile.kullanildi { opacity: .35; box-shadow: none; }
 .tren-tile.tren-yanlis { animation: salla .35s; border-color: #f87171; }
+
+/* ---- İki dilli dinle butonları ---- */
+.dinle-grup { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+.dinle-grup .dinle { margin-top: 0; }
+.dinle-tr {
+  background: #eef2ff; color: #4f46e5; border: none; padding: 12px 18px; border-radius: 18px;
+  font-family: inherit; font-weight: 800; font-size: 1rem; cursor: pointer; box-shadow: 0 5px 0 #c7d2fe;
+}
+.dinle-tr:active { transform: translateY(3px); box-shadow: 0 2px 0 #c7d2fe; }
