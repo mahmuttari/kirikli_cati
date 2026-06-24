@@ -138,8 +138,9 @@ const ARCADE = {
   mole:      { title: "Köstebek",     emoji: "🐹" },
   truefalse: { title: "Doğru mu?",    emoji: "⚡" },
   memory:    { title: "Hafıza",       emoji: "🃏" },
+  avla:      { title: "Harf Avı",     emoji: "🔎" },
 };
-const ARCADE_SIRA = ["balloon", "mole", "truefalse", "memory"];
+const ARCADE_SIRA = ["balloon", "avla", "mole", "truefalse", "memory"];
 
 function arcadeDurak(sid, model, grup) {
   const m = ARCADE[model];
@@ -158,7 +159,7 @@ function elifBaBolgeleri() {
       { id: `${sid}_ogren`, title: "Öğren",       emoji: "📖", type: "lesson", cards: grup },
       { id: `${sid}_esles`, title: "Eşleştir",    emoji: "🧩", type: "match",  pairs: grup },
       { id: `${sid}_dinle`, title: "Dinle & Bul", emoji: "👂", type: "listen", items: grup, pool: HARFLER },
-      arcadeDurak(sid, ARCADE_SIRA[i % 4], grup),     // aşamaya göre değişen oyun (çeşitlilik)
+      arcadeDurak(sid, ARCADE_SIRA[i % ARCADE_SIRA.length], grup), // aşamaya göre değişen oyun (çeşitlilik)
       { id: `${sid}_sinav`, title: "Sınav",       emoji: "🏅", type: "quiz",   quiz: makeLetterQuiz(grup, HARFLER) },
     ];
     return {
@@ -438,6 +439,7 @@ const KELIME_BOLGE = {
     { id: "kl3", title: "Zor Kelimeler", emoji: "🧩", type: "kelime", kelimeler: KELIMELER.slice(2, 6), pool: HARFLER },
     { id: "kl4", title: "Kelime Eşleştir", emoji: "🔗", type: "match",
       pairs: KELIMELER.map((k) => ({ glyph: k.tam, name: k.okunus })) },
+    { id: "kl5", title: "Kelime Treni", emoji: "🚂", type: "dizi", kelimeler: KELIMELER },
   ],
 };
 

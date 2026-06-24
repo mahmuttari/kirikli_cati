@@ -174,6 +174,8 @@ function durakAc(durak, index) {
     case "riddle":    return oyunBilmece(durak, index);
     case "fill":      return oyunBosluk(durak, index);
     case "kelime":    return oyunKelime(durak, index);
+    case "avla":      return oyunAvla(durak, index);
+    case "dizi":      return oyunDizi(durak, index);
     case "weak":      return oyunZayif(durak, index);
     case "timed":     return oyunSimsek(durak, index);
     case "quiz":      return testeGir(durak, index);
@@ -188,7 +190,7 @@ function tipEtiketi(type) {
     lesson: "📖 Öğren", quiz: "🏅 Sınav", match: "🧩 Eşleştir", listen: "👂 Dinle-Bul",
     memory: "🃏 Hafıza", trace: "🖊️ Çizme", balloon: "🎈 Balon", mole: "🐹 Köstebek",
     truefalse: "⚡ Doğru mu?", riddle: "🧠 Bilmece", fill: "📝 Boşluk", kelime: "🏙️ Kelime",
-    weak: "🔁 Tekrar", timed: "⚡ Yarış", sure: "📖 Sure",
+    avla: "🔎 Harf Avı", dizi: "🚂 Tren", weak: "🔁 Tekrar", timed: "⚡ Yarış", sure: "📖 Sure",
   }[type] || "📚 Ders";
 }
 
@@ -1458,6 +1460,131 @@ function profilEkrani() {
     grid.appendChild(el);
   });
   app.appendChild(wrap);
+  window.scrollTo(0, 0);
+}
+
+// ---- HARF AVI (ızgarada hedef harfin hepsini bul) ----
+function oyunAvla(durak, index) {
+  const pool = durak.pool || durak.letters;
+  const hedefSira = shuffleArr(durak.letters);
+  const turSayisi = Math.max(4, Math.min(6, durak.letters.length));
+  let tur = 0, hata = 0;
+
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const hedefBar = document.createElement("div");
+  hedefBar.className = "hedef-bar";
+  wrap.appendChild(hedefBar);
+  const alan = document.createElement("div");
+  wrap.appendChild(alan);
+  app.appendChild(wrap);
+
+  function ciz() {
+    const hedef = hedefSira[tur % hedefSira.length];
+    const adet = 2 + Math.floor(Math.random() * 2); // 2-3 hedef
+    const distractPool = pool.filter((p) => p.name !== hedef.name);
+    const hucreler = [];
+    for (let i = 0; i < adet; i++) hucreler.push(hedef);
+    while (hucreler.length < 16) hucreler.push(rastgele(distractPool));
+    shuffleArr(hucreler);
+    let kalan = adet;
+    hedefBar.innerHTML = `🔎 Bul: <b>${hedef.glyph}</b> ${hedef.name} — ${adet} tane <button class="mini-dinle">🔊</button> <span class="sayac">${tur + 1}/${turSayisi}</span>`;
+    hedefBar.querySelector(".mini-dinle").addEventListener("click", () => konus(hedef));
+    konus(hedef);
+    alan.innerHTML = `<div class="avla-grid"></div>`;
+    const grid = alan.querySelector(".avla-grid");
+    shuffleArr(hucreler).forEach((h) => {
+      const b = document.createElement("button");
+      b.className = "avla-hucre";
+      b.textContent = h.glyph;
+      b.addEventListener("click", () => {
+        if (b.classList.contains("bulundu") || b.disabled) return;
+        if (h.name === hedef.name) {
+          b.classList.add("bulundu"); sesDogru(); kalan--;
+          if (kalan === 0) { tur++; _gec(() => { tur >= turSayisi ? bitir() : ciz(); }, 350); }
+        } else {
+          sesYanlis(); hata++; b.classList.add("avla-yanlis");
+          _gec(() => b.classList.remove("avla-yanlis"), 350);
+        }
+      });
+      grid.appendChild(b);
+    });
+  }
+  function bitir() {
+    const yildiz = hata <= 1 ? 3 : hata <= 4 ? 2 : 1;
+    tamamla(durak, index, yildiz, turSayisi, turSayisi, `🔎 Avı tamamladın!`);
+  }
+  ciz();
+  window.scrollTo(0, 0);
+}
+
+// ---- KELİME TRENİ (harfleri sırayla dizerek kelimeyi kur) ----
+function oyunDizi(durak, index) {
+  const tur = shuffleArr(durak.kelimeler);
+  let turNo = 0, hata = 0;
+
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const alan = document.createElement("div");
+  wrap.appendChild(alan);
+  app.appendChild(wrap);
+
+  function ciz() {
+    const k = tur[turNo];
+    const hedef = k.harfler;
+    let pos = 0;
+    alan.innerHTML = `
+      <div class="test-ust">
+        <div class="ilerleme-cubuk"><div style="width:${(turNo / tur.length) * 100}%"></div></div>
+        <span>${turNo + 1}/${tur.length}</span>
+      </div>
+      <p class="oyun-aciklama">🚂 Harfleri sırayla diz: <b>“${k.okunus}”</b> (${k.anlam})
+        <button class="mini-dinle">🔊</button></p>
+      <div class="tren" dir="rtl"></div>
+      <div class="tren-havuz"></div>
+      <div class="geri-bildirim"></div>`;
+    alan.querySelector(".mini-dinle").addEventListener("click", () => konus({ glyph: k.tam, name: k.okunus }));
+    const tren = alan.querySelector(".tren");
+    hedef.forEach(() => { const s = document.createElement("span"); s.className = "tren-slot"; tren.appendChild(s); });
+    const slotlar = [...tren.querySelectorAll(".tren-slot")];
+    const havuz = alan.querySelector(".tren-havuz");
+    shuffleArr(hedef.map((g, i) => ({ g, i }))).forEach((t) => {
+      const b = document.createElement("button");
+      b.className = "tren-tile";
+      b.textContent = t.g;
+      b.addEventListener("click", () => {
+        if (b.disabled) return;
+        if (t.g === hedef[pos]) {
+          slotlar[pos].textContent = t.g; slotlar[pos].classList.add("dolu");
+          b.disabled = true; b.classList.add("kullanildi"); sesDogru(); pos++;
+          if (pos === hedef.length) {
+            konus({ glyph: k.tam, name: k.okunus });
+            const gb = alan.querySelector(".geri-bildirim");
+            gb.innerHTML = `<span class="iyi">${k.tam} = ${k.okunus} 🎉</span>`;
+            const ileri = document.createElement("button");
+            ileri.className = "devam";
+            ileri.textContent = turNo === tur.length - 1 ? "Bitir 🏁" : "Devam ▶";
+            ileri.addEventListener("click", () => {
+              turNo++;
+              if (turNo < tur.length) ciz();
+              else tamamla(durak, index, hata <= 1 ? 3 : hata <= 3 ? 2 : 1, tur.length, tur.length, "🚂 Tüm kelimeleri kurdun!");
+            });
+            gb.appendChild(ileri);
+          }
+        } else {
+          sesYanlis(); hata++; b.classList.add("tren-yanlis");
+          _gec(() => b.classList.remove("tren-yanlis"), 350);
+        }
+      });
+      havuz.appendChild(b);
+    });
+    konus({ glyph: k.tam, name: k.okunus });
+  }
+  ciz();
   window.scrollTo(0, 0);
 }
 
