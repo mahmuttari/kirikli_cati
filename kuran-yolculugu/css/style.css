@@ -455,3 +455,6 @@ body {
 }
 .simsek-sure { background: #fee2e2; color: #b91c1c; padding: 8px 16px; border-radius: 16px; font-size: 1.1rem; }
 .simsek-puan { background: #dcfce7; color: #166534; padding: 8px 16px; border-radius: 16px; font-size: 1.1rem; }
+
+/* ---- Tilavet notu ---- */
+.tilavet-not { display: inline-block; margin-top: 6px; color: #94a3b8; font-weight: 600; font-size: .72rem; }

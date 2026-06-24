@@ -55,3 +55,12 @@ Toplam **13 bölge, 67 durak.**
 ## Teknik
 
 Saf HTML + CSS + JavaScript. `index.html`, `css/style.css`, `js/data.js` (müfredat üretici), `js/app.js` (oyun motorları).
+
+## Ses / Tilavet
+
+- **Harf / hece / kelime okunuşları:** cihazın Türkçe seslendirme (TTS) motoruyla okunur.
+- **Sure tilaveti:** Sure ekranlarında, âyetler **gerçek hâfız tilavetiyle** seslendirilir.
+  Ses, cihazın internetiyle [everyayah.com](https://everyayah.com) üzerinden **Mahmud Halil
+  el-Husary (murattal)** kaydından akıtılır. İnternet yoksa otomatik olarak TTS okunuşa düşer.
+- Tilavet kaydı, eğitim/kişisel kullanım için serbestçe dağıtılan bir kayıttır; hak sahibi
+  kāridir. Tümüyle çevrimdışı ve kendi ses dosyalarınızla bir sürüm istenirse entegre edilebilir.

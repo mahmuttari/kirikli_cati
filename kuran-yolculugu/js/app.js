@@ -38,6 +38,7 @@ if (typeof window !== "undefined" && "speechSynthesis" in window) {
 }
 
 function seslendir(metin) {
+  if (typeof tilavetDurdur === "function") tilavetDurdur(); // çalan tilaveti durdur (üst üste binmesin)
   // 1) Native uygulama (Capacitor) -> cihazın kendi TTS motoru (WebView'de en güvenilir yol)
   const cap = window.Capacitor;
   if (cap && cap.Plugins && cap.Plugins.TextToSpeech) {
@@ -105,6 +106,7 @@ const app = document.getElementById("app");
 
 function render() {
   zamanlayicilariTemizle();
+  if (typeof tilavetDurdur === "function") tilavetDurdur();
   ILERLEME = ilerlemeYukle();
   app.innerHTML = "";
   app.appendChild(haritaEkrani());
@@ -680,6 +682,28 @@ function oyunTrace(durak, index) {
 }
 
 // ---- SURE OKUMA EKRANI (kelime kelime) ----
+// Gerçek tilavet (cihaz interneti) — yoksa Türkçe okunuş (TTS) yedeği
+let _tilavetSes = null;
+const TILAVET_KARI = "Husary_128kbps"; // Mahmud Halil el-Husary (everyayah.com)
+function tilavetDurdur() {
+  if (_tilavetSes) { try { _tilavetSes.pause(); _tilavetSes.src = ""; } catch {} _tilavetSes = null; }
+}
+function tilavetCal(sureNo, ayetNo, okunusYedek) {
+  tilavetDurdur();
+  if (!sureNo) { seslendir(okunusYedek); return; }
+  const ss = String(sureNo).padStart(3, "0");
+  const aa = String(ayetNo).padStart(3, "0");
+  try {
+    const ses = new Audio(`https://everyayah.com/data/${TILAVET_KARI}/${ss}${aa}.mp3`);
+    _tilavetSes = ses;
+    let yedek = false;
+    const yedekCal = () => { if (!yedek) { yedek = true; seslendir(okunusYedek); } };
+    ses.addEventListener("error", yedekCal);
+    const p = ses.play();
+    if (p && p.catch) p.catch(() => {}); // otomatik oynatma engellenirse sessizce geç (buton çalışır)
+  } catch { seslendir(okunusYedek); }
+}
+
 function sureEkrani(durak, index) {
   const s = durak.sure;
   let ayetNo = 0;
@@ -689,7 +713,7 @@ function sureEkrani(durak, index) {
   wrap.appendChild(ustBaslik(durak));
   const bilgi = document.createElement("p");
   bilgi.className = "oyun-aciklama";
-  bilgi.textContent = s.bilgi;
+  bilgi.innerHTML = `${s.bilgi}<br><small class="tilavet-not">🎙️ Tilavet: M. H. el-Husary (internet gerekir; yoksa cihaz sesi)</small>`;
   wrap.appendChild(bilgi);
   const alan = document.createElement("div");
   wrap.appendChild(alan);
@@ -703,15 +727,15 @@ function sureEkrani(durak, index) {
         <div class="sure-arapca">${a.glyph}</div>
         <div class="sure-okunus">${a.okunus}</div>
         <div class="sure-meal">“${a.meal}”</div>
-        <button class="dinle">🔊 Oku</button>
+        <button class="dinle">🔊 Dinle</button>
       </div>
       <div class="kart-nav">
         <button class="onceki" ${ayetNo === 0 ? "disabled" : ""}>◀ Geri</button>
         <span class="kart-sayac">${ayetNo + 1} / ${s.ayetler.length}</span>
         <button class="sonraki">${ayetNo === s.ayetler.length - 1 ? "Bitir 🏁" : "İleri ▶"}</button>
       </div>`;
-    alan.querySelector(".dinle").addEventListener("click", () => seslendir(a.okunus));
-    seslendir(a.okunus);
+    alan.querySelector(".dinle").addEventListener("click", () => tilavetCal(s.sureNo, ayetNo + 1, a.okunus));
+    tilavetCal(s.sureNo, ayetNo + 1, a.okunus);
     alan.querySelector(".onceki").addEventListener("click", () => { if (ayetNo > 0) { ayetNo--; ciz(); } });
     alan.querySelector(".sonraki").addEventListener("click", () => {
       if (ayetNo < s.ayetler.length - 1) { ayetNo++; ciz(); }

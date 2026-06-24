@@ -76,7 +76,7 @@ const RAKAMLAR = [
 
 const SURELER = {
   ihlas: {
-    ad: "İhlâs Sûresi", bilgi: "Allah'ın bir ve tek olduğunu anlatır.",
+    ad: "İhlâs Sûresi", sureNo: 112, bilgi: "Allah'ın bir ve tek olduğunu anlatır.",
     ayetler: [
       { glyph: "قُلْ هُوَ اللّٰهُ اَحَدٌ", okunus: "Kul hüvallâhü ehad", meal: "De ki: O Allah birdir." },
       { glyph: "اَللّٰهُ الصَّمَدُ", okunus: "Allâhü's-samed", meal: "Allah hiçbir şeye muhtaç değildir." },
@@ -85,7 +85,7 @@ const SURELER = {
     ],
   },
   kevser: {
-    ad: "Kevser Sûresi", bilgi: "Kur'an'ın en kısa suresidir.",
+    ad: "Kevser Sûresi", sureNo: 108, bilgi: "Kur'an'ın en kısa suresidir.",
     ayetler: [
       { glyph: "اِنَّٓا اَعْطَيْنَاكَ الْكَوْثَرَ", okunus: "İnnâ a'taynâ ke'l-kevser", meal: "Biz sana Kevser'i verdik." },
       { glyph: "فَصَلِّ لِرَبِّكَ وَانْحَرْ", okunus: "Fe salli li rabbike venhar", meal: "Öyleyse Rabbin için namaz kıl ve kurban kes." },
@@ -93,7 +93,7 @@ const SURELER = {
     ],
   },
   nas: {
-    ad: "Nâs Sûresi", bilgi: "Kötülüklerden Allah'a sığınmayı öğretir.",
+    ad: "Nâs Sûresi", sureNo: 114, bilgi: "Kötülüklerden Allah'a sığınmayı öğretir.",
     ayetler: [
       { glyph: "قُلْ اَعُوذُ بِرَبِّ النَّاسِ", okunus: "Kul eûzü bi rabbi'n-nâs", meal: "De ki: İnsanların Rabbine sığınırım." },
       { glyph: "مَلِكِ النَّاسِ", okunus: "Meliki'n-nâs", meal: "İnsanların hükümdarına." },
@@ -339,7 +339,7 @@ const DUA_BOLGE = {
   ],
 };
 const SURE_FATIHA = {
-  ad: "Fâtiha Sûresi", bilgi: "Kur'an'ın açılış suresi, her namazda okunur.",
+  ad: "Fâtiha Sûresi", sureNo: 1, bilgi: "Kur'an'ın açılış suresi, her namazda okunur.",
   ayetler: [
     { glyph: "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيمِ", okunus: "Bismillâhi'r-rahmâni'r-rahîm", meal: "Rahmân ve Rahîm Allah'ın adıyla." },
     { glyph: "اَلْحَمْدُ لِلّٰهِ رَبِّ الْعَالَمِينَ", okunus: "Elhamdü lillâhi rabbi'l-âlemîn", meal: "Hamd, âlemlerin Rabbi Allah'a mahsustur." },
@@ -351,7 +351,7 @@ const SURE_FATIHA = {
   ],
 };
 const SURE_FELAK = {
-  ad: "Felak Sûresi", bilgi: "Kötülüklerden sabahın Rabbine sığınmayı öğretir.",
+  ad: "Felak Sûresi", sureNo: 113, bilgi: "Kötülüklerden sabahın Rabbine sığınmayı öğretir.",
   ayetler: [
     { glyph: "قُلْ اَعُوذُ بِرَبِّ الْفَلَقِ", okunus: "Kul eûzü bi rabbi'l-felak", meal: "De ki: Sabahın Rabbine sığınırım." },
     { glyph: "مِنْ شَرِّ مَا خَلَقَ", okunus: "Min şerri mâ halak", meal: "Yarattıklarının şerrinden." },
@@ -361,7 +361,7 @@ const SURE_FELAK = {
   ],
 };
 const SURE_ASR = {
-  ad: "Asr Sûresi", bilgi: "Zamana yemin ederek insanın kurtuluş yolunu anlatır.",
+  ad: "Asr Sûresi", sureNo: 103, bilgi: "Zamana yemin ederek insanın kurtuluş yolunu anlatır.",
   ayetler: [
     { glyph: "وَالْعَصْرِ", okunus: "Vel-asr", meal: "Asra (zamana) yemin olsun." },
     { glyph: "اِنَّ الْاِنْسَانَ لَفِي خُسْرٍ", okunus: "İnne'l-insâne lefî husr", meal: "İnsan gerçekten ziyandadır." },

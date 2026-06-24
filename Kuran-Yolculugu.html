@@ -466,6 +466,9 @@ body {
 .simsek-sure { background: #fee2e2; color: #b91c1c; padding: 8px 16px; border-radius: 16px; font-size: 1.1rem; }
 .simsek-puan { background: #dcfce7; color: #166534; padding: 8px 16px; border-radius: 16px; font-size: 1.1rem; }
 
+/* ---- Tilavet notu ---- */
+.tilavet-not { display: inline-block; margin-top: 6px; color: #94a3b8; font-weight: 600; font-size: .72rem; }
+
   </style>
 </head>
 <body>
@@ -549,7 +552,7 @@ const RAKAMLAR = [
 
 const SURELER = {
   ihlas: {
-    ad: "İhlâs Sûresi", bilgi: "Allah'ın bir ve tek olduğunu anlatır.",
+    ad: "İhlâs Sûresi", sureNo: 112, bilgi: "Allah'ın bir ve tek olduğunu anlatır.",
     ayetler: [
       { glyph: "قُلْ هُوَ اللّٰهُ اَحَدٌ", okunus: "Kul hüvallâhü ehad", meal: "De ki: O Allah birdir." },
       { glyph: "اَللّٰهُ الصَّمَدُ", okunus: "Allâhü's-samed", meal: "Allah hiçbir şeye muhtaç değildir." },
@@ -558,7 +561,7 @@ const SURELER = {
     ],
   },
   kevser: {
-    ad: "Kevser Sûresi", bilgi: "Kur'an'ın en kısa suresidir.",
+    ad: "Kevser Sûresi", sureNo: 108, bilgi: "Kur'an'ın en kısa suresidir.",
     ayetler: [
       { glyph: "اِنَّٓا اَعْطَيْنَاكَ الْكَوْثَرَ", okunus: "İnnâ a'taynâ ke'l-kevser", meal: "Biz sana Kevser'i verdik." },
       { glyph: "فَصَلِّ لِرَبِّكَ وَانْحَرْ", okunus: "Fe salli li rabbike venhar", meal: "Öyleyse Rabbin için namaz kıl ve kurban kes." },
@@ -566,7 +569,7 @@ const SURELER = {
     ],
   },
   nas: {
-    ad: "Nâs Sûresi", bilgi: "Kötülüklerden Allah'a sığınmayı öğretir.",
+    ad: "Nâs Sûresi", sureNo: 114, bilgi: "Kötülüklerden Allah'a sığınmayı öğretir.",
     ayetler: [
       { glyph: "قُلْ اَعُوذُ بِرَبِّ النَّاسِ", okunus: "Kul eûzü bi rabbi'n-nâs", meal: "De ki: İnsanların Rabbine sığınırım." },
       { glyph: "مَلِكِ النَّاسِ", okunus: "Meliki'n-nâs", meal: "İnsanların hükümdarına." },
@@ -812,7 +815,7 @@ const DUA_BOLGE = {
   ],
 };
 const SURE_FATIHA = {
-  ad: "Fâtiha Sûresi", bilgi: "Kur'an'ın açılış suresi, her namazda okunur.",
+  ad: "Fâtiha Sûresi", sureNo: 1, bilgi: "Kur'an'ın açılış suresi, her namazda okunur.",
   ayetler: [
     { glyph: "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيمِ", okunus: "Bismillâhi'r-rahmâni'r-rahîm", meal: "Rahmân ve Rahîm Allah'ın adıyla." },
     { glyph: "اَلْحَمْدُ لِلّٰهِ رَبِّ الْعَالَمِينَ", okunus: "Elhamdü lillâhi rabbi'l-âlemîn", meal: "Hamd, âlemlerin Rabbi Allah'a mahsustur." },
@@ -824,7 +827,7 @@ const SURE_FATIHA = {
   ],
 };
 const SURE_FELAK = {
-  ad: "Felak Sûresi", bilgi: "Kötülüklerden sabahın Rabbine sığınmayı öğretir.",
+  ad: "Felak Sûresi", sureNo: 113, bilgi: "Kötülüklerden sabahın Rabbine sığınmayı öğretir.",
   ayetler: [
     { glyph: "قُلْ اَعُوذُ بِرَبِّ الْفَلَقِ", okunus: "Kul eûzü bi rabbi'l-felak", meal: "De ki: Sabahın Rabbine sığınırım." },
     { glyph: "مِنْ شَرِّ مَا خَلَقَ", okunus: "Min şerri mâ halak", meal: "Yarattıklarının şerrinden." },
@@ -834,7 +837,7 @@ const SURE_FELAK = {
   ],
 };
 const SURE_ASR = {
-  ad: "Asr Sûresi", bilgi: "Zamana yemin ederek insanın kurtuluş yolunu anlatır.",
+  ad: "Asr Sûresi", sureNo: 103, bilgi: "Zamana yemin ederek insanın kurtuluş yolunu anlatır.",
   ayetler: [
     { glyph: "وَالْعَصْرِ", okunus: "Vel-asr", meal: "Asra (zamana) yemin olsun." },
     { glyph: "اِنَّ الْاِنْسَانَ لَفِي خُسْرٍ", okunus: "İnne'l-insâne lefî husr", meal: "İnsan gerçekten ziyandadır." },
@@ -1228,6 +1231,7 @@ if (typeof window !== "undefined" && "speechSynthesis" in window) {
 }
 
 function seslendir(metin) {
+  if (typeof tilavetDurdur === "function") tilavetDurdur(); // çalan tilaveti durdur (üst üste binmesin)
   // 1) Native uygulama (Capacitor) -> cihazın kendi TTS motoru (WebView'de en güvenilir yol)
   const cap = window.Capacitor;
   if (cap && cap.Plugins && cap.Plugins.TextToSpeech) {
@@ -1295,6 +1299,7 @@ const app = document.getElementById("app");
 
 function render() {
   zamanlayicilariTemizle();
+  if (typeof tilavetDurdur === "function") tilavetDurdur();
   ILERLEME = ilerlemeYukle();
   app.innerHTML = "";
   app.appendChild(haritaEkrani());
@@ -1870,6 +1875,28 @@ function oyunTrace(durak, index) {
 }
 
 // ---- SURE OKUMA EKRANI (kelime kelime) ----
+// Gerçek tilavet (cihaz interneti) — yoksa Türkçe okunuş (TTS) yedeği
+let _tilavetSes = null;
+const TILAVET_KARI = "Husary_128kbps"; // Mahmud Halil el-Husary (everyayah.com)
+function tilavetDurdur() {
+  if (_tilavetSes) { try { _tilavetSes.pause(); _tilavetSes.src = ""; } catch {} _tilavetSes = null; }
+}
+function tilavetCal(sureNo, ayetNo, okunusYedek) {
+  tilavetDurdur();
+  if (!sureNo) { seslendir(okunusYedek); return; }
+  const ss = String(sureNo).padStart(3, "0");
+  const aa = String(ayetNo).padStart(3, "0");
+  try {
+    const ses = new Audio(`https://everyayah.com/data/${TILAVET_KARI}/${ss}${aa}.mp3`);
+    _tilavetSes = ses;
+    let yedek = false;
+    const yedekCal = () => { if (!yedek) { yedek = true; seslendir(okunusYedek); } };
+    ses.addEventListener("error", yedekCal);
+    const p = ses.play();
+    if (p && p.catch) p.catch(() => {}); // otomatik oynatma engellenirse sessizce geç (buton çalışır)
+  } catch { seslendir(okunusYedek); }
+}
+
 function sureEkrani(durak, index) {
   const s = durak.sure;
   let ayetNo = 0;
@@ -1879,7 +1906,7 @@ function sureEkrani(durak, index) {
   wrap.appendChild(ustBaslik(durak));
   const bilgi = document.createElement("p");
   bilgi.className = "oyun-aciklama";
-  bilgi.textContent = s.bilgi;
+  bilgi.innerHTML = `${s.bilgi}<br><small class="tilavet-not">🎙️ Tilavet: M. H. el-Husary (internet gerekir; yoksa cihaz sesi)</small>`;
   wrap.appendChild(bilgi);
   const alan = document.createElement("div");
   wrap.appendChild(alan);
@@ -1893,15 +1920,15 @@ function sureEkrani(durak, index) {
         <div class="sure-arapca">${a.glyph}</div>
         <div class="sure-okunus">${a.okunus}</div>
         <div class="sure-meal">“${a.meal}”</div>
-        <button class="dinle">🔊 Oku</button>
+        <button class="dinle">🔊 Dinle</button>
       </div>
       <div class="kart-nav">
         <button class="onceki" ${ayetNo === 0 ? "disabled" : ""}>◀ Geri</button>
         <span class="kart-sayac">${ayetNo + 1} / ${s.ayetler.length}</span>
         <button class="sonraki">${ayetNo === s.ayetler.length - 1 ? "Bitir 🏁" : "İleri ▶"}</button>
       </div>`;
-    alan.querySelector(".dinle").addEventListener("click", () => seslendir(a.okunus));
-    seslendir(a.okunus);
+    alan.querySelector(".dinle").addEventListener("click", () => tilavetCal(s.sureNo, ayetNo + 1, a.okunus));
+    tilavetCal(s.sureNo, ayetNo + 1, a.okunus);
     alan.querySelector(".onceki").addEventListener("click", () => { if (ayetNo > 0) { ayetNo--; ciz(); } });
     alan.querySelector(".sonraki").addEventListener("click", () => {
       if (ayetNo < s.ayetler.length - 1) { ayetNo++; ciz(); }
