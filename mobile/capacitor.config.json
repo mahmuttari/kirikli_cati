@@ -1,0 +1,9 @@
+{
+  "appId": "com.kuranyolculugu.app",
+  "appName": "Kur'an Yolculuğu",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true
+  },
+  "backgroundColor": "#bae6fd"
+}

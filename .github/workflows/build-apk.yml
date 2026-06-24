@@ -1,0 +1,83 @@
+name: APK Derle (Kur'an Yolculuğu)
+
+on:
+  push:
+    branches:
+      - claude/quran-learning-kids-app-bfho5c
+      - main
+    paths:
+      - "kuran-yolculugu/**"
+      - "mobile/**"
+      - ".github/workflows/build-apk.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java 21 kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Node 20 kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Android SDK kur
+        uses: android-actions/setup-android@v3
+
+      - name: Web uygulamasını www içine kopyala
+        run: |
+          mkdir -p mobile/www
+          cp -r kuran-yolculugu/* mobile/www/
+
+      - name: Capacitor bağımlılıklarını yükle
+        working-directory: mobile
+        run: npm install
+
+      - name: Android projesini üret
+        working-directory: mobile
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: APK derle (debug)
+        working-directory: mobile/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: APK'yı yeniden adlandır
+        run: |
+          mkdir -p dist
+          cp mobile/android/app/build/outputs/apk/debug/app-debug.apk \
+             dist/KuranYolculugu.apk
+          ls -lh dist
+
+      - name: APK'yı artifact olarak yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: KuranYolculugu-APK
+          path: dist/KuranYolculugu.apk
+          if-no-files-found: error
+
+      - name: Release oluştur ve APK'yı ekle
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-v${{ github.run_number }}
+          name: Kur'an Yolculuğu APK v${{ github.run_number }}
+          body: |
+            Çocuklar için Elif-Ba öğrenme uygulaması — Android APK (debug imzalı).
+
+            Kurulum: APK'yı indir, "bilinmeyen kaynaklara izin ver" deyip yükle.
+          files: dist/KuranYolculugu.apk
+          fail_on_unmatched_files: true
