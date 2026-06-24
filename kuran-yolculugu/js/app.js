@@ -142,6 +142,7 @@ function durakAc(durak, index) {
     case "riddle":    return oyunBilmece(durak, index);
     case "fill":      return oyunBosluk(durak, index);
     case "kelime":    return oyunKelime(durak, index);
+    case "timed":     return oyunSimsek(durak, index);
     case "quiz":      return testeGir(durak, index);
     case "sure":      return sureEkrani(durak, index);
     default:          return derseGir(durak, index);
@@ -154,7 +155,7 @@ function tipEtiketi(type) {
     lesson: "📖 Öğren", quiz: "🏅 Sınav", match: "🧩 Eşleştir", listen: "👂 Dinle-Bul",
     memory: "🃏 Hafıza", trace: "🖊️ Çizme", balloon: "🎈 Balon", mole: "🐹 Köstebek",
     truefalse: "⚡ Doğru mu?", riddle: "🧠 Bilmece", fill: "📝 Boşluk", kelime: "🏙️ Kelime",
-    sure: "📖 Sure",
+    timed: "⚡ Yarış", sure: "📖 Sure",
   }[type] || "📚 Ders";
 }
 
@@ -1116,6 +1117,64 @@ function oyunKelime(durak, index) {
     gb.appendChild(ileri);
   }
   ciz();
+  window.scrollTo(0, 0);
+}
+
+// ---- ŞİMŞEK YARIŞI (süreli puan turu) ----
+function oyunSimsek(durak, index) {
+  const havuz = durak.havuz;
+  const sure = durak.sure || 45;
+  let kalan = sure, puan = 0, bitti = false;
+
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "test-wrap";
+  app.appendChild(wrap);
+  const ust = document.createElement("div");
+  ust.className = "simsek-ust";
+  wrap.appendChild(ust);
+  const alan = document.createElement("div");
+  wrap.appendChild(alan);
+
+  function ustGuncelle() {
+    ust.innerHTML = `
+      <button class="geri">← Çık</button>
+      <span class="simsek-sure">⏱️ ${kalan}s</span>
+      <span class="simsek-puan">⚡ ${puan}</span>`;
+    ust.querySelector(".geri").addEventListener("click", render);
+  }
+  ustGuncelle();
+  _ara(() => { if (bitti) return; kalan--; ustGuncelle(); if (kalan <= 0) bitir(); }, 1000);
+
+  function soru() {
+    const hedef = rastgele(havuz);
+    const yanlis = shuffleArr(havuz.filter((x) => x.name !== hedef.name)).slice(0, 2).map((x) => x.name);
+    const secenekler = shuffleArr([hedef.name, ...yanlis]);
+    alan.innerHTML = `
+      <div class="soru"><div class="soru-harf">${hedef.glyph}</div><p>Bu nedir?</p></div>
+      <div class="secenekler"></div>`;
+    const sec = alan.querySelector(".secenekler");
+    secenekler.forEach((opt) => {
+      const b = document.createElement("button");
+      b.className = "secenek";
+      b.textContent = opt;
+      b.addEventListener("click", () => {
+        if (bitti) return;
+        if (opt === hedef.name) { puan++; sesDogru(); }
+        else { sesYanlis(); b.classList.add("yanlis"); }
+        ustGuncelle(); soru();
+      });
+      sec.appendChild(b);
+    });
+  }
+  function bitir() {
+    if (bitti) return;
+    bitti = true;
+    zamanlayicilariTemizle();
+    const yildiz = puan >= 12 ? 3 : puan >= 8 ? 2 : puan >= 4 ? 1 : 0;
+    tamamla(durak, index, yildiz, puan, puan, `⚡ ${puan} puan topladın!`);
+  }
+  soru();
   window.scrollTo(0, 0);
 }
 

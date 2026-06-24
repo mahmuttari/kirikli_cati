@@ -338,12 +338,45 @@ const DUA_BOLGE = {
       ] },
   ],
 };
+const SURE_FATIHA = {
+  ad: "Fâtiha Sûresi", bilgi: "Kur'an'ın açılış suresi, her namazda okunur.",
+  ayetler: [
+    { glyph: "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيمِ", okunus: "Bismillâhi'r-rahmâni'r-rahîm", meal: "Rahmân ve Rahîm Allah'ın adıyla." },
+    { glyph: "اَلْحَمْدُ لِلّٰهِ رَبِّ الْعَالَمِينَ", okunus: "Elhamdü lillâhi rabbi'l-âlemîn", meal: "Hamd, âlemlerin Rabbi Allah'a mahsustur." },
+    { glyph: "اَلرَّحْمٰنِ الرَّحِيمِ", okunus: "Er-rahmâni'r-rahîm", meal: "O, Rahmân ve Rahîm'dir." },
+    { glyph: "مَالِكِ يَوْمِ الدِّينِ", okunus: "Mâliki yevmi'd-dîn", meal: "Din (hesap) gününün sahibidir." },
+    { glyph: "اِيَّاكَ نَعْبُدُ وَاِيَّاكَ نَسْتَعِينُ", okunus: "İyyâke na'büdü ve iyyâke nesteîn", meal: "Yalnız sana kulluk eder, yalnız senden yardım dileriz." },
+    { glyph: "اِهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ", okunus: "İhdine's-sırâta'l-müstakîm", meal: "Bizi doğru yola ilet." },
+    { glyph: "صِرَاطَ الَّذِينَ اَنْعَمْتَ عَلَيْهِمْ", okunus: "Sırâtallezîne en'amte aleyhim...", meal: "Nimet verdiklerinin yoluna..." },
+  ],
+};
+const SURE_FELAK = {
+  ad: "Felak Sûresi", bilgi: "Kötülüklerden sabahın Rabbine sığınmayı öğretir.",
+  ayetler: [
+    { glyph: "قُلْ اَعُوذُ بِرَبِّ الْفَلَقِ", okunus: "Kul eûzü bi rabbi'l-felak", meal: "De ki: Sabahın Rabbine sığınırım." },
+    { glyph: "مِنْ شَرِّ مَا خَلَقَ", okunus: "Min şerri mâ halak", meal: "Yarattıklarının şerrinden." },
+    { glyph: "وَمِنْ شَرِّ غَاسِقٍ اِذَا وَقَبَ", okunus: "Ve min şerri ğâsikin izâ vekab", meal: "Karanlık çöktüğünde gecenin şerrinden." },
+    { glyph: "وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ", okunus: "Ve min şerri'n-neffâsâti fi'l-ukad", meal: "Düğümlere üfleyenlerin şerrinden." },
+    { glyph: "وَمِنْ شَرِّ حَاسِدٍ اِذَا حَسَدَ", okunus: "Ve min şerri hâsidin izâ hased", meal: "Haset ettiğinde hasetçinin şerrinden." },
+  ],
+};
+const SURE_ASR = {
+  ad: "Asr Sûresi", bilgi: "Zamana yemin ederek insanın kurtuluş yolunu anlatır.",
+  ayetler: [
+    { glyph: "وَالْعَصْرِ", okunus: "Vel-asr", meal: "Asra (zamana) yemin olsun." },
+    { glyph: "اِنَّ الْاِنْسَانَ لَفِي خُسْرٍ", okunus: "İnne'l-insâne lefî husr", meal: "İnsan gerçekten ziyandadır." },
+    { glyph: "اِلَّا الَّذِينَ اٰمَنُوا وَعَمِلُوا الصَّالِحَاتِ", okunus: "İlle'llezîne âmenû ve amilu's-sâlihât...", meal: "Ancak iman edip iyi işler yapanlar hariç..." },
+  ],
+};
 const SURE_BOLGE = {
   id: "bolgeSure", name: "Sure Sarayı 📖", color: "#818cf8",
   duraklar: [
+    { id: "v0", title: "Fâtiha Sûresi", emoji: "🕌", type: "sure", sure: SURE_FATIHA },
     { id: "v1", title: "İhlâs Sûresi", emoji: "📜", type: "sure", sure: SURELER.ihlas },
-    { id: "v2", title: "Kevser Sûresi", emoji: "📃", type: "sure", sure: SURELER.kevser },
+    { id: "v4", title: "Felak Sûresi", emoji: "🌅", type: "sure", sure: SURE_FELAK },
     { id: "v3", title: "Nâs Sûresi", emoji: "📖", type: "sure", sure: SURELER.nas },
+    { id: "v5", title: "Asr Sûresi", emoji: "⏳", type: "sure", sure: SURE_ASR },
+    { id: "v2", title: "Kevser Sûresi", emoji: "📃", type: "sure", sure: SURELER.kevser },
   ],
 };
 
@@ -416,6 +449,210 @@ const KELIME_BOLGE = {
   ],
 };
 
+/* ---------- Lâm-ı Tarif (Güneş / Ay harfleri) ---------- */
+const LAMTARIF_BOLGE = {
+  id: "bolgeLam", name: "El-Takısı Bahçesi 🌗", color: "#fb923c",
+  duraklar: [
+    { id: "lm1", title: "Ay & Güneş Harfleri", emoji: "🌗", type: "lesson",
+      cards: [
+        { glyph: "اَلْقَمَر", name: "El-Kamer", hint: "AY harfi: lâm OKUNUR (el-kamer)" },
+        { glyph: "اَلشَّمْس", name: "Eş-Şems", hint: "GÜNEŞ harfi: lâm OKUNMAZ, şedde (eş-şems)" },
+        { glyph: "اَلْبَاب", name: "El-Bâb", hint: "Ay harfi (b): el- okunur" },
+        { glyph: "اَلنُّور", name: "En-Nûr", hint: "Güneş harfi (n): lâm düşer, en-nûr" },
+      ],
+      quiz: [
+        { q: "AY (kamerî) harfinde lâm ne olur?", a: "Okunur", options: ["Okunur", "Okunmaz", "Uzar"] },
+        { q: "GÜNEŞ (şemsî) harfinde lâm ne olur?", a: "Okunmaz (şedde)", options: ["Okunur", "Okunmaz (şedde)", "Durur"] },
+        { q: "'اَلشَّمْس' nasıl okunur?", a: "Eş-Şems", options: ["El-Şems", "Eş-Şems", "El-Sems"] },
+        { q: "'اَلْقَمَر' nasıl okunur?", a: "El-Kamer", options: ["Ek-Kamer", "El-Kamer", "Ek-Amer"] },
+      ] },
+    { id: "lm2", title: "Hangisi Okunur?", emoji: "⚖️", type: "truefalse",
+      letters: [
+        { glyph: "اَلْقَمَر", name: "El-Kamer" }, { glyph: "اَلْبَيْت", name: "El-Beyt" },
+        { glyph: "اَلشَّمْس", name: "Eş-Şems" }, { glyph: "اَلرَّحْمٰن", name: "Er-Rahmân" },
+      ], pool: [
+        { glyph: "اَلْقَمَر", name: "El-Kamer" }, { glyph: "اَلْبَيْت", name: "El-Beyt" },
+        { glyph: "اَلشَّمْس", name: "Eş-Şems" }, { glyph: "اَلرَّحْمٰن", name: "Er-Rahmân" },
+      ] },
+  ],
+};
+
+/* ---------- Kalkale ---------- */
+const KALKALE_HARF = [
+  { glyph: "قْ", name: "Kaf", hint: "Sâkin olunca sıçrar/yankılanır" },
+  { glyph: "طْ", name: "Tı", hint: "Sâkin olunca sıçrar" },
+  { glyph: "بْ", name: "Be", hint: "Sâkin olunca sıçrar" },
+  { glyph: "جْ", name: "Cim", hint: "Sâkin olunca sıçrar" },
+  { glyph: "دْ", name: "Dal", hint: "Sâkin olunca sıçrar" },
+];
+const KALKALE_BOLGE = {
+  id: "bolgeKalkale", name: "Kalkale Köyü 🔔", color: "#38bdf8",
+  duraklar: [
+    { id: "kk1", title: "Sıçrayan Harfler", emoji: "🔔", type: "lesson", cards: KALKALE_HARF,
+      quiz: [
+        { q: "Kalkale harfleri kaç tanedir?", a: "5", options: ["3", "5", "7"] },
+        { q: "Kalkale ne demek?", a: "Sıçratarak okuma", options: ["Sessiz okuma", "Sıçratarak okuma", "Uzatma"] },
+        { q: "Hangisi kalkale harfidir?", a: "ق", options: ["م", "ق", "س"] },
+      ] },
+    { id: "kk2", title: "Kalkale Balonu", emoji: "🎈", type: "balloon", letters: KALKALE_HARF, pool: HARFLER },
+    { id: "kk3", title: "Kalkale Bul", emoji: "🐹", type: "mole", letters: KALKALE_HARF, pool: HARFLER },
+  ],
+};
+
+/* ---------- Med Çeşitleri ---------- */
+const MEDCESIT_BOLGE = {
+  id: "bolgeMedC", name: "Med Dağı ⛰️", color: "#2dd4bf",
+  duraklar: [
+    { id: "mc1", title: "Med Çeşitleri", emoji: "⛰️", type: "lesson",
+      cards: [
+        { glyph: "قَالَ", name: "Tabiî Med", hint: "Normal 1 elif uzatma (kâle)" },
+        { glyph: "جَٓاءَ", name: "Muttasıl Med", hint: "Med + aynı kelimede hemze: UZUN" },
+        { glyph: "يَٓا اَيُّهَا", name: "Munfasıl Med", hint: "Med + sonraki kelimede hemze: uzun" },
+        { glyph: "اَلضَّٓالّ۪ين", name: "Lâzım Med", hint: "Med + şedde/sükûn: EN UZUN" },
+      ],
+      quiz: [
+        { q: "Tabiî med kaç elif uzatılır?", a: "1 elif", options: ["1 elif", "4 elif", "Uzatılmaz"] },
+        { q: "En uzun okunan med hangisidir?", a: "Lâzım med", options: ["Tabiî med", "Lâzım med", "Hiçbiri"] },
+        { q: "Med harfleri hangileridir?", a: "Elif-Vav-Ye", options: ["Be-Te-Se", "Elif-Vav-Ye", "Kaf-Lam-Mim"] },
+      ] },
+    { id: "mc2", title: "Med Eşleştir", emoji: "🧩", type: "match",
+      pairs: [
+        { glyph: "قَالَ", name: "Tabiî" }, { glyph: "جَٓاءَ", name: "Muttasıl" },
+        { glyph: "اَلضَّٓالّ۪ين", name: "Lâzım" },
+      ] },
+  ],
+};
+
+/* ---------- Sâkin Nûn ve Tenvin (İzhâr/İdgâm/İklâb/İhfâ) ---------- */
+const NUNSAKIN_BOLGE = {
+  id: "bolgeNun", name: "Tecvid Tepesi 🏔️", color: "#a78bfa",
+  duraklar: [
+    { id: "nn1", title: "4 Kural", emoji: "🏔️", type: "lesson",
+      cards: [
+        { glyph: "مَنْ اٰمَنَ", name: "İzhâr", hint: "Boğaz harfi (ء ه ع ح غ خ): AÇIK oku" },
+        { glyph: "مِنْ رَبِّهِمْ", name: "İdgâm", hint: "ي ر م ل و ن: sonrakine KAYNAŞTIR" },
+        { glyph: "مِنْۢ بَعْدِ", name: "İklâb", hint: "ب'den önce: nûn 'm'ye DÖNÜŞÜR" },
+        { glyph: "اَنْتُمْ", name: "İhfâ", hint: "Kalan harfler: GİZLİ/genizden oku" },
+      ],
+      quiz: [
+        { q: "Sâkin nûn + boğaz harfi = ?", a: "İzhâr", options: ["İzhâr", "İklâb", "İhfâ"] },
+        { q: "Sâkin nûn + 'b' = ?", a: "İklâb", options: ["İdgâm", "İklâb", "İzhâr"] },
+        { q: "İdgâm harfleri (yermelûn) kaç tane?", a: "6", options: ["4", "6", "15"] },
+        { q: "İklâb'da nûn hangi sese döner?", a: "m", options: ["m", "n", "l"] },
+      ] },
+    { id: "nn2", title: "Kuralı Eşleştir", emoji: "🧩", type: "match",
+      pairs: [
+        { glyph: "مَنْ اٰمَنَ", name: "İzhâr" }, { glyph: "مِنْ رَبِّهِمْ", name: "İdgâm" },
+        { glyph: "مِنْۢ بَعْدِ", name: "İklâb" }, { glyph: "اَنْتُمْ", name: "İhfâ" },
+      ] },
+    { id: "nn3", title: "Kural Sınavı", emoji: "🏅", type: "quiz",
+      quiz: [
+        { q: "'اَنْتُمْ' hangi kural?", a: "İhfâ", options: ["İzhâr", "İhfâ", "İklâb"] },
+        { q: "'مَنْ اٰمَنَ' hangi kural?", a: "İzhâr", options: ["İzhâr", "İdgâm", "İhfâ"] },
+        { q: "'مِنْۢ بَعْدِ' hangi kural?", a: "İklâb", options: ["İklâb", "İdgâm", "İzhâr"] },
+        { q: "'مِنْ رَبِّهِمْ' hangi kural?", a: "İdgâm", options: ["İhfâ", "İdgâm", "İklâb"] },
+      ] },
+  ],
+};
+
+/* ---------- Sâkin Mîm ---------- */
+const MIMSAKIN_BOLGE = {
+  id: "bolgeMim", name: "Mîm Kuralları 🅜", color: "#f472b6",
+  duraklar: [
+    { id: "mm1", title: "Sâkin Mîm", emoji: "🅜", type: "lesson",
+      cards: [
+        { glyph: "هُمْ بِهٖ", name: "İhfâ-i Şefevî", hint: "مْ + ب: dudakla gizle" },
+        { glyph: "لَهُمْ مَا", name: "İdgâm-ı Misleyn", hint: "مْ + م: kaynaştır" },
+        { glyph: "اَمْ لَمْ", name: "İzhâr-i Şefevî", hint: "مْ + diğer harf: açık oku" },
+      ],
+      quiz: [
+        { q: "Sâkin mîm + 'b' = ?", a: "İhfâ-i şefevî", options: ["İhfâ-i şefevî", "İdgâm", "İzhâr"] },
+        { q: "Sâkin mîm + 'm' = ?", a: "İdgâm-ı misleyn", options: ["İklâb", "İdgâm-ı misleyn", "İhfâ"] },
+        { q: "Sâkin mîm + başka harf = ?", a: "İzhâr-i şefevî", options: ["İzhâr-i şefevî", "İklâb", "İdgâm"] },
+      ] },
+  ],
+};
+
+/* ---------- Vakıf (Durak) İşaretleri ---------- */
+const VAKIF_BOLGE = {
+  id: "bolgeVakif", name: "Durak İşaretleri ⏸️", color: "#94a3b8",
+  duraklar: [
+    { id: "vk1", title: "Secâvend", emoji: "⏸️", type: "lesson",
+      cards: [
+        { glyph: "مـ", name: "Lâzım", hint: "Mutlaka DUR" },
+        { glyph: "ج", name: "Câiz", hint: "Durabilir de geçebilir de" },
+        { glyph: "لا", name: "Lâ", hint: "DURMA, geç" },
+        { glyph: "قلى", name: "Durmak evlâ", hint: "Durmak daha iyi" },
+        { glyph: "صلى", name: "Geçmek evlâ", hint: "Geçmek daha iyi" },
+        { glyph: "∴ ... ∴", name: "Muânaka", hint: "Birinde dur (ikisinde değil)" },
+      ],
+      quiz: [
+        { q: "'مـ' işareti ne der?", a: "Mutlaka dur", options: ["Mutlaka dur", "Durma", "Hızlan"] },
+        { q: "'لا' işareti ne der?", a: "Durma, geç", options: ["Dur", "Durma, geç", "Uzat"] },
+        { q: "'ج' işareti ne anlama gelir?", a: "Durmak câiz", options: ["Yasak", "Durmak câiz", "Mutlaka dur"] },
+      ] },
+  ],
+};
+
+/* ---------- Okuma İncelikleri (Lafzatullah + özel harfler) ---------- */
+const INCELIK_BOLGE = {
+  id: "bolgeIncelik", name: "Okuma İncelikleri 💠", color: "#818cf8",
+  duraklar: [
+    { id: "in1", title: "Lafzatullah", emoji: "💠", type: "lesson",
+      cards: [
+        { glyph: "نَصْرُ اللّٰه", name: "Kalın", hint: "Önünde üstün/ötre → KALIN (Allah)" },
+        { glyph: "بِسْمِ اللّٰه", name: "İnce", hint: "Önünde esre → İNCE (Allah)" },
+      ],
+      quiz: [
+        { q: "Esreden sonra Allah lafzı nasıl?", a: "İnce", options: ["Kalın", "İnce", "Sessiz"] },
+        { q: "Üstün/ötreden sonra Allah lafzı nasıl?", a: "Kalın", options: ["Kalın", "İnce", "Uzun"] },
+      ] },
+    { id: "in2", title: "Özel Harfler", emoji: "✴️", type: "lesson",
+      cards: [
+        { glyph: "ة", name: "Ta-i merbûta", hint: "Geçerken 't', dururken 'h'" },
+        { glyph: "ى", name: "Elif-i maksûre", hint: "'a' diye uzatılır" },
+        { glyph: "ء", name: "Hemze", hint: "Boğazda kesme sesi" },
+      ],
+      quiz: [
+        { q: "'ة' dururken nasıl okunur?", a: "h", options: ["t", "h", "s"] },
+        { q: "'ى' hangi sesi uzatır?", a: "a", options: ["a", "i", "u"] },
+        { q: "'ء' (hemze) nedir?", a: "Kesme sesi", options: ["Uzatma", "Kesme sesi", "Şedde"] },
+      ] },
+  ],
+};
+
+/* ---------- Okuma Atölyesi (şeddeli/medli kelime okuma) ---------- */
+const OKUMA_KELIMELER = [
+  { glyph: "اَلرَّحْمٰن", name: "Er-Rahmân", hint: "Şedde + med" },
+  { glyph: "اَلرَّحِيم", name: "Er-Rahîm", hint: "Şedde + med" },
+  { glyph: "اِيَّاكَ", name: "İyyâke", hint: "Med + şedde" },
+  { glyph: "الْعَالَمِين", name: "El-Âlemîn", hint: "Med" },
+  { glyph: "مَالِكِ", name: "Mâliki", hint: "Med" },
+  { glyph: "الدِّين", name: "Ed-Dîn", hint: "Şedde + med" },
+  { glyph: "الصِّرَاط", name: "Es-Sırât", hint: "Şemsî + med" },
+  { glyph: "الْمُسْتَقِيم", name: "El-Müstakîm", hint: "Med" },
+];
+const OKUMA_BOLGE = {
+  id: "bolgeOkuma", name: "Okuma Atölyesi 📚", color: "#34d399",
+  duraklar: [
+    { id: "ok1", title: "Kelime Oku", emoji: "📚", type: "lesson", cards: OKUMA_KELIMELER.slice(0, 4) },
+    { id: "ok2", title: "Daha Çok Kelime", emoji: "📖", type: "lesson", cards: OKUMA_KELIMELER.slice(4, 8) },
+    { id: "ok3", title: "Kelime Dinle", emoji: "👂", type: "listen", items: OKUMA_KELIMELER, pool: OKUMA_KELIMELER },
+    { id: "ok4", title: "Kelime Eşleştir", emoji: "🧩", type: "match", pairs: OKUMA_KELIMELER },
+    { id: "ok5", title: "Okuma Sınavı", emoji: "🏅", type: "quiz", quiz: makeLetterQuiz(OKUMA_KELIMELER, OKUMA_KELIMELER, 6, "Bu nasıl okunur?") },
+  ],
+};
+
+/* ---------- Şimşek Yarışı (süre/puan yarışı) ---------- */
+const SIMSEK_BOLGE = {
+  id: "bolgeSimsek", name: "Şimşek Yarışı ⚡", color: "#f59e0b",
+  duraklar: [
+    { id: "sm1", title: "Harf Şimşeği", emoji: "⚡", type: "timed", havuz: HARFLER, sure: 45 },
+    { id: "sm2", title: "Hece Şimşeği", emoji: "🌩️", type: "timed", havuz: HECE_HEPSI, sure: 45 },
+    { id: "sm3", title: "Rakam Şimşeği", emoji: "🔢", type: "timed", havuz: RAKAMLAR, sure: 40 },
+  ],
+};
+
 /* ---------- Tüm bölgeleri sırala (aşamalar + araya pekiştirme) ---------- */
 function tumBolgeler() {
   const a = elifBaBolgeleri();
@@ -424,7 +661,10 @@ function tumBolgeler() {
   out.push(a[2], a[3], pekistirmeBolge(2, HARFLER.slice(0, 15), "#fbbf24"));
   out.push(a[4], a[5], pekistirmeBolge(3, HARFLER.slice(0, 23), "#f59e0b"));
   out.push(a[6], pekistirmeBolge(4, HARFLER, "#f97316", true));
-  out.push(SEKIL_BOLGE, ...HECE_BOLGELERI, MED_BOLGE, TENVIN_BOLGE, YILDIZ_BOLGE, KELIME_BOLGE, RAKAM_BOLGE, DUA_BOLGE, SURE_BOLGE);
+  out.push(SEKIL_BOLGE, ...HECE_BOLGELERI);
+  out.push(MED_BOLGE, TENVIN_BOLGE, YILDIZ_BOLGE);
+  out.push(LAMTARIF_BOLGE, KALKALE_BOLGE, MEDCESIT_BOLGE, NUNSAKIN_BOLGE, MIMSAKIN_BOLGE, VAKIF_BOLGE, INCELIK_BOLGE);
+  out.push(OKUMA_BOLGE, KELIME_BOLGE, RAKAM_BOLGE, DUA_BOLGE, SIMSEK_BOLGE, SURE_BOLGE);
   return out;
 }
 
