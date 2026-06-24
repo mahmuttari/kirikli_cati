@@ -149,24 +149,16 @@ function arcadeDurak(sid, model, grup) {
   };
 }
 
-// Her aşama için oyun duraklarını üretir (en az 5 farklı oyun modeli)
+// Her aşama için oyun duraklarını üretir (sade: 5 durak; aşamalar arası dönüşümlü arcade)
 function elifBaBolgeleri() {
   return ELIFBA_GRUPLARI.map((grup, i) => {
     const sid = `a${i + 1}`;
-    // bu aşamanın 3 arcade oyunu (dönüşümlü -> aşamalar arası çeşitlilik)
-    const arc = [
-      ARCADE_SIRA[i % 4],
-      ARCADE_SIRA[(i + 1) % 4],
-      ARCADE_SIRA[(i + 2) % 4],
-    ];
     const harfStr = grup.map((h) => h.glyph).join(" ");
     const duraklar = [
       { id: `${sid}_ogren`, title: "Öğren",       emoji: "📖", type: "lesson", cards: grup },
       { id: `${sid}_esles`, title: "Eşleştir",    emoji: "🧩", type: "match",  pairs: grup },
-      arcadeDurak(sid, arc[0], grup),
       { id: `${sid}_dinle`, title: "Dinle & Bul", emoji: "👂", type: "listen", items: grup, pool: HARFLER },
-      arcadeDurak(sid, arc[1], grup),
-      arcadeDurak(sid, arc[2], grup),
+      arcadeDurak(sid, ARCADE_SIRA[i % 4], grup),     // aşamaya göre değişen oyun (çeşitlilik)
       { id: `${sid}_sinav`, title: "Sınav",       emoji: "🏅", type: "quiz",   quiz: makeLetterQuiz(grup, HARFLER) },
     ];
     return {
@@ -643,6 +635,15 @@ const OKUMA_BOLGE = {
   ],
 };
 
+/* ---------- Tekrar Köşesi (adaptif: zayıf öğeler hata yaptıkça uzar) ---------- */
+const TEKRAR_BOLGE = {
+  id: "bolge_tekrar", name: "Tekrar Köşesi 🔁", color: "#fca5a5",
+  duraklar: [
+    { id: "tk1", title: "Zayıf Harfler", emoji: "🔁", type: "weak", pool: HARFLER },
+    { id: "tk2", title: "Zayıf Heceler", emoji: "🔂", type: "weak", pool: HECE_HEPSI },
+  ],
+};
+
 /* ---------- Şimşek Yarışı (süre/puan yarışı) ---------- */
 const SIMSEK_BOLGE = {
   id: "bolgeSimsek", name: "Şimşek Yarışı ⚡", color: "#f59e0b",
@@ -664,7 +665,7 @@ function tumBolgeler() {
   out.push(SEKIL_BOLGE, ...HECE_BOLGELERI);
   out.push(MED_BOLGE, TENVIN_BOLGE, YILDIZ_BOLGE);
   out.push(LAMTARIF_BOLGE, KALKALE_BOLGE, MEDCESIT_BOLGE, NUNSAKIN_BOLGE, MIMSAKIN_BOLGE, VAKIF_BOLGE, INCELIK_BOLGE);
-  out.push(OKUMA_BOLGE, KELIME_BOLGE, RAKAM_BOLGE, DUA_BOLGE, SIMSEK_BOLGE, SURE_BOLGE);
+  out.push(OKUMA_BOLGE, KELIME_BOLGE, RAKAM_BOLGE, DUA_BOLGE, TEKRAR_BOLGE, SIMSEK_BOLGE, SURE_BOLGE);
   return out;
 }
 

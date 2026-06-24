@@ -458,3 +458,26 @@ body {
 
 /* ---- Tilavet notu ---- */
 .tilavet-not { display: inline-block; margin-top: 6px; color: #94a3b8; font-weight: 600; font-size: .72rem; }
+
+/* ---- Profil ses ayarı ---- */
+.ayar-kart { background: #fff; border-radius: 20px; padding: 16px; margin-bottom: 18px; box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+.ayar-satir { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 800; color: var(--koyu); }
+.ayar-secim { display: flex; gap: 8px; }
+.ayar-btn { border: 2px solid #e2e8f0; background: #f8fafc; color: #64748b; font-family: inherit; font-weight: 800; padding: 8px 12px; border-radius: 14px; cursor: pointer; font-size: .9rem; }
+.ayar-btn.secili { background: #ede9fe; border-color: var(--mor); color: #6d28d9; }
+.ayar-not { margin-top: 10px; color: #94a3b8; font-weight: 600; font-size: .78rem; }
+
+/* ---- Balon: öğretici ıskalama ---- */
+.balon.ogretici .balon-ic { box-shadow: 0 0 0 5px #fde047, 0 0 22px #facc15; }
+.balon-kacti { color: #b91c1c; font-weight: 800; }
+.balon-kacti b { font-family: "Amiri", serif; font-size: 1.6rem; }
+
+/* ---- Harekeli örnekleri büyüt (okunabilirlik) ---- */
+.harf-buyuk { font-size: 6.4rem; line-height: 1.35; overflow: visible; }
+.harf-ipucu { font-size: 1.02rem; }
+.fill-chip-harf { font-size: 3.3rem; }
+.kelime-harf { font-size: 4rem; }
+.kelime-kutu { min-width: 60px; height: 70px; font-size: 3rem; }
+.sure-arapca { font-size: 2.9rem; line-height: 2; }
+/* hece/şekil örnek kartlarında arapça net görünsün */
+.flashcard .harf-buyuk { padding: 6px 0; }
