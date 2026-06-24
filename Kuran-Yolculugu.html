@@ -178,9 +178,103 @@ body {
   to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
 }
 
+/* ---- Durak tip etiketi ---- */
+.durak-tip {
+  font-size: .62rem; font-weight: 800; background: #eef2ff; color: #6366f1;
+  padding: 1px 8px; border-radius: 10px; margin-bottom: 2px;
+}
+.durak.tamam .durak-tip { background: rgba(255,255,255,.55); color: #92400e; }
+.durak.kilitli .durak-tip { background: #e2e8f0; color: #94a3b8; }
+
+/* ---- Oyun açıklaması ---- */
+.oyun-aciklama {
+  text-align: center; font-weight: 700; color: #475569; margin: 0 0 16px;
+  background: #fff; padding: 12px 16px; border-radius: 16px; box-shadow: 0 4px 14px rgba(0,0,0,.08);
+}
+
+/* ---- Eşleştirme oyunu ---- */
+.match-tahta { display: flex; gap: 16px; }
+.match-sutun { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.match-hucre {
+  background: #fff; border: 3px solid #e2e8f0; border-radius: 18px; padding: 14px;
+  font-family: inherit; font-weight: 800; cursor: pointer; transition: transform .1s;
+  box-shadow: 0 4px 0 #cbd5e1; min-height: 60px;
+}
+.match-hucre.harf { font-family: "Amiri", serif; font-size: 2.4rem; color: var(--gok2); }
+.match-hucre.isim { font-size: 1.2rem; color: var(--koyu); }
+.match-hucre.secili { border-color: var(--mor); background: #ede9fe; transform: scale(1.04); }
+.match-hucre.eslesti { border-color: var(--yesil); background: #dcfce7; opacity: .55; cursor: default; box-shadow: none; }
+.match-hucre.yanlis-titre { animation: titre .4s; border-color: #f87171; }
+@keyframes titre { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+
+/* ---- Dinle ve bul ---- */
+.buyuk-dinle {
+  display: block; margin: 0 auto 18px; background: var(--yesil); color: #fff; border: none;
+  padding: 16px 30px; border-radius: 20px; font-family: inherit; font-weight: 800;
+  font-size: 1.2rem; cursor: pointer; box-shadow: 0 5px 0 #16a34a;
+}
+.listen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.listen-hucre {
+  background: #fff; border: 3px solid #e2e8f0; border-radius: 20px; padding: 18px;
+  font-family: "Amiri", serif; font-size: 3.2rem; color: var(--gok2); cursor: pointer;
+  box-shadow: 0 5px 0 #cbd5e1;
+}
+.listen-hucre.dogru { background: #dcfce7; border-color: var(--yesil); }
+.listen-hucre.yanlis { background: #fee2e2; border-color: #f87171; }
+
+/* ---- Hafıza oyunu ---- */
+.memory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.memory-kart {
+  position: relative; aspect-ratio: 3/4; border: none; background: transparent;
+  cursor: pointer; padding: 0; perspective: 600px;
+}
+.memory-on, .memory-arka {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  border-radius: 16px; font-weight: 800; backface-visibility: hidden; transition: transform .35s;
+}
+.memory-on { background: linear-gradient(135deg, var(--gok2), var(--mor)); color: #fff; font-size: 2rem; box-shadow: 0 4px 0 rgba(0,0,0,.15); }
+.memory-arka {
+  background: #fff; color: var(--koyu); font-size: 1.1rem; transform: rotateY(180deg);
+  border: 3px solid #e2e8f0; font-family: "Amiri", serif;
+}
+.memory-arka:not(:empty) { font-size: 2.4rem; }
+.memory-kart.acik .memory-on { transform: rotateY(180deg); }
+.memory-kart.acik .memory-arka { transform: rotateY(360deg); }
+.memory-kart.eslesti .memory-arka { background: #dcfce7; border-color: var(--yesil); }
+
+/* ---- Harf izi (çizme) ---- */
+.trace-kutu { position: relative; width: 300px; max-width: 90vw; aspect-ratio: 1; margin: 0 auto; }
+.trace-harf {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: "Amiri", serif; font-size: 13rem; color: #e2e8f0; user-select: none; pointer-events: none;
+}
+.trace-canvas {
+  position: relative; width: 100%; height: 100%; background: #fff;
+  border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,.12); touch-action: none;
+}
+.trace-ad { text-align: center; font-weight: 800; font-size: 1.5rem; margin: 14px 0; color: var(--koyu); }
+.dinle-mini { background: none; border: none; cursor: pointer; font-size: 1.3rem; }
+
+/* ---- Sure okuma ---- */
+.sure-kart {
+  background: #fff; border-radius: 26px; padding: 26px 20px; text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,.14); margin-bottom: 16px; animation: pop .3s ease;
+}
+.sure-no { font-weight: 800; color: var(--mor); margin-bottom: 12px; }
+.sure-arapca { font-family: "Amiri", serif; font-size: 2.6rem; line-height: 1.8; color: var(--koyu); direction: rtl; }
+.sure-okunus { font-size: 1.3rem; font-weight: 800; color: var(--gok2); margin-top: 14px; }
+.sure-meal { color: #64748b; font-weight: 600; margin-top: 8px; font-style: italic; }
+.sure-kart .dinle {
+  margin-top: 18px; background: var(--yesil); color: #fff; border: none;
+  padding: 12px 26px; border-radius: 18px; font-family: inherit; font-weight: 800;
+  font-size: 1.1rem; cursor: pointer; box-shadow: 0 5px 0 #16a34a;
+}
+
 @media (max-width: 380px) {
   .durak { width: 130px; }
   .harf-buyuk { font-size: 4.5rem; }
+  .trace-harf { font-size: 10rem; }
+  .listen-hucre { font-size: 2.6rem; }
 }
 
   </style>
@@ -191,7 +285,15 @@ body {
 /*
  * Kur'an Yolculuğu - Müfredat Verisi
  * Çocuklar için Elif-Ba öğretimi.
- * Her "durak" (station) bir dersi ve bir mini testi içerir.
+ * Her "durak" (station) bir öğrenme etkinliği içerir.
+ *
+ * Durak tipleri (type):
+ *   'lesson' -> öğrenme kartları + çoktan seçmeli mini test
+ *   'match'  -> eşleştirme oyunu (harf <-> isim)
+ *   'listen' -> dinle ve doğru harfi bul
+ *   'memory' -> hafıza kartları (aynı çifti bul)
+ *   'trace'  -> harf izi (parmakla/fareyle harfin üzerinden geç)
+ *   'sure'   -> kısa sure okuma (kelime kelime)
  */
 
 // Arap harfleri: glyph (harf), name (Türkçe okunuşu), hint (ipucu/benzetme)
@@ -233,10 +335,81 @@ const HAREKELER = [
   { glyph: "بُ", name: "Ötre (u)",    hint: "Harfin üstünde küçük vav: 'u' sesi" },
 ];
 
+// Harflerin başta/ortada/sonda aldığı şekiller
+const HARF_SEKILLERI = [
+  { name: "Be",  glyph: "ب", bas: "بـ", orta: "ـبـ", son: "ـب" },
+  { name: "Sin", glyph: "س", bas: "سـ", orta: "ـسـ", son: "ـس" },
+  { name: "Mim", glyph: "م", bas: "مـ", orta: "ـمـ", son: "ـم" },
+  { name: "Ayn", glyph: "ع", bas: "عـ", orta: "ـعـ", son: "ـع" },
+  { name: "He",  glyph: "ه", bas: "هـ", orta: "ـهـ", son: "ـه" },
+  { name: "Kef", glyph: "ك", bas: "كـ", orta: "ـكـ", son: "ـك" },
+];
+
+// Arapça rakamlar
+const RAKAMLAR = [
+  { glyph: "٠", name: "Sıfır", hint: "0" },
+  { glyph: "١", name: "Bir",   hint: "1" },
+  { glyph: "٢", name: "İki",   hint: "2" },
+  { glyph: "٣", name: "Üç",    hint: "3" },
+  { glyph: "٤", name: "Dört",  hint: "4" },
+  { glyph: "٥", name: "Beş",   hint: "5" },
+  { glyph: "٦", name: "Altı",  hint: "6" },
+  { glyph: "٧", name: "Yedi",  hint: "7" },
+  { glyph: "٨", name: "Sekiz", hint: "8" },
+  { glyph: "٩", name: "Dokuz", hint: "9" },
+];
+
+// Kısa sureler (kelime kelime okunuş)
+const SURELER = {
+  ihlas: {
+    ad: "İhlâs Sûresi",
+    bilgi: "Allah'ın bir ve tek olduğunu anlatır.",
+    ayetler: [
+      { glyph: "قُلْ هُوَ اللّٰهُ اَحَدٌ", okunus: "Kul hüvallâhü ehad", meal: "De ki: O Allah birdir." },
+      { glyph: "اَللّٰهُ الصَّمَدُ", okunus: "Allâhü's-samed", meal: "Allah hiçbir şeye muhtaç değildir." },
+      { glyph: "لَمْ يَلِدْ وَلَمْ يُولَدْ", okunus: "Lem yelid ve lem yûled", meal: "O doğurmamış ve doğmamıştır." },
+      { glyph: "وَلَمْ يَكُنْ لَهُ كُفُوًا اَحَدٌ", okunus: "Ve lem yekün lehû küfüven ehad", meal: "Hiçbir şey O'na denk değildir." },
+    ],
+  },
+  kevser: {
+    ad: "Kevser Sûresi",
+    bilgi: "Kur'an'ın en kısa suresidir.",
+    ayetler: [
+      { glyph: "اِنَّٓا اَعْطَيْنَاكَ الْكَوْثَرَ", okunus: "İnnâ a'taynâ ke'l-kevser", meal: "Biz sana Kevser'i verdik." },
+      { glyph: "فَصَلِّ لِرَبِّكَ وَانْحَرْ", okunus: "Fe salli li rabbike venhar", meal: "Öyleyse Rabbin için namaz kıl ve kurban kes." },
+      { glyph: "اِنَّ شَانِئَكَ هُوَ الْاَبْتَرُ", okunus: "İnne şânieke hüve'l-ebter", meal: "Asıl soyu kesik olan sana kin tutandır." },
+    ],
+  },
+  nas: {
+    ad: "Nâs Sûresi",
+    bilgi: "Kötülüklerden Allah'a sığınmayı öğretir.",
+    ayetler: [
+      { glyph: "قُلْ اَعُوذُ بِرَبِّ النَّاسِ", okunus: "Kul eûzü bi rabbi'n-nâs", meal: "De ki: İnsanların Rabbine sığınırım." },
+      { glyph: "مَلِكِ النَّاسِ", okunus: "Meliki'n-nâs", meal: "İnsanların hükümdarına." },
+      { glyph: "اِلٰهِ النَّاسِ", okunus: "İlâhi'n-nâs", meal: "İnsanların ilâhına." },
+    ],
+  },
+};
+
+// Dualar
+const DUALAR = [
+  { glyph: "بِسْمِ اللّٰهِ", okunus: "Bismillah", anlam: "Allah'ın adıyla (başlarım)", emoji: "🌟" },
+  { glyph: "اَلْحَمْدُ لِلّٰهِ", okunus: "Elhamdülillah", anlam: "Hamd (övgü) Allah'a aittir", emoji: "🤲" },
+  { glyph: "اَللّٰهُ اَكْبَرُ", okunus: "Allâhü Ekber", anlam: "Allah en büyüktür", emoji: "✨" },
+  { glyph: "سُبْحَانَ اللّٰهِ", okunus: "Sübhânallah", anlam: "Allah'ı tüm eksikliklerden tenzih ederim", emoji: "💫" },
+];
+
+// Esmaü'l-Hüsna (Allah'ın güzel isimlerinden bazıları)
+const ESMA = [
+  { glyph: "اَلرَّحْمٰنُ", okunus: "Er-Rahmân", anlam: "Çok merhamet eden", emoji: "💗" },
+  { glyph: "اَلرَّحِيمُ", okunus: "Er-Rahîm", anlam: "Çok bağışlayan", emoji: "💝" },
+  { glyph: "اَلْمَلِكُ", okunus: "El-Melik", anlam: "Her şeyin sahibi", emoji: "👑" },
+  { glyph: "اَلْخَالِقُ", okunus: "El-Hâlik", anlam: "Yaratan", emoji: "🌍" },
+  { glyph: "اَلرَّزَّاقُ", okunus: "Er-Razzâk", anlam: "Rızık veren", emoji: "🍎" },
+];
+
 /*
  * Bölgeler (harita üzerindeki ana bölümler) ve duraklar.
- * Her durak: id, title, emoji, type, cards (öğrenme kartları), quiz (sorular)
- * type: 'lesson' (kart + test)
  */
 const BOLGELER = [
   {
@@ -244,27 +417,14 @@ const BOLGELER = [
     name: "Harf Adası 🏝️",
     color: "#4ade80",
     duraklar: [
-      {
-        id: "d1",
-        title: "İlk Harfler",
-        emoji: "🌱",
-        cards: HARFLER.slice(0, 4),       // Elif, Be, Te, Se
-        quiz: makeLetterQuiz(HARFLER.slice(0, 4), HARFLER),
-      },
-      {
-        id: "d2",
-        title: "Kanca Harfler",
-        emoji: "🪝",
-        cards: HARFLER.slice(4, 9),       // Cim..Zel
-        quiz: makeLetterQuiz(HARFLER.slice(4, 9), HARFLER),
-      },
-      {
-        id: "d3",
-        title: "Kuyruklu Harfler",
-        emoji: "🐉",
-        cards: HARFLER.slice(9, 13),      // Ra..Şın
-        quiz: makeLetterQuiz(HARFLER.slice(9, 13), HARFLER),
-      },
+      { id: "d1", title: "İlk Harfler", emoji: "🌱", type: "lesson",
+        cards: HARFLER.slice(0, 4), quiz: makeLetterQuiz(HARFLER.slice(0, 4), HARFLER) },
+      { id: "d2", title: "Kanca Harfler", emoji: "🪝", type: "lesson",
+        cards: HARFLER.slice(4, 9), quiz: makeLetterQuiz(HARFLER.slice(4, 9), HARFLER) },
+      { id: "d2b", title: "Eşleştirme Oyunu", emoji: "🧩", type: "match",
+        pairs: HARFLER.slice(0, 9) },
+      { id: "d3", title: "Kuyruklu Harfler", emoji: "🐉", type: "lesson",
+        cards: HARFLER.slice(9, 13), quiz: makeLetterQuiz(HARFLER.slice(9, 13), HARFLER) },
     ],
   },
   {
@@ -272,27 +432,27 @@ const BOLGELER = [
     name: "Çöl Vadisi 🏜️",
     color: "#fbbf24",
     duraklar: [
-      {
-        id: "d4",
-        title: "Kalın Harfler",
-        emoji: "🐪",
-        cards: HARFLER.slice(13, 19),     // Sad..Gayn
-        quiz: makeLetterQuiz(HARFLER.slice(13, 19), HARFLER),
-      },
-      {
-        id: "d5",
-        title: "Son Harfler",
-        emoji: "⭐",
-        cards: HARFLER.slice(19, 28),     // Fe..Ye
-        quiz: makeLetterQuiz(HARFLER.slice(19, 28), HARFLER),
-      },
-      {
-        id: "d6",
-        title: "Tüm Harfler Sınavı",
-        emoji: "🏆",
-        cards: HARFLER,
-        quiz: makeLetterQuiz(HARFLER, HARFLER, 6),
-      },
+      { id: "d4", title: "Kalın Harfler", emoji: "🐪", type: "lesson",
+        cards: HARFLER.slice(13, 19), quiz: makeLetterQuiz(HARFLER.slice(13, 19), HARFLER) },
+      { id: "d5", title: "Son Harfler", emoji: "⭐", type: "lesson",
+        cards: HARFLER.slice(19, 28), quiz: makeLetterQuiz(HARFLER.slice(19, 28), HARFLER) },
+      { id: "d5b", title: "Dinle ve Bul", emoji: "👂", type: "listen",
+        items: HARFLER.slice(13, 28) },
+      { id: "d6", title: "Tüm Harfler Sınavı", emoji: "🏆", type: "lesson",
+        cards: HARFLER, quiz: makeLetterQuiz(HARFLER, HARFLER, 8) },
+    ],
+  },
+  {
+    id: "bolgeSekil",
+    name: "Şekil Atölyesi 🔤",
+    color: "#fb923c",
+    duraklar: [
+      { id: "ds1", title: "Harf Şekilleri", emoji: "✏️", type: "lesson",
+        cards: HARF_SEKILLERI.slice(0, 3).map(sekilKart), quiz: makeSekilQuiz(HARF_SEKILLERI.slice(0, 3)) },
+      { id: "ds2", title: "Daha Çok Şekil", emoji: "🖌️", type: "lesson",
+        cards: HARF_SEKILLERI.slice(3, 6).map(sekilKart), quiz: makeSekilQuiz(HARF_SEKILLERI.slice(3, 6)) },
+      { id: "ds3", title: "Harf İzi (Çizme)", emoji: "🖊️", type: "trace",
+        cards: HARFLER.slice(0, 6) },
     ],
   },
   {
@@ -300,24 +460,16 @@ const BOLGELER = [
     name: "Sihirli Orman 🌳",
     color: "#34d399",
     duraklar: [
-      {
-        id: "d7",
-        title: "Üstün - Esre - Ötre",
-        emoji: "✨",
-        cards: HAREKELER,
-        quiz: [
+      { id: "d7", title: "Üstün - Esre - Ötre", emoji: "✨", type: "lesson",
+        cards: HAREKELER, quiz: [
           { q: "Harfin ÜSTÜNDE çizgi varsa hangi ses çıkar?", a: "e", options: ["e", "i", "u"] },
           { q: "Harfin ALTINDA çizgi varsa hangi ses çıkar?",  a: "i", options: ["e", "i", "u"] },
           { q: "Harfin üstünde küçük 'vav' varsa hangi ses çıkar?", a: "u", options: ["e", "i", "u"] },
           { q: "'بَ' nasıl okunur?", a: "Be", options: ["Bi", "Be", "Bu"] },
           { q: "'بِ' nasıl okunur?", a: "Bi", options: ["Bi", "Be", "Bu"] },
           { q: "'بُ' nasıl okunur?", a: "Bu", options: ["Bi", "Be", "Bu"] },
-        ],
-      },
-      {
-        id: "d8",
-        title: "Heceler Köprüsü",
-        emoji: "🌉",
+        ] },
+      { id: "d8", title: "Heceler Köprüsü", emoji: "🌉", type: "lesson",
         cards: [
           { glyph: "بَ", name: "Be", hint: "B + e" },
           { glyph: "تِ", name: "Ti", hint: "T + i" },
@@ -331,8 +483,22 @@ const BOLGELER = [
           { q: "'نُ' hecesi nasıl okunur?", a: "Nu", options: ["Ne", "Ni", "Nu"] },
           { q: "'مَ' hecesi nasıl okunur?", a: "Me", options: ["Me", "Mi", "Mu"] },
           { q: "'لِ' hecesi nasıl okunur?", a: "Li", options: ["Le", "Li", "Lu"] },
-        ],
-      },
+        ] },
+      { id: "d8b", title: "Hafıza Oyunu", emoji: "🃏", type: "memory",
+        pairs: HARFLER.slice(0, 6) },
+    ],
+  },
+  {
+    id: "bolgeRakam",
+    name: "Rakamlar Diyarı 🔢",
+    color: "#22d3ee",
+    duraklar: [
+      { id: "dr1", title: "Arapça Rakamlar 0-4", emoji: "🔢", type: "lesson",
+        cards: RAKAMLAR.slice(0, 5), quiz: makeLetterQuiz(RAKAMLAR.slice(0, 5), RAKAMLAR) },
+      { id: "dr2", title: "Arapça Rakamlar 5-9", emoji: "🧮", type: "lesson",
+        cards: RAKAMLAR.slice(5, 10), quiz: makeLetterQuiz(RAKAMLAR.slice(5, 10), RAKAMLAR) },
+      { id: "dr3", title: "Rakam Eşleştirme", emoji: "🎯", type: "match",
+        pairs: RAKAMLAR },
     ],
   },
   {
@@ -340,10 +506,7 @@ const BOLGELER = [
     name: "Yıldız Şehri 🌟",
     color: "#a78bfa",
     duraklar: [
-      {
-        id: "d9",
-        title: "Cezm (Durak İşareti)",
-        emoji: "🛑",
+      { id: "d9", title: "Cezm (Durak İşareti)", emoji: "🛑", type: "lesson",
         cards: [
           { glyph: "بْ", name: "Cezm", hint: "Harfin üstünde küçük yuvarlak: ses durur (b)" },
           { glyph: "أَبْ", name: "Eb", hint: "E + b" },
@@ -353,12 +516,8 @@ const BOLGELER = [
           { q: "Cezm işareti ne yapar?", a: "Sesi durdurur", options: ["Sesi uzatır", "Sesi durdurur", "Sesi tekrarlar"] },
           { q: "'مِنْ' nasıl okunur?", a: "Min", options: ["Mine", "Min", "Mina"] },
           { q: "Cezmin şekli nedir?", a: "Küçük yuvarlak/baş", options: ["Çizgi", "Küçük yuvarlak/baş", "Nokta"] },
-        ],
-      },
-      {
-        id: "d10",
-        title: "Şedde (İkileme)",
-        emoji: "🔁",
+        ] },
+      { id: "d10", title: "Şedde (İkileme)", emoji: "🔁", type: "lesson",
         cards: [
           { glyph: "بّ", name: "Şedde", hint: "Harf iki kere okunur (bb)" },
           { glyph: "رَبّ", name: "Rabb", hint: "Ra + bb" },
@@ -368,12 +527,8 @@ const BOLGELER = [
           { q: "Şedde ne yapar?", a: "Harfi iki kere okutur", options: ["Harfi siler", "Harfi iki kere okutur", "Harfi uzatır"] },
           { q: "'رَبّ' nasıl okunur?", a: "Rabb", options: ["Rab", "Rabb", "Reb"] },
           { q: "Şedde harfin neresindedir?", a: "Üstünde", options: ["Altında", "Üstünde", "Yanında"] },
-        ],
-      },
-      {
-        id: "d11",
-        title: "İlk Kelimeler",
-        emoji: "📖",
+        ] },
+      { id: "d11", title: "İlk Kelimeler", emoji: "📖", type: "lesson",
         cards: [
           { glyph: "اَللّٰه", name: "Allah", hint: "Yüce Allah'ın ismi" },
           { glyph: "نُور", name: "Nur", hint: "Işık / aydınlık" },
@@ -384,11 +539,60 @@ const BOLGELER = [
           { q: "'كِتَاب' ne demek?", a: "Kitap", options: ["Kalem", "Kitap", "Kapı"] },
           { q: "'نُور' ne demek?", a: "Işık", options: ["Su", "Işık", "Taş"] },
           { q: "'نَبِيّ' ne demek?", a: "Peygamber", options: ["Melek", "Peygamber", "Kral"] },
-        ],
-      },
+        ] },
+    ],
+  },
+  {
+    id: "bolgeDua",
+    name: "Dua Bahçesi 🤲",
+    color: "#f472b6",
+    duraklar: [
+      { id: "dd1", title: "Güzel Sözler", emoji: "🌸", type: "lesson",
+        cards: DUALAR.map((d) => ({ glyph: d.glyph, name: d.okunus, hint: d.anlam })),
+        quiz: [
+          { q: "'Bismillah' ne demek?", a: "Allah'ın adıyla", options: ["Allah'ın adıyla", "Teşekkürler", "Günaydın"] },
+          { q: "'Elhamdülillah' ne zaman söylenir?", a: "Şükrederken", options: ["Şükrederken", "Uyurken", "Koşarken"] },
+          { q: "'Allâhü Ekber' ne demek?", a: "Allah en büyüktür", options: ["Allah en büyüktür", "Allah güzeldir", "Allah birdir"] },
+        ] },
+      { id: "dd2", title: "Esmaü'l-Hüsna", emoji: "💎", type: "lesson",
+        cards: ESMA.map((e) => ({ glyph: e.glyph, name: e.okunus, hint: e.anlam })),
+        quiz: [
+          { q: "'Er-Rahmân' ne demek?", a: "Çok merhamet eden", options: ["Çok merhamet eden", "Yaratan", "Rızık veren"] },
+          { q: "'El-Hâlik' ne demek?", a: "Yaratan", options: ["Yaratan", "Affeden", "Gören"] },
+          { q: "'Er-Razzâk' ne demek?", a: "Rızık veren", options: ["Rızık veren", "Koruyan", "Bilen"] },
+        ] },
+    ],
+  },
+  {
+    id: "bolgeSure",
+    name: "Sure Sarayı 📖",
+    color: "#818cf8",
+    duraklar: [
+      { id: "su1", title: "İhlâs Sûresi", emoji: "📜", type: "sure", sure: SURELER.ihlas },
+      { id: "su2", title: "Kevser Sûresi", emoji: "📃", type: "sure", sure: SURELER.kevser },
+      { id: "su3", title: "Nâs Sûresi", emoji: "📖", type: "sure", sure: SURELER.nas },
     ],
   },
 ];
+
+// Harf şekli kartı üretir (lesson kartı formatında)
+function sekilKart(s) {
+  return {
+    glyph: `${s.bas}  ${s.orta}  ${s.son}`,
+    name: s.name,
+    hint: `Başta: ${s.bas} • Ortada: ${s.orta} • Sonda: ${s.son}`,
+  };
+}
+
+// Harf şekilleri için mini test
+function makeSekilQuiz(grup) {
+  return grup.map((s) => ({
+    q: `Bu hangi harfin başta hâlidir?  ${s.bas}`,
+    a: s.name,
+    options: shuffleArr([s.name, ...shuffleArr(HARF_SEKILLERI.filter((x) => x.name !== s.name)).slice(0, 2).map((x) => x.name)]),
+    glyph: s.bas,
+  }));
+}
 
 // Bir harf grubundan çoktan seçmeli test üretir.
 function makeLetterQuiz(group, pool, limit) {
@@ -426,7 +630,7 @@ function tumDuraklar() {
   <script>
 /*
  * Kur'an Yolculuğu - Uygulama Mantığı
- * Harita, ders kartları, mini test ve ilerleme yönetimi.
+ * Harita + farklı öğrenme biçimleri (ders, eşleştirme, dinle-bul, hafıza, harf izi, sure).
  */
 
 const STORAGE_KEY = "kuranYolculugu_v1";
@@ -444,14 +648,13 @@ function ilerlemeKaydet(p) {
 }
 let ILERLEME = ilerlemeYukle();
 
+const DURAKLAR = tumDuraklar();
+
 // Bir durağın kilidi açık mı? (ilk durak hep açık, sonrakiler önceki tamamlanınca açılır)
 function durakAcikMi(index) {
   if (index === 0) return true;
-  const oncekiId = DURAKLAR[index - 1].id;
-  return !!ILERLEME.tamamlanan[oncekiId];
+  return !!ILERLEME.tamamlanan[DURAKLAR[index - 1].id];
 }
-
-const DURAKLAR = tumDuraklar();
 
 // ---- Ses (Türkçe okunuş için tarayıcı konuşma sentezi) ----
 function seslendir(metin) {
@@ -495,11 +698,32 @@ function render() {
   ILERLEME = ilerlemeYukle();
   app.innerHTML = "";
   app.appendChild(haritaEkrani());
+  window.scrollTo(0, 0);
 }
 
-// Toplam yıldız sayısı
 function toplamYildiz() {
   return Object.values(ILERLEME.yildiz).reduce((a, b) => a + b, 0);
+}
+
+// Durak tipine göre doğru ekranı açan dağıtıcı
+function durakAc(durak, index) {
+  tonCal([440]);
+  switch (durak.type) {
+    case "match":  return oyunMatch(durak, index);
+    case "listen": return oyunListen(durak, index);
+    case "memory": return oyunMemory(durak, index);
+    case "trace":  return oyunTrace(durak, index);
+    case "sure":   return sureEkrani(durak, index);
+    default:       return derseGir(durak, index);
+  }
+}
+
+// Durak tipine göre küçük etiket
+function tipEtiketi(type) {
+  return {
+    lesson: "📚 Ders", match: "🧩 Eşleştir", listen: "👂 Dinle-Bul",
+    memory: "🃏 Hafıza", trace: "🖊️ Çizme", sure: "📖 Sure",
+  }[type] || "📚 Ders";
 }
 
 // ---- HARİTA EKRANI ----
@@ -507,7 +731,6 @@ function haritaEkrani() {
   const wrap = document.createElement("div");
   wrap.className = "harita-wrap";
 
-  // Üst bilgi çubuğu
   const bar = document.createElement("div");
   bar.className = "topbar";
   bar.innerHTML = `
@@ -518,7 +741,7 @@ function haritaEkrani() {
 
   const intro = document.createElement("p");
   intro.className = "intro";
-  intro.textContent = "Haritada ilerle, harfleri öğren, yıldızları topla! 🎉";
+  intro.textContent = "Haritada ilerle, harfleri öğren, oyunlar oyna, yıldızları topla! 🎉";
   wrap.appendChild(intro);
 
   const yol = document.createElement("div");
@@ -526,7 +749,6 @@ function haritaEkrani() {
 
   let sonBolgeId = null;
   DURAKLAR.forEach((durak, i) => {
-    // Yeni bölge başlığı
     if (durak.bolge.id !== sonBolgeId) {
       const bb = document.createElement("div");
       bb.className = "bolge-baslik";
@@ -545,15 +767,12 @@ function haritaEkrani() {
     node.classList.add(tamam ? "tamam" : acik ? "acik" : "kilitli");
     node.disabled = !acik;
     node.innerHTML = `
+      <span class="durak-tip">${tipEtiketi(durak.type)}</span>
       <span class="durak-emoji">${acik ? durak.emoji : "🔒"}</span>
       <span class="durak-isim">${durak.title}</span>
       <span class="durak-yildiz">${"⭐".repeat(yildiz)}${"☆".repeat(3 - yildiz)}</span>
     `;
-    node.addEventListener("click", () => {
-      if (!acik) return;
-      tonCal([440]);
-      derseGir(durak, i);
-    });
+    node.addEventListener("click", () => { if (acik) durakAc(durak, i); });
     yol.appendChild(node);
   });
 
@@ -573,19 +792,62 @@ function haritaEkrani() {
   return wrap;
 }
 
-// ---- DERS EKRANI (kartlar) ----
-function derseGir(durak, index) {
-  let kartNo = 0;
-  app.innerHTML = "";
-
-  const wrap = document.createElement("div");
-  wrap.className = "ders-wrap";
-
+// Ortak üst başlık (geri butonu + başlık)
+function ustBaslik(durak, geriFn) {
   const ust = document.createElement("div");
   ust.className = "ders-ust";
   ust.innerHTML = `<button class="geri">← Harita</button><h2>${durak.emoji} ${durak.title}</h2>`;
-  wrap.appendChild(ust);
-  ust.querySelector(".geri").addEventListener("click", render);
+  ust.querySelector(".geri").addEventListener("click", geriFn || render);
+  return ust;
+}
+
+// Bir durağı tamamlandı olarak işaretle + sonuç ekranı göster
+function tamamla(durak, index, yildiz, dogru, toplam, mesaj) {
+  if (yildiz >= 1) {
+    ILERLEME.tamamlanan[durak.id] = true;
+    ILERLEME.yildiz[durak.id] = Math.max(ILERLEME.yildiz[durak.id] || 0, yildiz);
+    ilerlemeKaydet(ILERLEME);
+    sesBasari();
+  } else {
+    sesYanlis();
+  }
+  sonucGoster(durak, index, yildiz, dogru, toplam, mesaj);
+}
+
+function sonucGoster(durak, index, yildiz, dogru, toplam, mesaj) {
+  const gecti = yildiz >= 1;
+  const sonrakiVar = index < DURAKLAR.length - 1;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "test-wrap";
+  wrap.innerHTML = `
+    <div class="sonuc ${gecti ? "basarili" : "tekrar"}">
+      <div class="sonuc-emoji">${gecti ? "🏆" : "💪"}</div>
+      <h2>${gecti ? "Tebrikler!" : "Az Kaldı!"}</h2>
+      <div class="sonuc-yildiz">${"⭐".repeat(yildiz)}${"☆".repeat(3 - yildiz)}</div>
+      <p>${mesaj || (toplam ? `${dogru} / ${toplam} doğru` : "")}</p>
+      <div class="sonuc-butonlar">
+        <button class="tekrar-btn">🔁 Tekrar Dene</button>
+        ${gecti && sonrakiVar ? `<button class="sonraki-btn">Sonraki Durak ▶</button>` : ""}
+        <button class="harita-btn">🗺️ Haritaya Dön</button>
+      </div>
+    </div>`;
+  app.appendChild(wrap);
+  if (gecti) konfetiPatlat();
+  wrap.querySelector(".tekrar-btn").addEventListener("click", () => durakAc(durak, index));
+  wrap.querySelector(".harita-btn").addEventListener("click", render);
+  const sb = wrap.querySelector(".sonraki-btn");
+  if (sb) sb.addEventListener("click", () => durakAc(DURAKLAR[index + 1], index + 1));
+  window.scrollTo(0, 0);
+}
+
+// ---- DERS EKRANI (kartlar + test) ----
+function derseGir(durak, index) {
+  let kartNo = 0;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
 
   const kartAlan = document.createElement("div");
   kartAlan.className = "kart-alan";
@@ -596,8 +858,7 @@ function derseGir(durak, index) {
   altBar.innerHTML = `
     <button class="onceki">◀ Geri</button>
     <span class="kart-sayac"></span>
-    <button class="sonraki">İleri ▶</button>
-  `;
+    <button class="sonraki">İleri ▶</button>`;
   wrap.appendChild(altBar);
 
   function kartCiz() {
@@ -608,34 +869,33 @@ function derseGir(durak, index) {
         <div class="harf-ad">${k.name}</div>
         <div class="harf-ipucu">${k.hint || ""}</div>
         <button class="dinle">🔊 Dinle</button>
-      </div>
-    `;
+      </div>`;
     kartAlan.querySelector(".dinle").addEventListener("click", () => seslendir(k.name));
     seslendir(k.name);
     altBar.querySelector(".kart-sayac").textContent = `${kartNo + 1} / ${durak.cards.length}`;
     altBar.querySelector(".onceki").disabled = kartNo === 0;
-    const son = kartNo === durak.cards.length - 1;
-    altBar.querySelector(".sonraki").textContent = son ? "Teste Geç ✏️" : "İleri ▶";
+    altBar.querySelector(".sonraki").textContent =
+      kartNo === durak.cards.length - 1
+        ? (durak.quiz ? "Teste Geç ✏️" : "Bitir 🏁")
+        : "İleri ▶";
   }
 
-  altBar.querySelector(".onceki").addEventListener("click", () => {
-    if (kartNo > 0) { kartNo--; kartCiz(); }
-  });
+  altBar.querySelector(".onceki").addEventListener("click", () => { if (kartNo > 0) { kartNo--; kartCiz(); } });
   altBar.querySelector(".sonraki").addEventListener("click", () => {
     if (kartNo < durak.cards.length - 1) { kartNo++; kartCiz(); }
-    else testeGir(durak, index);
+    else if (durak.quiz) testeGir(durak, index);
+    else tamamla(durak, index, 3, 0, 0, "Bütün kartları öğrendin! 🎉");
   });
 
   app.appendChild(wrap);
   kartCiz();
+  window.scrollTo(0, 0);
 }
 
 // ---- TEST EKRANI ----
 function testeGir(durak, index) {
   const sorular = shuffleArr(durak.quiz);
-  let soruNo = 0;
-  let dogru = 0;
-
+  let soruNo = 0, dogru = 0;
   app.innerHTML = "";
   const wrap = document.createElement("div");
   wrap.className = "test-wrap";
@@ -651,10 +911,8 @@ function testeGir(durak, index) {
       </div>
       <div class="soru">${s.glyph ? `<div class="soru-harf">${s.glyph}</div>` : ""}<p>${s.q.replace(s.glyph || "@@@", "")}</p></div>
       <div class="secenekler"></div>
-      <div class="geri-bildirim"></div>
-    `;
+      <div class="geri-bildirim"></div>`;
     wrap.querySelector(".geri").addEventListener("click", render);
-
     const sec = wrap.querySelector(".secenekler");
     shuffleArr(s.options).forEach((opt) => {
       const b = document.createElement("button");
@@ -666,18 +924,14 @@ function testeGir(durak, index) {
   }
 
   function cevapVer(btn, opt, s) {
-    const tumu = wrap.querySelectorAll(".secenek");
-    tumu.forEach((b) => (b.disabled = true));
+    wrap.querySelectorAll(".secenek").forEach((b) => (b.disabled = true));
     const gb = wrap.querySelector(".geri-bildirim");
     if (opt === s.a) {
-      btn.classList.add("dogru");
-      dogru++;
-      sesDogru();
+      btn.classList.add("dogru"); dogru++; sesDogru();
       gb.innerHTML = `<span class="iyi">Aferin! 🎉</span>`;
     } else {
-      btn.classList.add("yanlis");
-      sesYanlis();
-      tumu.forEach((b) => { if (b.textContent === s.a) b.classList.add("dogru"); });
+      btn.classList.add("yanlis"); sesYanlis();
+      wrap.querySelectorAll(".secenek").forEach((b) => { if (b.textContent === s.a) b.classList.add("dogru"); });
       gb.innerHTML = `<span class="kotu">Doğrusu: <b>${s.a}</b></span>`;
     }
     const ileri = document.createElement("button");
@@ -686,48 +940,295 @@ function testeGir(durak, index) {
     ileri.addEventListener("click", () => {
       soruNo++;
       if (soruNo < sorular.length) soruCiz();
-      else sonucEkrani();
+      else {
+        const oran = dogru / sorular.length;
+        const yildiz = oran >= 0.99 ? 3 : oran >= 0.7 ? 2 : oran >= 0.5 ? 1 : 0;
+        tamamla(durak, index, yildiz, dogru, sorular.length);
+      }
     });
     gb.appendChild(ileri);
   }
+  soruCiz();
+  window.scrollTo(0, 0);
+}
 
-  function sonucEkrani() {
-    const oran = dogru / sorular.length;
-    let yildiz = oran >= 0.99 ? 3 : oran >= 0.7 ? 2 : oran >= 0.5 ? 1 : 0;
-    const gecti = yildiz >= 1;
+// ---- EŞLEŞTİRME OYUNU (harf <-> isim) ----
+function oyunMatch(durak, index) {
+  const secilenler = shuffleArr(durak.pairs).slice(0, 5);
+  let seciliHarf = null, eslesen = 0;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const aciklama = document.createElement("p");
+  aciklama.className = "oyun-aciklama";
+  aciklama.textContent = "Harfi, doğru ismiyle eşleştir! Önce harfe, sonra ismine dokun.";
+  wrap.appendChild(aciklama);
 
-    if (gecti) {
-      // İlerlemeyi kaydet (en iyi yıldız korunur)
-      ILERLEME.tamamlanan[durak.id] = true;
-      ILERLEME.yildiz[durak.id] = Math.max(ILERLEME.yildiz[durak.id] || 0, yildiz);
-      ilerlemeKaydet(ILERLEME);
-      sesBasari();
+  const tahta = document.createElement("div");
+  tahta.className = "match-tahta";
+  const solSutun = document.createElement("div"); solSutun.className = "match-sutun";
+  const sagSutun = document.createElement("div"); sagSutun.className = "match-sutun";
+  tahta.appendChild(solSutun); tahta.appendChild(sagSutun);
+  wrap.appendChild(tahta);
+  app.appendChild(wrap);
+
+  shuffleArr(secilenler).forEach((p) => {
+    const b = document.createElement("button");
+    b.className = "match-hucre harf"; b.textContent = p.glyph; b.dataset.name = p.name;
+    b.addEventListener("click", () => harfSec(b, p));
+    solSutun.appendChild(b);
+  });
+  shuffleArr(secilenler).forEach((p) => {
+    const b = document.createElement("button");
+    b.className = "match-hucre isim"; b.textContent = p.name; b.dataset.name = p.name;
+    b.addEventListener("click", () => isimSec(b, p));
+    sagSutun.appendChild(b);
+  });
+
+  function harfSec(btn, p) {
+    if (btn.classList.contains("eslesti")) return;
+    solSutun.querySelectorAll(".match-hucre").forEach((x) => x.classList.remove("secili"));
+    btn.classList.add("secili");
+    seciliHarf = { btn, p };
+    seslendir(p.name);
+  }
+  function isimSec(btn, p) {
+    if (!seciliHarf || btn.classList.contains("eslesti")) return;
+    if (seciliHarf.p.name === p.name) {
+      seciliHarf.btn.classList.add("eslesti"); btn.classList.add("eslesti");
+      seciliHarf.btn.classList.remove("secili");
+      sesDogru(); eslesen++;
+      seciliHarf = null;
+      if (eslesen === secilenler.length)
+        setTimeout(() => tamamla(durak, index, 3, eslesen, secilenler.length, "Hepsini eşleştirdin! 🧩"), 500);
     } else {
       sesYanlis();
+      btn.classList.add("yanlis-titre");
+      setTimeout(() => btn.classList.remove("yanlis-titre"), 400);
     }
-
-    const sonrakiVar = index < DURAKLAR.length - 1;
-    wrap.innerHTML = `
-      <div class="sonuc ${gecti ? "basarili" : "tekrar"}">
-        <div class="sonuc-emoji">${gecti ? "🏆" : "💪"}</div>
-        <h2>${gecti ? "Tebrikler!" : "Az Kaldı!"}</h2>
-        <div class="sonuc-yildiz">${"⭐".repeat(yildiz)}${"☆".repeat(3 - yildiz)}</div>
-        <p>${dogru} / ${sorular.length} doğru</p>
-        <div class="sonuc-butonlar">
-          <button class="tekrar-btn">🔁 Tekrar Dene</button>
-          ${gecti && sonrakiVar ? `<button class="sonraki-btn">Sonraki Durak ▶</button>` : ""}
-          <button class="harita-btn">🗺️ Haritaya Dön</button>
-        </div>
-      </div>
-    `;
-    if (gecti) konfetiPatlat();
-    wrap.querySelector(".tekrar-btn").addEventListener("click", () => testeGir(durak, index));
-    wrap.querySelector(".harita-btn").addEventListener("click", render);
-    const sb = wrap.querySelector(".sonraki-btn");
-    if (sb) sb.addEventListener("click", () => derseGir(DURAKLAR[index + 1], index + 1));
   }
+  window.scrollTo(0, 0);
+}
 
-  soruCiz();
+// ---- DİNLE VE BUL OYUNU ----
+function oyunListen(durak, index) {
+  const tur = shuffleArr(durak.items).slice(0, 6);
+  let turNo = 0, dogru = 0;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  app.appendChild(wrap);
+  const alan = document.createElement("div");
+  wrap.appendChild(alan);
+
+  function turCiz() {
+    const hedef = tur[turNo];
+    const yanlislar = shuffleArr(durak.items.filter((x) => x.name !== hedef.name)).slice(0, 3);
+    const secenekler = shuffleArr([hedef, ...yanlislar]);
+    alan.innerHTML = `
+      <p class="oyun-aciklama">Sesi dinle ve doğru harfi bul!</p>
+      <button class="buyuk-dinle">🔊 Tekrar Dinle</button>
+      <div class="listen-grid"></div>
+      <div class="geri-bildirim"></div>`;
+    alan.querySelector(".buyuk-dinle").addEventListener("click", () => seslendir(hedef.name));
+    seslendir(hedef.name);
+    const grid = alan.querySelector(".listen-grid");
+    secenekler.forEach((opt) => {
+      const b = document.createElement("button");
+      b.className = "listen-hucre"; b.textContent = opt.glyph;
+      b.addEventListener("click", () => sec(b, opt, hedef));
+      grid.appendChild(b);
+    });
+  }
+  function sec(btn, opt, hedef) {
+    alan.querySelectorAll(".listen-hucre").forEach((b) => (b.disabled = true));
+    const gb = alan.querySelector(".geri-bildirim");
+    if (opt.name === hedef.name) {
+      btn.classList.add("dogru"); dogru++; sesDogru();
+      gb.innerHTML = `<span class="iyi">Doğru: ${hedef.glyph} = ${hedef.name} 🎉</span>`;
+    } else {
+      btn.classList.add("yanlis"); sesYanlis();
+      alan.querySelectorAll(".listen-hucre").forEach((b) => { if (b.textContent === hedef.glyph) b.classList.add("dogru"); });
+      gb.innerHTML = `<span class="kotu">Doğrusu: ${hedef.glyph} = <b>${hedef.name}</b></span>`;
+    }
+    const ileri = document.createElement("button");
+    ileri.className = "devam";
+    ileri.textContent = turNo === tur.length - 1 ? "Bitir 🏁" : "Devam ▶";
+    ileri.addEventListener("click", () => {
+      turNo++;
+      if (turNo < tur.length) turCiz();
+      else {
+        const oran = dogru / tur.length;
+        tamamla(durak, index, oran >= 0.99 ? 3 : oran >= 0.7 ? 2 : oran >= 0.5 ? 1 : 0, dogru, tur.length);
+      }
+    });
+    gb.appendChild(ileri);
+  }
+  turCiz();
+  window.scrollTo(0, 0);
+}
+
+// ---- HAFIZA OYUNU (eş kartları bul) ----
+function oyunMemory(durak, index) {
+  const secilen = shuffleArr(durak.pairs).slice(0, 6);
+  // her çift için iki kart: biri harf, biri isim, aynı 'key'
+  const kartlar = shuffleArr(
+    secilen.flatMap((p) => [
+      { key: p.name, yuz: p.glyph, tip: "harf" },
+      { key: p.name, yuz: p.name, tip: "isim" },
+    ])
+  );
+  let acik = [], eslesen = 0, kilit = false;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const aciklama = document.createElement("p");
+  aciklama.className = "oyun-aciklama";
+  aciklama.textContent = "Kartları çevir, harfi ismiyle eşleştir! 🃏";
+  wrap.appendChild(aciklama);
+  const grid = document.createElement("div");
+  grid.className = "memory-grid";
+  wrap.appendChild(grid);
+  app.appendChild(wrap);
+
+  kartlar.forEach((k) => {
+    const c = document.createElement("button");
+    c.className = "memory-kart";
+    c.innerHTML = `<span class="memory-on">?</span><span class="memory-arka">${k.yuz}</span>`;
+    c.addEventListener("click", () => cevir(c, k));
+    grid.appendChild(c);
+  });
+
+  function cevir(el, k) {
+    if (kilit || el.classList.contains("acik") || el.classList.contains("eslesti")) return;
+    el.classList.add("acik");
+    if (k.tip === "isim") seslendir(k.yuz);
+    acik.push({ el, k });
+    if (acik.length === 2) {
+      kilit = true;
+      if (acik[0].k.key === acik[1].k.key) {
+        sesDogru();
+        acik.forEach((a) => a.el.classList.add("eslesti"));
+        eslesen++;
+        acik = []; kilit = false;
+        if (eslesen === secilen.length)
+          setTimeout(() => tamamla(durak, index, 3, eslesen, secilen.length, "Tüm çiftleri buldun! 🧠"), 500);
+      } else {
+        sesYanlis();
+        setTimeout(() => {
+          acik.forEach((a) => a.el.classList.remove("acik"));
+          acik = []; kilit = false;
+        }, 800);
+      }
+    }
+  }
+  window.scrollTo(0, 0);
+}
+
+// ---- HARF İZİ (parmakla/fareyle çizme) ----
+function oyunTrace(durak, index) {
+  let kartNo = 0;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const aciklama = document.createElement("p");
+  aciklama.className = "oyun-aciklama";
+  aciklama.textContent = "Harfin üzerinden parmağınla (veya fareyle) geçerek çiz! ✏️";
+  wrap.appendChild(aciklama);
+  const alan = document.createElement("div");
+  wrap.appendChild(alan);
+  app.appendChild(wrap);
+
+  function ciz() {
+    const k = durak.cards[kartNo];
+    alan.innerHTML = `
+      <div class="trace-kutu">
+        <div class="trace-harf">${k.glyph}</div>
+        <canvas class="trace-canvas" width="300" height="300"></canvas>
+      </div>
+      <div class="trace-ad">${k.name} <button class="dinle-mini">🔊</button></div>
+      <div class="kart-nav">
+        <button class="temizle">🧽 Temizle</button>
+        <span class="kart-sayac">${kartNo + 1} / ${durak.cards.length}</span>
+        <button class="sonraki">${kartNo === durak.cards.length - 1 ? "Bitir 🏁" : "Sonraki ▶"}</button>
+      </div>`;
+    alan.querySelector(".dinle-mini").addEventListener("click", () => seslendir(k.name));
+    seslendir(k.name);
+
+    const canvas = alan.querySelector(".trace-canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.lineWidth = 14; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#38bdf8";
+    let ciziyor = false;
+    const nokta = (e) => {
+      const r = canvas.getBoundingClientRect();
+      const t = e.touches ? e.touches[0] : e;
+      return { x: (t.clientX - r.left) * (canvas.width / r.width), y: (t.clientY - r.top) * (canvas.height / r.height) };
+    };
+    const basla = (e) => { e.preventDefault(); ciziyor = true; const p = nokta(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+    const devam = (e) => { if (!ciziyor) return; e.preventDefault(); const p = nokta(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+    const bitir = () => { ciziyor = false; };
+    canvas.addEventListener("mousedown", basla); canvas.addEventListener("mousemove", devam);
+    window.addEventListener("mouseup", bitir);
+    canvas.addEventListener("touchstart", basla, { passive: false });
+    canvas.addEventListener("touchmove", devam, { passive: false });
+    canvas.addEventListener("touchend", bitir);
+
+    alan.querySelector(".temizle").addEventListener("click", () => ctx.clearRect(0, 0, canvas.width, canvas.height));
+    alan.querySelector(".sonraki").addEventListener("click", () => {
+      tonCal([523]);
+      if (kartNo < durak.cards.length - 1) { kartNo++; ciz(); }
+      else tamamla(durak, index, 3, 0, 0, "Tüm harfleri çizdin! ✏️🎉");
+    });
+  }
+  ciz();
+  window.scrollTo(0, 0);
+}
+
+// ---- SURE OKUMA EKRANI (kelime kelime) ----
+function sureEkrani(durak, index) {
+  const s = durak.sure;
+  let ayetNo = 0;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const bilgi = document.createElement("p");
+  bilgi.className = "oyun-aciklama";
+  bilgi.textContent = s.bilgi;
+  wrap.appendChild(bilgi);
+  const alan = document.createElement("div");
+  wrap.appendChild(alan);
+  app.appendChild(wrap);
+
+  function ciz() {
+    const a = s.ayetler[ayetNo];
+    alan.innerHTML = `
+      <div class="sure-kart">
+        <div class="sure-no">${ayetNo + 1}. âyet</div>
+        <div class="sure-arapca">${a.glyph}</div>
+        <div class="sure-okunus">${a.okunus}</div>
+        <div class="sure-meal">“${a.meal}”</div>
+        <button class="dinle">🔊 Oku</button>
+      </div>
+      <div class="kart-nav">
+        <button class="onceki" ${ayetNo === 0 ? "disabled" : ""}>◀ Geri</button>
+        <span class="kart-sayac">${ayetNo + 1} / ${s.ayetler.length}</span>
+        <button class="sonraki">${ayetNo === s.ayetler.length - 1 ? "Bitir 🏁" : "İleri ▶"}</button>
+      </div>`;
+    alan.querySelector(".dinle").addEventListener("click", () => seslendir(a.okunus));
+    seslendir(a.okunus);
+    alan.querySelector(".onceki").addEventListener("click", () => { if (ayetNo > 0) { ayetNo--; ciz(); } });
+    alan.querySelector(".sonraki").addEventListener("click", () => {
+      if (ayetNo < s.ayetler.length - 1) { ayetNo++; ciz(); }
+      else tamamla(durak, index, 3, 0, 0, `${s.ad}'ni okudun! 📖🎉`);
+    });
+  }
+  ciz();
+  window.scrollTo(0, 0);
 }
 
 // ---- Konfeti efekti ----

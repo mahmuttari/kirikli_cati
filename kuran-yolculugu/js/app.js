@@ -1,6 +1,6 @@
 /*
  * Kur'an Yolculuğu - Uygulama Mantığı
- * Harita, ders kartları, mini test ve ilerleme yönetimi.
+ * Harita + farklı öğrenme biçimleri (ders, eşleştirme, dinle-bul, hafıza, harf izi, sure).
  */
 
 const STORAGE_KEY = "kuranYolculugu_v1";
@@ -18,14 +18,13 @@ function ilerlemeKaydet(p) {
 }
 let ILERLEME = ilerlemeYukle();
 
+const DURAKLAR = tumDuraklar();
+
 // Bir durağın kilidi açık mı? (ilk durak hep açık, sonrakiler önceki tamamlanınca açılır)
 function durakAcikMi(index) {
   if (index === 0) return true;
-  const oncekiId = DURAKLAR[index - 1].id;
-  return !!ILERLEME.tamamlanan[oncekiId];
+  return !!ILERLEME.tamamlanan[DURAKLAR[index - 1].id];
 }
-
-const DURAKLAR = tumDuraklar();
 
 // ---- Ses (Türkçe okunuş için tarayıcı konuşma sentezi) ----
 function seslendir(metin) {
@@ -69,11 +68,32 @@ function render() {
   ILERLEME = ilerlemeYukle();
   app.innerHTML = "";
   app.appendChild(haritaEkrani());
+  window.scrollTo(0, 0);
 }
 
-// Toplam yıldız sayısı
 function toplamYildiz() {
   return Object.values(ILERLEME.yildiz).reduce((a, b) => a + b, 0);
+}
+
+// Durak tipine göre doğru ekranı açan dağıtıcı
+function durakAc(durak, index) {
+  tonCal([440]);
+  switch (durak.type) {
+    case "match":  return oyunMatch(durak, index);
+    case "listen": return oyunListen(durak, index);
+    case "memory": return oyunMemory(durak, index);
+    case "trace":  return oyunTrace(durak, index);
+    case "sure":   return sureEkrani(durak, index);
+    default:       return derseGir(durak, index);
+  }
+}
+
+// Durak tipine göre küçük etiket
+function tipEtiketi(type) {
+  return {
+    lesson: "📚 Ders", match: "🧩 Eşleştir", listen: "👂 Dinle-Bul",
+    memory: "🃏 Hafıza", trace: "🖊️ Çizme", sure: "📖 Sure",
+  }[type] || "📚 Ders";
 }
 
 // ---- HARİTA EKRANI ----
@@ -81,7 +101,6 @@ function haritaEkrani() {
   const wrap = document.createElement("div");
   wrap.className = "harita-wrap";
 
-  // Üst bilgi çubuğu
   const bar = document.createElement("div");
   bar.className = "topbar";
   bar.innerHTML = `
@@ -92,7 +111,7 @@ function haritaEkrani() {
 
   const intro = document.createElement("p");
   intro.className = "intro";
-  intro.textContent = "Haritada ilerle, harfleri öğren, yıldızları topla! 🎉";
+  intro.textContent = "Haritada ilerle, harfleri öğren, oyunlar oyna, yıldızları topla! 🎉";
   wrap.appendChild(intro);
 
   const yol = document.createElement("div");
@@ -100,7 +119,6 @@ function haritaEkrani() {
 
   let sonBolgeId = null;
   DURAKLAR.forEach((durak, i) => {
-    // Yeni bölge başlığı
     if (durak.bolge.id !== sonBolgeId) {
       const bb = document.createElement("div");
       bb.className = "bolge-baslik";
@@ -119,15 +137,12 @@ function haritaEkrani() {
     node.classList.add(tamam ? "tamam" : acik ? "acik" : "kilitli");
     node.disabled = !acik;
     node.innerHTML = `
+      <span class="durak-tip">${tipEtiketi(durak.type)}</span>
       <span class="durak-emoji">${acik ? durak.emoji : "🔒"}</span>
       <span class="durak-isim">${durak.title}</span>
       <span class="durak-yildiz">${"⭐".repeat(yildiz)}${"☆".repeat(3 - yildiz)}</span>
     `;
-    node.addEventListener("click", () => {
-      if (!acik) return;
-      tonCal([440]);
-      derseGir(durak, i);
-    });
+    node.addEventListener("click", () => { if (acik) durakAc(durak, i); });
     yol.appendChild(node);
   });
 
@@ -147,19 +162,62 @@ function haritaEkrani() {
   return wrap;
 }
 
-// ---- DERS EKRANI (kartlar) ----
-function derseGir(durak, index) {
-  let kartNo = 0;
-  app.innerHTML = "";
-
-  const wrap = document.createElement("div");
-  wrap.className = "ders-wrap";
-
+// Ortak üst başlık (geri butonu + başlık)
+function ustBaslik(durak, geriFn) {
   const ust = document.createElement("div");
   ust.className = "ders-ust";
   ust.innerHTML = `<button class="geri">← Harita</button><h2>${durak.emoji} ${durak.title}</h2>`;
-  wrap.appendChild(ust);
-  ust.querySelector(".geri").addEventListener("click", render);
+  ust.querySelector(".geri").addEventListener("click", geriFn || render);
+  return ust;
+}
+
+// Bir durağı tamamlandı olarak işaretle + sonuç ekranı göster
+function tamamla(durak, index, yildiz, dogru, toplam, mesaj) {
+  if (yildiz >= 1) {
+    ILERLEME.tamamlanan[durak.id] = true;
+    ILERLEME.yildiz[durak.id] = Math.max(ILERLEME.yildiz[durak.id] || 0, yildiz);
+    ilerlemeKaydet(ILERLEME);
+    sesBasari();
+  } else {
+    sesYanlis();
+  }
+  sonucGoster(durak, index, yildiz, dogru, toplam, mesaj);
+}
+
+function sonucGoster(durak, index, yildiz, dogru, toplam, mesaj) {
+  const gecti = yildiz >= 1;
+  const sonrakiVar = index < DURAKLAR.length - 1;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "test-wrap";
+  wrap.innerHTML = `
+    <div class="sonuc ${gecti ? "basarili" : "tekrar"}">
+      <div class="sonuc-emoji">${gecti ? "🏆" : "💪"}</div>
+      <h2>${gecti ? "Tebrikler!" : "Az Kaldı!"}</h2>
+      <div class="sonuc-yildiz">${"⭐".repeat(yildiz)}${"☆".repeat(3 - yildiz)}</div>
+      <p>${mesaj || (toplam ? `${dogru} / ${toplam} doğru` : "")}</p>
+      <div class="sonuc-butonlar">
+        <button class="tekrar-btn">🔁 Tekrar Dene</button>
+        ${gecti && sonrakiVar ? `<button class="sonraki-btn">Sonraki Durak ▶</button>` : ""}
+        <button class="harita-btn">🗺️ Haritaya Dön</button>
+      </div>
+    </div>`;
+  app.appendChild(wrap);
+  if (gecti) konfetiPatlat();
+  wrap.querySelector(".tekrar-btn").addEventListener("click", () => durakAc(durak, index));
+  wrap.querySelector(".harita-btn").addEventListener("click", render);
+  const sb = wrap.querySelector(".sonraki-btn");
+  if (sb) sb.addEventListener("click", () => durakAc(DURAKLAR[index + 1], index + 1));
+  window.scrollTo(0, 0);
+}
+
+// ---- DERS EKRANI (kartlar + test) ----
+function derseGir(durak, index) {
+  let kartNo = 0;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
 
   const kartAlan = document.createElement("div");
   kartAlan.className = "kart-alan";
@@ -170,8 +228,7 @@ function derseGir(durak, index) {
   altBar.innerHTML = `
     <button class="onceki">◀ Geri</button>
     <span class="kart-sayac"></span>
-    <button class="sonraki">İleri ▶</button>
-  `;
+    <button class="sonraki">İleri ▶</button>`;
   wrap.appendChild(altBar);
 
   function kartCiz() {
@@ -182,34 +239,33 @@ function derseGir(durak, index) {
         <div class="harf-ad">${k.name}</div>
         <div class="harf-ipucu">${k.hint || ""}</div>
         <button class="dinle">🔊 Dinle</button>
-      </div>
-    `;
+      </div>`;
     kartAlan.querySelector(".dinle").addEventListener("click", () => seslendir(k.name));
     seslendir(k.name);
     altBar.querySelector(".kart-sayac").textContent = `${kartNo + 1} / ${durak.cards.length}`;
     altBar.querySelector(".onceki").disabled = kartNo === 0;
-    const son = kartNo === durak.cards.length - 1;
-    altBar.querySelector(".sonraki").textContent = son ? "Teste Geç ✏️" : "İleri ▶";
+    altBar.querySelector(".sonraki").textContent =
+      kartNo === durak.cards.length - 1
+        ? (durak.quiz ? "Teste Geç ✏️" : "Bitir 🏁")
+        : "İleri ▶";
   }
 
-  altBar.querySelector(".onceki").addEventListener("click", () => {
-    if (kartNo > 0) { kartNo--; kartCiz(); }
-  });
+  altBar.querySelector(".onceki").addEventListener("click", () => { if (kartNo > 0) { kartNo--; kartCiz(); } });
   altBar.querySelector(".sonraki").addEventListener("click", () => {
     if (kartNo < durak.cards.length - 1) { kartNo++; kartCiz(); }
-    else testeGir(durak, index);
+    else if (durak.quiz) testeGir(durak, index);
+    else tamamla(durak, index, 3, 0, 0, "Bütün kartları öğrendin! 🎉");
   });
 
   app.appendChild(wrap);
   kartCiz();
+  window.scrollTo(0, 0);
 }
 
 // ---- TEST EKRANI ----
 function testeGir(durak, index) {
   const sorular = shuffleArr(durak.quiz);
-  let soruNo = 0;
-  let dogru = 0;
-
+  let soruNo = 0, dogru = 0;
   app.innerHTML = "";
   const wrap = document.createElement("div");
   wrap.className = "test-wrap";
@@ -225,10 +281,8 @@ function testeGir(durak, index) {
       </div>
       <div class="soru">${s.glyph ? `<div class="soru-harf">${s.glyph}</div>` : ""}<p>${s.q.replace(s.glyph || "@@@", "")}</p></div>
       <div class="secenekler"></div>
-      <div class="geri-bildirim"></div>
-    `;
+      <div class="geri-bildirim"></div>`;
     wrap.querySelector(".geri").addEventListener("click", render);
-
     const sec = wrap.querySelector(".secenekler");
     shuffleArr(s.options).forEach((opt) => {
       const b = document.createElement("button");
@@ -240,18 +294,14 @@ function testeGir(durak, index) {
   }
 
   function cevapVer(btn, opt, s) {
-    const tumu = wrap.querySelectorAll(".secenek");
-    tumu.forEach((b) => (b.disabled = true));
+    wrap.querySelectorAll(".secenek").forEach((b) => (b.disabled = true));
     const gb = wrap.querySelector(".geri-bildirim");
     if (opt === s.a) {
-      btn.classList.add("dogru");
-      dogru++;
-      sesDogru();
+      btn.classList.add("dogru"); dogru++; sesDogru();
       gb.innerHTML = `<span class="iyi">Aferin! 🎉</span>`;
     } else {
-      btn.classList.add("yanlis");
-      sesYanlis();
-      tumu.forEach((b) => { if (b.textContent === s.a) b.classList.add("dogru"); });
+      btn.classList.add("yanlis"); sesYanlis();
+      wrap.querySelectorAll(".secenek").forEach((b) => { if (b.textContent === s.a) b.classList.add("dogru"); });
       gb.innerHTML = `<span class="kotu">Doğrusu: <b>${s.a}</b></span>`;
     }
     const ileri = document.createElement("button");
@@ -260,48 +310,295 @@ function testeGir(durak, index) {
     ileri.addEventListener("click", () => {
       soruNo++;
       if (soruNo < sorular.length) soruCiz();
-      else sonucEkrani();
+      else {
+        const oran = dogru / sorular.length;
+        const yildiz = oran >= 0.99 ? 3 : oran >= 0.7 ? 2 : oran >= 0.5 ? 1 : 0;
+        tamamla(durak, index, yildiz, dogru, sorular.length);
+      }
     });
     gb.appendChild(ileri);
   }
+  soruCiz();
+  window.scrollTo(0, 0);
+}
 
-  function sonucEkrani() {
-    const oran = dogru / sorular.length;
-    let yildiz = oran >= 0.99 ? 3 : oran >= 0.7 ? 2 : oran >= 0.5 ? 1 : 0;
-    const gecti = yildiz >= 1;
+// ---- EŞLEŞTİRME OYUNU (harf <-> isim) ----
+function oyunMatch(durak, index) {
+  const secilenler = shuffleArr(durak.pairs).slice(0, 5);
+  let seciliHarf = null, eslesen = 0;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const aciklama = document.createElement("p");
+  aciklama.className = "oyun-aciklama";
+  aciklama.textContent = "Harfi, doğru ismiyle eşleştir! Önce harfe, sonra ismine dokun.";
+  wrap.appendChild(aciklama);
 
-    if (gecti) {
-      // İlerlemeyi kaydet (en iyi yıldız korunur)
-      ILERLEME.tamamlanan[durak.id] = true;
-      ILERLEME.yildiz[durak.id] = Math.max(ILERLEME.yildiz[durak.id] || 0, yildiz);
-      ilerlemeKaydet(ILERLEME);
-      sesBasari();
+  const tahta = document.createElement("div");
+  tahta.className = "match-tahta";
+  const solSutun = document.createElement("div"); solSutun.className = "match-sutun";
+  const sagSutun = document.createElement("div"); sagSutun.className = "match-sutun";
+  tahta.appendChild(solSutun); tahta.appendChild(sagSutun);
+  wrap.appendChild(tahta);
+  app.appendChild(wrap);
+
+  shuffleArr(secilenler).forEach((p) => {
+    const b = document.createElement("button");
+    b.className = "match-hucre harf"; b.textContent = p.glyph; b.dataset.name = p.name;
+    b.addEventListener("click", () => harfSec(b, p));
+    solSutun.appendChild(b);
+  });
+  shuffleArr(secilenler).forEach((p) => {
+    const b = document.createElement("button");
+    b.className = "match-hucre isim"; b.textContent = p.name; b.dataset.name = p.name;
+    b.addEventListener("click", () => isimSec(b, p));
+    sagSutun.appendChild(b);
+  });
+
+  function harfSec(btn, p) {
+    if (btn.classList.contains("eslesti")) return;
+    solSutun.querySelectorAll(".match-hucre").forEach((x) => x.classList.remove("secili"));
+    btn.classList.add("secili");
+    seciliHarf = { btn, p };
+    seslendir(p.name);
+  }
+  function isimSec(btn, p) {
+    if (!seciliHarf || btn.classList.contains("eslesti")) return;
+    if (seciliHarf.p.name === p.name) {
+      seciliHarf.btn.classList.add("eslesti"); btn.classList.add("eslesti");
+      seciliHarf.btn.classList.remove("secili");
+      sesDogru(); eslesen++;
+      seciliHarf = null;
+      if (eslesen === secilenler.length)
+        setTimeout(() => tamamla(durak, index, 3, eslesen, secilenler.length, "Hepsini eşleştirdin! 🧩"), 500);
     } else {
       sesYanlis();
+      btn.classList.add("yanlis-titre");
+      setTimeout(() => btn.classList.remove("yanlis-titre"), 400);
     }
-
-    const sonrakiVar = index < DURAKLAR.length - 1;
-    wrap.innerHTML = `
-      <div class="sonuc ${gecti ? "basarili" : "tekrar"}">
-        <div class="sonuc-emoji">${gecti ? "🏆" : "💪"}</div>
-        <h2>${gecti ? "Tebrikler!" : "Az Kaldı!"}</h2>
-        <div class="sonuc-yildiz">${"⭐".repeat(yildiz)}${"☆".repeat(3 - yildiz)}</div>
-        <p>${dogru} / ${sorular.length} doğru</p>
-        <div class="sonuc-butonlar">
-          <button class="tekrar-btn">🔁 Tekrar Dene</button>
-          ${gecti && sonrakiVar ? `<button class="sonraki-btn">Sonraki Durak ▶</button>` : ""}
-          <button class="harita-btn">🗺️ Haritaya Dön</button>
-        </div>
-      </div>
-    `;
-    if (gecti) konfetiPatlat();
-    wrap.querySelector(".tekrar-btn").addEventListener("click", () => testeGir(durak, index));
-    wrap.querySelector(".harita-btn").addEventListener("click", render);
-    const sb = wrap.querySelector(".sonraki-btn");
-    if (sb) sb.addEventListener("click", () => derseGir(DURAKLAR[index + 1], index + 1));
   }
+  window.scrollTo(0, 0);
+}
 
-  soruCiz();
+// ---- DİNLE VE BUL OYUNU ----
+function oyunListen(durak, index) {
+  const tur = shuffleArr(durak.items).slice(0, 6);
+  let turNo = 0, dogru = 0;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  app.appendChild(wrap);
+  const alan = document.createElement("div");
+  wrap.appendChild(alan);
+
+  function turCiz() {
+    const hedef = tur[turNo];
+    const yanlislar = shuffleArr(durak.items.filter((x) => x.name !== hedef.name)).slice(0, 3);
+    const secenekler = shuffleArr([hedef, ...yanlislar]);
+    alan.innerHTML = `
+      <p class="oyun-aciklama">Sesi dinle ve doğru harfi bul!</p>
+      <button class="buyuk-dinle">🔊 Tekrar Dinle</button>
+      <div class="listen-grid"></div>
+      <div class="geri-bildirim"></div>`;
+    alan.querySelector(".buyuk-dinle").addEventListener("click", () => seslendir(hedef.name));
+    seslendir(hedef.name);
+    const grid = alan.querySelector(".listen-grid");
+    secenekler.forEach((opt) => {
+      const b = document.createElement("button");
+      b.className = "listen-hucre"; b.textContent = opt.glyph;
+      b.addEventListener("click", () => sec(b, opt, hedef));
+      grid.appendChild(b);
+    });
+  }
+  function sec(btn, opt, hedef) {
+    alan.querySelectorAll(".listen-hucre").forEach((b) => (b.disabled = true));
+    const gb = alan.querySelector(".geri-bildirim");
+    if (opt.name === hedef.name) {
+      btn.classList.add("dogru"); dogru++; sesDogru();
+      gb.innerHTML = `<span class="iyi">Doğru: ${hedef.glyph} = ${hedef.name} 🎉</span>`;
+    } else {
+      btn.classList.add("yanlis"); sesYanlis();
+      alan.querySelectorAll(".listen-hucre").forEach((b) => { if (b.textContent === hedef.glyph) b.classList.add("dogru"); });
+      gb.innerHTML = `<span class="kotu">Doğrusu: ${hedef.glyph} = <b>${hedef.name}</b></span>`;
+    }
+    const ileri = document.createElement("button");
+    ileri.className = "devam";
+    ileri.textContent = turNo === tur.length - 1 ? "Bitir 🏁" : "Devam ▶";
+    ileri.addEventListener("click", () => {
+      turNo++;
+      if (turNo < tur.length) turCiz();
+      else {
+        const oran = dogru / tur.length;
+        tamamla(durak, index, oran >= 0.99 ? 3 : oran >= 0.7 ? 2 : oran >= 0.5 ? 1 : 0, dogru, tur.length);
+      }
+    });
+    gb.appendChild(ileri);
+  }
+  turCiz();
+  window.scrollTo(0, 0);
+}
+
+// ---- HAFIZA OYUNU (eş kartları bul) ----
+function oyunMemory(durak, index) {
+  const secilen = shuffleArr(durak.pairs).slice(0, 6);
+  // her çift için iki kart: biri harf, biri isim, aynı 'key'
+  const kartlar = shuffleArr(
+    secilen.flatMap((p) => [
+      { key: p.name, yuz: p.glyph, tip: "harf" },
+      { key: p.name, yuz: p.name, tip: "isim" },
+    ])
+  );
+  let acik = [], eslesen = 0, kilit = false;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const aciklama = document.createElement("p");
+  aciklama.className = "oyun-aciklama";
+  aciklama.textContent = "Kartları çevir, harfi ismiyle eşleştir! 🃏";
+  wrap.appendChild(aciklama);
+  const grid = document.createElement("div");
+  grid.className = "memory-grid";
+  wrap.appendChild(grid);
+  app.appendChild(wrap);
+
+  kartlar.forEach((k) => {
+    const c = document.createElement("button");
+    c.className = "memory-kart";
+    c.innerHTML = `<span class="memory-on">?</span><span class="memory-arka">${k.yuz}</span>`;
+    c.addEventListener("click", () => cevir(c, k));
+    grid.appendChild(c);
+  });
+
+  function cevir(el, k) {
+    if (kilit || el.classList.contains("acik") || el.classList.contains("eslesti")) return;
+    el.classList.add("acik");
+    if (k.tip === "isim") seslendir(k.yuz);
+    acik.push({ el, k });
+    if (acik.length === 2) {
+      kilit = true;
+      if (acik[0].k.key === acik[1].k.key) {
+        sesDogru();
+        acik.forEach((a) => a.el.classList.add("eslesti"));
+        eslesen++;
+        acik = []; kilit = false;
+        if (eslesen === secilen.length)
+          setTimeout(() => tamamla(durak, index, 3, eslesen, secilen.length, "Tüm çiftleri buldun! 🧠"), 500);
+      } else {
+        sesYanlis();
+        setTimeout(() => {
+          acik.forEach((a) => a.el.classList.remove("acik"));
+          acik = []; kilit = false;
+        }, 800);
+      }
+    }
+  }
+  window.scrollTo(0, 0);
+}
+
+// ---- HARF İZİ (parmakla/fareyle çizme) ----
+function oyunTrace(durak, index) {
+  let kartNo = 0;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const aciklama = document.createElement("p");
+  aciklama.className = "oyun-aciklama";
+  aciklama.textContent = "Harfin üzerinden parmağınla (veya fareyle) geçerek çiz! ✏️";
+  wrap.appendChild(aciklama);
+  const alan = document.createElement("div");
+  wrap.appendChild(alan);
+  app.appendChild(wrap);
+
+  function ciz() {
+    const k = durak.cards[kartNo];
+    alan.innerHTML = `
+      <div class="trace-kutu">
+        <div class="trace-harf">${k.glyph}</div>
+        <canvas class="trace-canvas" width="300" height="300"></canvas>
+      </div>
+      <div class="trace-ad">${k.name} <button class="dinle-mini">🔊</button></div>
+      <div class="kart-nav">
+        <button class="temizle">🧽 Temizle</button>
+        <span class="kart-sayac">${kartNo + 1} / ${durak.cards.length}</span>
+        <button class="sonraki">${kartNo === durak.cards.length - 1 ? "Bitir 🏁" : "Sonraki ▶"}</button>
+      </div>`;
+    alan.querySelector(".dinle-mini").addEventListener("click", () => seslendir(k.name));
+    seslendir(k.name);
+
+    const canvas = alan.querySelector(".trace-canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.lineWidth = 14; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#38bdf8";
+    let ciziyor = false;
+    const nokta = (e) => {
+      const r = canvas.getBoundingClientRect();
+      const t = e.touches ? e.touches[0] : e;
+      return { x: (t.clientX - r.left) * (canvas.width / r.width), y: (t.clientY - r.top) * (canvas.height / r.height) };
+    };
+    const basla = (e) => { e.preventDefault(); ciziyor = true; const p = nokta(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+    const devam = (e) => { if (!ciziyor) return; e.preventDefault(); const p = nokta(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+    const bitir = () => { ciziyor = false; };
+    canvas.addEventListener("mousedown", basla); canvas.addEventListener("mousemove", devam);
+    window.addEventListener("mouseup", bitir);
+    canvas.addEventListener("touchstart", basla, { passive: false });
+    canvas.addEventListener("touchmove", devam, { passive: false });
+    canvas.addEventListener("touchend", bitir);
+
+    alan.querySelector(".temizle").addEventListener("click", () => ctx.clearRect(0, 0, canvas.width, canvas.height));
+    alan.querySelector(".sonraki").addEventListener("click", () => {
+      tonCal([523]);
+      if (kartNo < durak.cards.length - 1) { kartNo++; ciz(); }
+      else tamamla(durak, index, 3, 0, 0, "Tüm harfleri çizdin! ✏️🎉");
+    });
+  }
+  ciz();
+  window.scrollTo(0, 0);
+}
+
+// ---- SURE OKUMA EKRANI (kelime kelime) ----
+function sureEkrani(durak, index) {
+  const s = durak.sure;
+  let ayetNo = 0;
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const bilgi = document.createElement("p");
+  bilgi.className = "oyun-aciklama";
+  bilgi.textContent = s.bilgi;
+  wrap.appendChild(bilgi);
+  const alan = document.createElement("div");
+  wrap.appendChild(alan);
+  app.appendChild(wrap);
+
+  function ciz() {
+    const a = s.ayetler[ayetNo];
+    alan.innerHTML = `
+      <div class="sure-kart">
+        <div class="sure-no">${ayetNo + 1}. âyet</div>
+        <div class="sure-arapca">${a.glyph}</div>
+        <div class="sure-okunus">${a.okunus}</div>
+        <div class="sure-meal">“${a.meal}”</div>
+        <button class="dinle">🔊 Oku</button>
+      </div>
+      <div class="kart-nav">
+        <button class="onceki" ${ayetNo === 0 ? "disabled" : ""}>◀ Geri</button>
+        <span class="kart-sayac">${ayetNo + 1} / ${s.ayetler.length}</span>
+        <button class="sonraki">${ayetNo === s.ayetler.length - 1 ? "Bitir 🏁" : "İleri ▶"}</button>
+      </div>`;
+    alan.querySelector(".dinle").addEventListener("click", () => seslendir(a.okunus));
+    seslendir(a.okunus);
+    alan.querySelector(".onceki").addEventListener("click", () => { if (ayetNo > 0) { ayetNo--; ciz(); } });
+    alan.querySelector(".sonraki").addEventListener("click", () => {
+      if (ayetNo < s.ayetler.length - 1) { ayetNo++; ciz(); }
+      else tamamla(durak, index, 3, 0, 0, `${s.ad}'ni okudun! 📖🎉`);
+    });
+  }
+  ciz();
+  window.scrollTo(0, 0);
 }
 
 // ---- Konfeti efekti ----
