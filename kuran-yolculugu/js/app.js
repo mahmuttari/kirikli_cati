@@ -77,11 +77,12 @@ function seslendir(metin, dil) {
 // harfin/hecenin/kelimenin KENDİSİNİ Arapça TTS ile okur (Ce/Sad/Ra gibi
 // İngilizce-Latin hatalarını önler); aksi halde Türkçe okunuşu söyler.
 function arapcaAcik() { return ILERLEME.arapca !== false; } // varsayılan: açık
+function idArapca(id) {
+  // Çekirdek "okuma" bölgeleri (harf/hece/kelime) -> Arapça; kavram/sayı/dua/sure -> Türkçe
+  return !/bolgeRakam|bolgeDua|bolgeSure|bolgeVakif|bolgeMim|bolgeNun|bolgeMedC|bolgeIncelik|bolgeSekil|bolge_hcint/.test(id || "");
+}
 function durakArapcaMi(d) {
-  const id = (d && d.bolge && d.bolge.id) || "";
-  // Bu bölgelerde Türkçe okunsun (rakam, dua/esma, sure, kavram dersleri, harekeler-tanıtım, şekil):
-  if (/bolgeRakam|bolgeDua|bolgeSure|bolgeVakif|bolgeMim|bolgeNun|bolgeMedC|bolgeIncelik|bolgeSekil|bolge_hcint/.test(id)) return false;
-  return true; // harfler, pekiştirme, heceler, med, okuma, kelime, lâm-ı tarif, kalkale, tenvin
+  return idArapca((d && d.bolge && d.bolge.id) || "");
 }
 function konus(item) {
   const arap = AKTIF_DURAK && durakArapcaMi(AKTIF_DURAK) && arapcaAcik() && item && item.glyph;
@@ -220,7 +221,16 @@ function haritaEkrani() {
       const bb = document.createElement("div");
       bb.className = "bolge-baslik";
       bb.style.background = durak.bolge.color;
-      bb.textContent = durak.bolge.name;
+      bb.innerHTML = `<span>${durak.bolge.name}</span>`;
+      // Bölüm kilitliyse "Sınavla Atla" butonu (iyi bilenler için)
+      if (i > 0 && !durakAcikMi(i)) {
+        const atla = document.createElement("button");
+        atla.className = "atla-btn";
+        atla.textContent = "⏭️ Sınavla Atla";
+        const bolge = durak.bolge, baslangic = i;
+        atla.addEventListener("click", (e) => { e.stopPropagation(); atlamaSinavi(baslangic, bolge); });
+        bb.appendChild(atla);
+      }
       yol.appendChild(bb);
       sonBolgeId = durak.bolge.id;
     }
@@ -1269,6 +1279,109 @@ function oyunZayif(durak, index) {
   const secim = zayif.slice(0, 10);
   durak.quiz = makeLetterQuiz(secim, havuz, secim.length, "Bu nedir?");
   testeGir(durak, index);
+}
+
+// ---- SINAVLA ATLA (yeterlilik sınavı: %95+ ile bölüme atla) ----
+function bolgeTestOgeleri(bolge) {
+  const set = new Map();
+  bolge.duraklar.forEach((d) => {
+    const arr = d.cards || d.letters || d.items || d.pairs || [];
+    arr.forEach((it) => { if (it && it.glyph && it.name && !set.has(it.name)) set.set(it.name, { glyph: it.glyph, name: it.name }); });
+  });
+  return [...set.values()];
+}
+
+function atlamaSinavi(hedefIndex, bolge) {
+  zamanlayicilariTemizle();
+  AKTIF_DURAK = null;
+  // Havuz: hedef bölge dâhil, ondan önceki çekirdek "okuma" bölgeleri
+  const havuzMap = new Map();
+  for (let bi = 0; bi < BOLGELER.length; bi++) {
+    const b = BOLGELER[bi];
+    if (idArapca(b.id)) bolgeTestOgeleri(b).forEach((it) => { if (!havuzMap.has(it.name)) havuzMap.set(it.name, it); });
+    if (b.id === bolge.id) break;
+  }
+  const havuz = [...havuzMap.values()];
+  if (havuz.length < 3) { alert("Bu bölüm için sınav oluşturulamadı."); return; }
+  const soruSay = Math.min(16, Math.max(8, havuz.length));
+  const sorular = makeLetterQuiz(shuffleArr(havuz).slice(0, soruSay), havuz, soruSay, "Bu nedir?");
+  let i = 0, dogru = 0;
+
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "test-wrap";
+  app.appendChild(wrap);
+
+  function ciz() {
+    const s = sorular[i];
+    wrap.innerHTML = `
+      <div class="test-ust">
+        <button class="geri">← Çık</button>
+        <div class="ilerleme-cubuk"><div style="width:${(i / sorular.length) * 100}%"></div></div>
+        <span>${i + 1}/${sorular.length}</span>
+      </div>
+      <p class="oyun-aciklama">⏭️ Atlama Sınavı — geçmek için %95 (en çok 1 yanlış)</p>
+      <div class="soru">${s.glyph ? `<div class="soru-harf">${s.glyph}</div>` : ""}<p>${s.q.replace(s.glyph || "@@@", "")}</p></div>
+      <div class="secenekler"></div>
+      <div class="geri-bildirim"></div>`;
+    wrap.querySelector(".geri").addEventListener("click", render);
+    const sec = wrap.querySelector(".secenekler");
+    shuffleArr(s.options).forEach((opt) => {
+      const b = document.createElement("button");
+      b.className = "secenek";
+      b.textContent = opt;
+      b.addEventListener("click", () => cevap(b, opt, s));
+      sec.appendChild(b);
+    });
+  }
+  function cevap(btn, opt, s) {
+    wrap.querySelectorAll(".secenek").forEach((b) => (b.disabled = true));
+    const gb = wrap.querySelector(".geri-bildirim");
+    if (opt === s.a) { btn.classList.add("dogru"); dogru++; sesDogru(); gb.innerHTML = `<span class="iyi">Doğru ✓</span>`; }
+    else {
+      btn.classList.add("yanlis"); sesYanlis();
+      wrap.querySelectorAll(".secenek").forEach((b) => { if (b.textContent === s.a) b.classList.add("dogru"); });
+      gb.innerHTML = `<span class="kotu">Doğrusu: <b>${s.a}</b></span>`;
+    }
+    const ileri = document.createElement("button");
+    ileri.className = "devam";
+    ileri.textContent = i === sorular.length - 1 ? "Bitir 🏁" : "Devam ▶";
+    ileri.addEventListener("click", () => { i++; if (i < sorular.length) ciz(); else bitir(); });
+    gb.appendChild(ileri);
+  }
+  function bitir() {
+    const oran = dogru / sorular.length;
+    const yuzde = Math.round(oran * 100);
+    const gecti = oran >= 0.95;
+    if (gecti) {
+      for (let j = 0; j < hedefIndex; j++) ILERLEME.tamamlanan[DURAKLAR[j].id] = true;
+      ilerlemeKaydet(ILERLEME);
+      sesBasari(); konfetiPatlat();
+    } else sesYanlis();
+    app.innerHTML = "";
+    const w = document.createElement("div");
+    w.className = "test-wrap";
+    w.innerHTML = `
+      <div class="sonuc ${gecti ? "basarili" : "tekrar"}">
+        <div class="sonuc-emoji">${gecti ? "⏭️" : "📚"}</div>
+        <h2>${gecti ? "Tebrikler, geçtin!" : "Henüz olmadı"}</h2>
+        <p>${dogru} / ${sorular.length} doğru — <b>%${yuzde}</b></p>
+        <p>${gecti ? `“${bolge.name}” bölümüne kadar olan kısım açıldı!` : "Geçmek için %95 gerekiyor. Önce dersleri çalış 💪"}</p>
+        <div class="sonuc-butonlar">
+          ${gecti ? `<button class="sonraki-btn">Bölüme Git ▶</button>` : `<button class="tekrar-btn">🔁 Tekrar Dene</button>`}
+          <button class="harita-btn">🗺️ Haritaya Dön</button>
+        </div>
+      </div>`;
+    app.appendChild(w);
+    w.querySelector(".harita-btn").addEventListener("click", render);
+    const sb = w.querySelector(".sonraki-btn");
+    if (sb) sb.addEventListener("click", () => durakAc(DURAKLAR[hedefIndex], hedefIndex));
+    const tb = w.querySelector(".tekrar-btn");
+    if (tb) tb.addEventListener("click", () => atlamaSinavi(hedefIndex, bolge));
+    window.scrollTo(0, 0);
+  }
+  ciz();
+  window.scrollTo(0, 0);
 }
 
 // ---- PROFİL & ROZETLER ----

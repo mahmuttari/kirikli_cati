@@ -481,3 +481,12 @@ body {
 .sure-arapca { font-size: 2.9rem; line-height: 2; }
 /* hece/şekil örnek kartlarında arapça net görünsün */
 .flashcard .harf-buyuk { padding: 6px 0; }
+
+/* ---- Bölüm başlığı + Sınavla Atla ---- */
+.bolge-baslik { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.atla-btn {
+  background: rgba(255,255,255,.92); color: #b45309; border: none; cursor: pointer;
+  font-family: inherit; font-weight: 800; font-size: .8rem; padding: 6px 12px;
+  border-radius: 14px; box-shadow: 0 3px 0 rgba(0,0,0,.18); white-space: nowrap;
+}
+.atla-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.18); }
