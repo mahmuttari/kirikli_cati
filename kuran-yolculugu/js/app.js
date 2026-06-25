@@ -760,13 +760,24 @@ function oyunTrace(durak, index) {
 // ---- SURE OKUMA EKRANI (kelime kelime) ----
 // Gerçek tilavet (cihaz interneti) — yoksa Türkçe okunuş (TTS) yedeği
 let _tilavetSes = null;
+let _tilavetTur = 0; // her çağrı bir "nesil"; eski geri çağrılar geçersiz olur
 const TILAVET_KARI = "Husary_128kbps"; // Mahmud Halil el-Husary (everyayah.com)
 function tilavetDurdur() {
-  if (_tilavetSes) { try { _tilavetSes.pause(); _tilavetSes.src = ""; } catch {} _tilavetSes = null; }
+  _tilavetTur++; // devam eden tüm dene()/error geri çağrılarını geçersiz kıl
+  if (_tilavetSes) {
+    try {
+      _tilavetSes.onerror = null;            // ÖNCE dinleyiciyi kaldır (yoksa boşaltma 'error' tetikler)
+      _tilavetSes.pause();
+      _tilavetSes.removeAttribute("src");
+      _tilavetSes.load();                    // temiz durdur (src="" yapıp error tetiklemeden)
+    } catch {}
+    _tilavetSes = null;
+  }
 }
 function tilavetCal(sureNo, ayetNo, okunusYedek) {
-  sesKes(); // önce her şeyi sustur (TTS + eski tilavet) -> üst üste binme olmasın
+  sesKes(); // önce her şeyi sustur (TTS + eski tilavet); sesKes -> tilavetDurdur -> _tilavetTur++
   if (!sureNo) { seslendir(okunusYedek); return; }
+  const benimTur = _tilavetTur; // bu çağrının nesli
   const ss = String(sureNo).padStart(3, "0");
   const aa = String(ayetNo).padStart(3, "0");
   // 1) APK'ya gömülü yerel ses  2) internetten akış  3) TTS okunuş
@@ -776,12 +787,13 @@ function tilavetCal(sureNo, ayetNo, okunusYedek) {
   ];
   let i = 0;
   function dene() {
+    if (benimTur !== _tilavetTur) return;     // başka âyet/ses devraldı -> bu nesli bırak
     if (i >= kaynaklar.length) { seslendir(okunusYedek); return; }
     const ses = new Audio(kaynaklar[i++]);
     _tilavetSes = ses;
-    ses.addEventListener("error", dene);       // kaynak yüklenemezse sonrakini dene
+    ses.onerror = () => { if (benimTur === _tilavetTur) dene(); }; // sadece güncel nesilde sonrakini dene
     const p = ses.play();
-    if (p && p.catch) p.catch(() => {});        // otomatik oynatma engeli -> sessizce geç (buton çalışır)
+    if (p && p.catch) p.catch(() => {});      // otomatik oynatma engeli -> sessizce geç (buton çalışır)
   }
   dene();
 }
