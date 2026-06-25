@@ -168,10 +168,24 @@ function zamanlayicilariTemizle() {
 const RENKLER = ["#f87171", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa", "#f472b6", "#fb923c", "#22d3ee"];
 function rastgeleRenk() { return RENKLER[Math.floor(Math.random() * RENKLER.length)]; }
 
+// Havuzdan taze rastgele örnek (her açılışta farklı içerik)
+function ornekle(havuz, adet) {
+  return shuffleArr(havuz).slice(0, Math.min(adet || 5, havuz.length));
+}
+// Durakta 'havuz' varsa, her açılışta içeriği yeniden RASTGELE seç
+function durakHazirla(d) {
+  if (!d || !d.havuz || d.type === "timed") return d;
+  const ornek = ornekle(d.havuz, d.adet);
+  d.cards = ornek; d.letters = ornek; d.items = ornek; d.pairs = ornek; d.kelimeler = ornek;
+  if (d.type === "quiz") d.quiz = makeLetterQuiz(ornek, d.havuz, ornek.length, d.soru || "Bu nedir?");
+  return d;
+}
+
 // Durak tipine göre doğru ekranı açan dağıtıcı
 let AKTIF_DURAK = null;
 function durakAc(durak, index) {
   zamanlayicilariTemizle();
+  durakHazirla(durak);
   AKTIF_DURAK = durak;
   tonCal([440]);
   switch (durak.type) {
@@ -335,6 +349,7 @@ function sonucGoster(durak, index, yildiz, dogru, toplam, mesaj) {
 // ---- DERS EKRANI (kartlar + test) ----
 function derseGir(durak, index) {
   let kartNo = 0;
+  const kartlar = shuffleArr(durak.cards); // her açılışta kartlar karışık sırada
   app.innerHTML = "";
   const wrap = document.createElement("div");
   wrap.className = "ders-wrap";
@@ -353,7 +368,7 @@ function derseGir(durak, index) {
   wrap.appendChild(altBar);
 
   function kartCiz() {
-    const k = durak.cards[kartNo];
+    const k = kartlar[kartNo];
     // İleri Arapça okuma bölgelerinde, kural/Türkçe adı için ikinci buton göster
     const ikiDil = durakArapcaMi(durak) && arapcaAcik() && k.name && k.name !== k.glyph;
     kartAlan.innerHTML = `
@@ -370,17 +385,17 @@ function derseGir(durak, index) {
     const trBtn = kartAlan.querySelector(".dinle-tr");
     if (trBtn) trBtn.addEventListener("click", () => seslendir(k.name));
     konus(k);
-    altBar.querySelector(".kart-sayac").textContent = `${kartNo + 1} / ${durak.cards.length}`;
+    altBar.querySelector(".kart-sayac").textContent = `${kartNo + 1} / ${kartlar.length}`;
     altBar.querySelector(".onceki").disabled = kartNo === 0;
     altBar.querySelector(".sonraki").textContent =
-      kartNo === durak.cards.length - 1
+      kartNo === kartlar.length - 1
         ? (durak.quiz ? "Teste Geç ✏️" : "Bitir 🏁")
         : "İleri ▶";
   }
 
   altBar.querySelector(".onceki").addEventListener("click", () => { if (kartNo > 0) { kartNo--; kartCiz(); } });
   altBar.querySelector(".sonraki").addEventListener("click", () => {
-    if (kartNo < durak.cards.length - 1) { kartNo++; kartCiz(); }
+    if (kartNo < kartlar.length - 1) { kartNo++; kartCiz(); }
     else if (durak.quiz) testeGir(durak, index);
     else tamamla(durak, index, 3, 0, 0, "Bütün kartları öğrendin! 🎉");
   });

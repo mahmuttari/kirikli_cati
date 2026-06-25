@@ -175,14 +175,15 @@ function elifBaBolgeleri() {
 // Aşamalar arasına serpiştirilen, o ana kadar öğrenilen TÜM harfleri karıştıran tekrar durağı.
 function pekistirmeBolge(no, harfler, renk, buyuk) {
   const sid = `pk${no}`;
+  const ad = Math.min(buyuk ? 12 : 8, harfler.length); // her açılışta bu kadar RASTGELE harf
   const d = [
-    { id: `${sid}_bilmece`,  title: "Bilmece",     emoji: "🧠", type: "riddle",   letters: harfler, pool: HARFLER },
-    { id: `${sid}_balon`,    title: "Balon",       emoji: "🎈", type: "balloon",  letters: harfler, pool: HARFLER },
-    { id: `${sid}_kostebek`, title: "Köstebek",    emoji: "🐹", type: "mole",     letters: harfler, pool: HARFLER },
-    { id: `${sid}_dinle`,    title: "Dinle & Bul", emoji: "👂", type: "listen",   items: harfler,   pool: HARFLER },
-    { id: `${sid}_sinav`,    title: "Sınav",       emoji: "🏅", type: "quiz",     quiz: makeLetterQuiz(harfler, HARFLER, buyuk ? 10 : 8) },
+    { id: `${sid}_bilmece`,  title: "Bilmece",     emoji: "🧠", type: "riddle",   havuz: harfler, adet: ad, pool: HARFLER },
+    { id: `${sid}_balon`,    title: "Balon",       emoji: "🎈", type: "balloon",  havuz: harfler, adet: ad, pool: HARFLER },
+    { id: `${sid}_kostebek`, title: "Köstebek",    emoji: "🐹", type: "mole",     havuz: harfler, adet: ad, pool: HARFLER },
+    { id: `${sid}_dinle`,    title: "Dinle & Bul", emoji: "👂", type: "listen",   havuz: harfler, adet: ad, pool: HARFLER },
+    { id: `${sid}_sinav`,    title: "Sınav",       emoji: "🏅", type: "quiz",     havuz: harfler, adet: ad, pool: HARFLER },
   ];
-  if (buyuk) d.splice(4, 0, { id: `${sid}_hafiza`, title: "Hafıza", emoji: "🃏", type: "memory", pairs: harfler.slice(0, 6) });
+  if (buyuk) d.splice(4, 0, { id: `${sid}_hafiza`, title: "Hafıza", emoji: "🃏", type: "memory", havuz: harfler, adet: 6, pool: HARFLER });
   return {
     id: `bolge_${sid}`,
     name: `🎯 Pekiştirme ${no}${buyuk ? " · Büyük Tekrar" : ""}  (${harfler.length} harf)`,
@@ -422,24 +423,47 @@ const TENVIN_BOLGE = {
 };
 
 /* ---------- Kelimeler (kelime düzeyinde boşluk doldurma) ---------- */
-const KELIMELER = [
-  { tam: "اَب",    harfler: ["ا", "ب"],            okunus: "Eb",    anlam: "Baba" },
-  { tam: "بَاب",   harfler: ["ب", "ا", "ب"],        okunus: "Bâb",   anlam: "Kapı" },
-  { tam: "نُور",   harfler: ["ن", "و", "ر"],        okunus: "Nûr",   anlam: "Işık" },
-  { tam: "قَلَم",  harfler: ["ق", "ل", "م"],        okunus: "Kalem", anlam: "Kalem" },
-  { tam: "دِين",   harfler: ["د", "ي", "ن"],        okunus: "Dîn",   anlam: "Din" },
-  { tam: "كِتَاب", harfler: ["ك", "ت", "ا", "ب"],   okunus: "Kitâb", anlam: "Kitap" },
+// Kur'an'da sık geçen kelimelerden bir havuz; alıştırmalar her açılışta buradan
+// RASTGELE seçer (kelime/okuma/harf tekrarları her seferinde farklı gelsin diye).
+function kelimeYap(tam, harfler, okunus, anlam) {
+  return { tam, harfler, okunus, anlam, glyph: tam, name: okunus, hint: anlam };
+}
+const KURAN_KELIMELER = [
+  kelimeYap("اَب", ["ا", "ب"], "Eb", "Baba"),
+  kelimeYap("اُمّ", ["ا", "م"], "Ümm", "Anne"),
+  kelimeYap("بَاب", ["ب", "ا", "ب"], "Bâb", "Kapı"),
+  kelimeYap("نُور", ["ن", "و", "ر"], "Nûr", "Işık"),
+  kelimeYap("قَلَم", ["ق", "ل", "م"], "Kalem", "Kalem"),
+  kelimeYap("دِين", ["د", "ي", "ن"], "Dîn", "Din"),
+  kelimeYap("كِتَاب", ["ك", "ت", "ا", "ب"], "Kitâb", "Kitap"),
+  kelimeYap("رَبّ", ["ر", "ب"], "Rabb", "Rab"),
+  kelimeYap("عَبْد", ["ع", "ب", "د"], "Abd", "Kul"),
+  kelimeYap("يَوْم", ["ي", "و", "م"], "Yevm", "Gün"),
+  kelimeYap("بَيْت", ["ب", "ي", "ت"], "Beyt", "Ev"),
+  kelimeYap("قَمَر", ["ق", "م", "ر"], "Kamer", "Ay"),
+  kelimeYap("شَمْس", ["ش", "م", "س"], "Şems", "Güneş"),
+  kelimeYap("مَلِك", ["م", "ل", "ك"], "Melik", "Hükümdar"),
+  kelimeYap("صَبْر", ["ص", "ب", "ر"], "Sabr", "Sabır"),
+  kelimeYap("عِلْم", ["ع", "ل", "م"], "İlm", "İlim"),
+  kelimeYap("حَمْد", ["ح", "م", "د"], "Hamd", "Övgü"),
+  kelimeYap("نَار", ["ن", "ا", "ر"], "Nâr", "Ateş"),
+  kelimeYap("اَرْض", ["ا", "ر", "ض"], "Arz", "Yeryüzü"),
+  kelimeYap("رَسُول", ["ر", "س", "و", "ل"], "Resûl", "Elçi"),
+  kelimeYap("دَرْس", ["د", "ر", "س"], "Ders", "Ders"),
+  kelimeYap("خَيْر", ["خ", "ي", "ر"], "Hayr", "İyilik"),
+  kelimeYap("نَفْس", ["ن", "ف", "س"], "Nefs", "Can"),
+  kelimeYap("حَقّ", ["ح", "ق"], "Hakk", "Gerçek"),
+  kelimeYap("نَهْر", ["ن", "ه", "ر"], "Nehr", "Nehir"),
+  kelimeYap("نَجْم", ["ن", "ج", "م"], "Necm", "Yıldız"),
 ];
 const KELIME_BOLGE = {
   id: "bolgeKelime", name: "Kelime Şehri 🏙️", color: "#fb7185",
   duraklar: [
-    { id: "kl1", title: "Kelime Tanı", emoji: "📖", type: "lesson",
-      cards: KELIMELER.map((k) => ({ glyph: k.tam, name: k.okunus, hint: k.anlam })) },
-    { id: "kl2", title: "Boşluğu Doldur", emoji: "📝", type: "kelime", kelimeler: KELIMELER.slice(0, 4), pool: HARFLER },
-    { id: "kl3", title: "Zor Kelimeler", emoji: "🧩", type: "kelime", kelimeler: KELIMELER.slice(2, 6), pool: HARFLER },
-    { id: "kl4", title: "Kelime Eşleştir", emoji: "🔗", type: "match",
-      pairs: KELIMELER.map((k) => ({ glyph: k.tam, name: k.okunus })) },
-    { id: "kl5", title: "Kelime Treni", emoji: "🚂", type: "dizi", kelimeler: KELIMELER },
+    { id: "kl1", title: "Kelime Tanı", emoji: "📖", type: "lesson", havuz: KURAN_KELIMELER, adet: 5 },
+    { id: "kl2", title: "Boşluğu Doldur", emoji: "📝", type: "kelime", havuz: KURAN_KELIMELER, adet: 4, pool: HARFLER },
+    { id: "kl3", title: "Zor Kelimeler", emoji: "🧩", type: "kelime", havuz: KURAN_KELIMELER, adet: 5, pool: HARFLER },
+    { id: "kl4", title: "Kelime Eşleştir", emoji: "🔗", type: "match", havuz: KURAN_KELIMELER, adet: 5 },
+    { id: "kl5", title: "Kelime Treni", emoji: "🚂", type: "dizi", havuz: KURAN_KELIMELER, adet: 5 },
   ],
 };
 
@@ -626,14 +650,16 @@ const OKUMA_KELIMELER = [
   { glyph: "الصِّرَاط", name: "Es-Sırât", hint: "Şemsî + med" },
   { glyph: "الْمُسْتَقِيم", name: "El-Müstakîm", hint: "Med" },
 ];
+// İleri okuma havuzu (şeddeli/medli) + Kur'an kelime havuzu birlikte -> her açılışta farklı
+const OKUMA_HAVUZ = OKUMA_KELIMELER.concat(KURAN_KELIMELER);
 const OKUMA_BOLGE = {
   id: "bolgeOkuma", name: "Okuma Atölyesi 📚", color: "#34d399",
   duraklar: [
-    { id: "ok1", title: "Kelime Oku", emoji: "📚", type: "lesson", cards: OKUMA_KELIMELER.slice(0, 4) },
-    { id: "ok2", title: "Daha Çok Kelime", emoji: "📖", type: "lesson", cards: OKUMA_KELIMELER.slice(4, 8) },
-    { id: "ok3", title: "Kelime Dinle", emoji: "👂", type: "listen", items: OKUMA_KELIMELER, pool: OKUMA_KELIMELER },
-    { id: "ok4", title: "Kelime Eşleştir", emoji: "🧩", type: "match", pairs: OKUMA_KELIMELER },
-    { id: "ok5", title: "Okuma Sınavı", emoji: "🏅", type: "quiz", quiz: makeLetterQuiz(OKUMA_KELIMELER, OKUMA_KELIMELER, 6, "Bu nasıl okunur?") },
+    { id: "ok1", title: "Kelime Oku", emoji: "📚", type: "lesson", havuz: OKUMA_HAVUZ, adet: 4 },
+    { id: "ok2", title: "Daha Çok Kelime", emoji: "📖", type: "lesson", havuz: OKUMA_HAVUZ, adet: 4 },
+    { id: "ok3", title: "Kelime Dinle", emoji: "👂", type: "listen", havuz: OKUMA_HAVUZ, adet: 6, pool: OKUMA_HAVUZ },
+    { id: "ok4", title: "Kelime Eşleştir", emoji: "🧩", type: "match", havuz: OKUMA_HAVUZ, adet: 5 },
+    { id: "ok5", title: "Okuma Sınavı", emoji: "🏅", type: "quiz", havuz: OKUMA_HAVUZ, adet: 6, soru: "Bu nasıl okunur?" },
   ],
 };
 
