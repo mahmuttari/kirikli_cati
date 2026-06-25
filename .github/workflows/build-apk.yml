@@ -34,6 +34,9 @@ jobs:
 
       - name: Android SDK kur
         uses: android-actions/setup-android@v3
+        with:
+          # Emülatörü kurma (paketi bazen bozuk inip derlemeyi düşürüyor); APK için gerekmez
+          packages: "platform-tools"
 
       - name: Web uygulamasını www içine kopyala
         run: |
