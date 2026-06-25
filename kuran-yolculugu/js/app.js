@@ -46,13 +46,12 @@ if (typeof window !== "undefined" && "speechSynthesis" in window) {
 }
 
 function seslendir(metin, dil) {
-  if (typeof tilavetDurdur === "function") tilavetDurdur(); // çalan tilaveti durdur (üst üste binmesin)
+  sesKes(); // her yeni seste TÜM motorları sustur (üst üste binmesin)
   const lang = dil || "tr-TR";
   // 1) Native uygulama (Capacitor) -> cihazın kendi TTS motoru (WebView'de en güvenilir yol)
   const cap = window.Capacitor;
   if (cap && cap.Plugins && cap.Plugins.TextToSpeech) {
     try {
-      cap.Plugins.TextToSpeech.stop().catch(() => {});
       cap.Plugins.TextToSpeech.speak({
         text: metin, lang, rate: 0.95, pitch: 1.05, volume: 1.0, category: "playback",
       }).catch(() => {});
@@ -62,7 +61,6 @@ function seslendir(metin, dil) {
   // 2) Tarayıcı -> Web Speech API
   if ("speechSynthesis" in window) {
     try {
-      speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(metin);
       const pre = lang.slice(0, 2).toLowerCase();
       const v = _sesler.find((x) => x.lang && x.lang.toLowerCase().startsWith(pre));
@@ -71,6 +69,16 @@ function seslendir(metin, dil) {
       speechSynthesis.speak(u);
     } catch {}
   }
+}
+
+// Tüm ses motorlarını (native TTS + Web Speech + tilavet kaydı) durdur
+function sesKes() {
+  try {
+    const cap = window.Capacitor;
+    if (cap && cap.Plugins && cap.Plugins.TextToSpeech) cap.Plugins.TextToSpeech.stop().catch(() => {});
+  } catch {}
+  try { if ("speechSynthesis" in window) speechSynthesis.cancel(); } catch {}
+  if (typeof tilavetDurdur === "function") tilavetDurdur();
 }
 
 // Bir öğrenme öğesini seslendirir. Arapça mod açıksa ve içerik Arapça ise
@@ -741,7 +749,7 @@ function tilavetDurdur() {
   if (_tilavetSes) { try { _tilavetSes.pause(); _tilavetSes.src = ""; } catch {} _tilavetSes = null; }
 }
 function tilavetCal(sureNo, ayetNo, okunusYedek) {
-  tilavetDurdur();
+  sesKes(); // önce her şeyi sustur (TTS + eski tilavet) -> üst üste binme olmasın
   if (!sureNo) { seslendir(okunusYedek); return; }
   const ss = String(sureNo).padStart(3, "0");
   const aa = String(ayetNo).padStart(3, "0");
