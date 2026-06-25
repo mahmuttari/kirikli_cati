@@ -532,6 +532,22 @@ body {
 }
 .dinle-tr:active { transform: translateY(3px); box-shadow: 0 2px 0 #c7d2fe; }
 
+/* ---- Kayan Yakala ---- */
+.yakala-alan {
+  position: relative; height: 60vh; min-height: 340px; overflow: hidden;
+  background: linear-gradient(180deg, #e0f2fe, #ddd6fe); border-radius: 22px;
+}
+.dusen {
+  position: absolute; top: -70px; width: 64px; height: 64px; border: none; cursor: pointer;
+  border-radius: 18px; color: #fff; font-family: "Amiri", serif; font-weight: 700; font-size: 2.3rem;
+  text-shadow: 0 2px 3px rgba(0,0,0,.35); box-shadow: 0 5px 0 rgba(0,0,0,.18);
+  animation-name: dusus; animation-timing-function: linear; animation-fill-mode: forwards;
+}
+@keyframes dusus { to { transform: translateY(64vh) rotate(12deg); } }
+.dusen.yakalandi { animation: yakala-pat .35s forwards; }
+@keyframes yakala-pat { to { transform: scale(1.6); opacity: 0; } }
+.dusen.kacti-x { outline: 4px solid #f87171; }
+
 </style></head><body><div id="app"></div><script>
 /*
  * Kur'an Yolculuğu - Müfredat Verisi
@@ -674,8 +690,9 @@ const ARCADE = {
   truefalse: { title: "Doğru mu?",    emoji: "⚡" },
   memory:    { title: "Hafıza",       emoji: "🃏" },
   avla:      { title: "Harf Avı",     emoji: "🔎" },
+  catch:     { title: "Kayan Yakala", emoji: "🪂" },
 };
-const ARCADE_SIRA = ["balloon", "avla", "mole", "truefalse", "memory"];
+const ARCADE_SIRA = ["balloon", "avla", "mole", "catch", "truefalse", "memory"];
 
 function arcadeDurak(sid, model, grup) {
   const m = ARCADE[model];
@@ -897,6 +914,54 @@ const SURE_ASR = {
     { glyph: "اِلَّا الَّذِينَ اٰمَنُوا وَعَمِلُوا الصَّالِحَاتِ", okunus: "İlle'llezîne âmenû ve amilu's-sâlihât...", meal: "Ancak iman edip iyi işler yapanlar hariç..." },
   ],
 };
+const SURE_KADR = {
+  ad: "Kadir Sûresi", sureNo: 97, bilgi: "Kur'an'ın indirildiği Kadir gecesini anlatır.",
+  ayetler: [
+    { glyph: "اِنَّٓا اَنْزَلْنَاهُ فِي لَيْلَةِ الْقَدْرِ", okunus: "İnnâ enzelnâhü fî leyleti'l-kadr", meal: "Biz onu Kadir gecesinde indirdik." },
+    { glyph: "وَمَٓا اَدْرٰيكَ مَا لَيْلَةُ الْقَدْرِ", okunus: "Ve mâ edrâke mâ leyletü'l-kadr", meal: "Kadir gecesinin ne olduğunu bilir misin?" },
+    { glyph: "لَيْلَةُ الْقَدْرِ خَيْرٌ مِنْ اَلْفِ شَهْرٍ", okunus: "Leyletü'l-kadri hayrun min elfi şehr", meal: "Kadir gecesi bin aydan hayırlıdır." },
+    { glyph: "تَنَزَّلُ الْمَلٰٓئِكَةُ وَالرُّوحُ فِيهَا بِاِذْنِ رَبِّهِمْ", okunus: "Tenezzelü'l-melâiketü ve'r-rûhu fîhâ bi-izni rabbihim", meal: "Melekler ve Ruh, Rablerinin izniyle iner." },
+    { glyph: "سَلَامٌ هِيَ حَتّٰى مَطْلَعِ الْفَجْرِ", okunus: "Selâmün hiye hattâ matlai'l-fecr", meal: "O gece tan yeri ağarana dek selâmettir." },
+  ],
+};
+const SURE_FIL = {
+  ad: "Fîl Sûresi", sureNo: 105, bilgi: "Kâbe'yi yıkmak isteyen fil ordusunun helâkını anlatır.",
+  ayetler: [
+    { glyph: "اَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ بِاَصْحَابِ الْفِيلِ", okunus: "Elem tera keyfe feale rabbüke bi-ashâbi'l-fîl", meal: "Rabbinin fil sahiplerine ne yaptığını görmedin mi?" },
+    { glyph: "اَلَمْ يَجْعَلْ كَيْدَهُمْ فِي تَضْلِيلٍ", okunus: "Elem yec'al keydehüm fî tadlîl", meal: "Tuzaklarını boşa çıkarmadı mı?" },
+    { glyph: "وَاَرْسَلَ عَلَيْهِمْ طَيْرًا اَبَابِيلَ", okunus: "Ve ersele aleyhim tayran ebâbîl", meal: "Üzerlerine sürü sürü kuşlar gönderdi." },
+    { glyph: "تَرْمِيهِمْ بِحِجَارَةٍ مِنْ سِجِّيلٍ", okunus: "Termîhim bi-hicâratin min siccîl", meal: "Onlara pişmiş çamurdan taşlar atıyorlardı." },
+    { glyph: "فَجَعَلَهُمْ كَعَصْفٍ مَأْكُولٍ", okunus: "Fe-cealehüm ke-asfin me'kûl", meal: "Onları yenmiş ekin gibi yaptı." },
+  ],
+};
+const SURE_KUREYS = {
+  ad: "Kureyş Sûresi", sureNo: 106, bilgi: "Kureyş'e verilen nimetleri ve şükrü anlatır.",
+  ayetler: [
+    { glyph: "لِاِيلَافِ قُرَيْشٍ", okunus: "Li-îlâfi Kureyş", meal: "Kureyş'i alıştırdığı için," },
+    { glyph: "اٖيلَافِهِمْ رِحْلَةَ الشِّتَٓاءِ وَالصَّيْفِ", okunus: "Îlâfihim rihlete'ş-şitâi ve's-sayf", meal: "kış ve yaz yolculuğuna alıştırdığı için," },
+    { glyph: "فَلْيَعْبُدُوا رَبَّ هٰذَا الْبَيْتِ", okunus: "Felya'büdû rabbe hâze'l-beyt", meal: "bu evin (Kâbe'nin) Rabbine kulluk etsinler." },
+    { glyph: "اَلَّذٖٓي اَطْعَمَهُمْ مِنْ جُوعٍ وَاٰمَنَهُمْ مِنْ خَوْفٍ", okunus: "Ellezî at'amehüm min cûin ve âmenehüm min havf", meal: "O ki onları açlıktan doyurdu, korkudan emin kıldı." },
+  ],
+};
+const SURE_KAFIRUN = {
+  ad: "Kâfirûn Sûresi", sureNo: 109, bilgi: "Tevhidi ve inançta netliği anlatır.",
+  ayetler: [
+    { glyph: "قُلْ يَٓا اَيُّهَا الْكَافِرُونَ", okunus: "Kul yâ eyyühe'l-kâfirûn", meal: "De ki: Ey kâfirler!" },
+    { glyph: "لَٓا اَعْبُدُ مَا تَعْبُدُونَ", okunus: "Lâ a'büdü mâ ta'büdûn", meal: "Sizin taptıklarınıza tapmam." },
+    { glyph: "وَلَٓا اَنْتُمْ عَابِدُونَ مَٓا اَعْبُدُ", okunus: "Ve lâ entüm âbidûne mâ a'büd", meal: "Siz de benim taptığıma tapmazsınız." },
+    { glyph: "وَلَٓا اَنَا۠ عَابِدٌ مَا عَبَدْتُمْ", okunus: "Ve lâ ene âbidün mâ abedtüm", meal: "Ben sizin taptıklarınıza tapacak değilim." },
+    { glyph: "وَلَٓا اَنْتُمْ عَابِدُونَ مَٓا اَعْبُدُ", okunus: "Ve lâ entüm âbidûne mâ a'büd", meal: "Siz de benim taptığıma tapacak değilsiniz." },
+    { glyph: "لَكُمْ دٖينُكُمْ وَلِيَ دٖينِ", okunus: "Leküm dînüküm ve liye dîn", meal: "Sizin dininiz size, benim dinim bana." },
+  ],
+};
+const SURE_NASR = {
+  ad: "Nasr Sûresi", sureNo: 110, bilgi: "Allah'ın yardımı ve fethi müjdeler.",
+  ayetler: [
+    { glyph: "اِذَا جَٓاءَ نَصْرُ اللّٰهِ وَالْفَتْحُ", okunus: "İzâ câe nasrullâhi ve'l-feth", meal: "Allah'ın yardımı ve fetih geldiğinde," },
+    { glyph: "وَرَاَيْتَ النَّاسَ يَدْخُلُونَ فٖي دٖينِ اللّٰهِ اَفْوَاجًا", okunus: "Ve raeyte'n-nâse yedhulûne fî dînillâhi efvâcâ", meal: "insanların Allah'ın dinine akın akın girdiğini gördüğünde," },
+    { glyph: "فَسَبِّحْ بِحَمْدِ رَبِّكَ وَاسْتَغْفِرْهُ اِنَّهُ كَانَ تَوَّابًا", okunus: "Fe-sebbih bi-hamdi rabbike vestağfirh, innehû kâne tevvâbâ", meal: "Rabbini hamd ile tesbih et, O'ndan bağışlanma dile. O, tövbeleri çok kabul edendir." },
+  ],
+};
 const SURE_BOLGE = {
   id: "bolgeSure", name: "Sure Sarayı 📖", color: "#818cf8",
   duraklar: [
@@ -904,8 +969,13 @@ const SURE_BOLGE = {
     { id: "v1", title: "İhlâs Sûresi", emoji: "📜", type: "sure", sure: SURELER.ihlas },
     { id: "v4", title: "Felak Sûresi", emoji: "🌅", type: "sure", sure: SURE_FELAK },
     { id: "v3", title: "Nâs Sûresi", emoji: "📖", type: "sure", sure: SURELER.nas },
-    { id: "v5", title: "Asr Sûresi", emoji: "⏳", type: "sure", sure: SURE_ASR },
     { id: "v2", title: "Kevser Sûresi", emoji: "📃", type: "sure", sure: SURELER.kevser },
+    { id: "v5", title: "Asr Sûresi", emoji: "⏳", type: "sure", sure: SURE_ASR },
+    { id: "v6", title: "Fîl Sûresi", emoji: "🐘", type: "sure", sure: SURE_FIL },
+    { id: "v7", title: "Kureyş Sûresi", emoji: "🕋", type: "sure", sure: SURE_KUREYS },
+    { id: "v8", title: "Kâfirûn Sûresi", emoji: "☝️", type: "sure", sure: SURE_KAFIRUN },
+    { id: "v9", title: "Nasr Sûresi", emoji: "🏳️", type: "sure", sure: SURE_NASR },
+    { id: "v10", title: "Kadir Sûresi", emoji: "🌙", type: "sure", sure: SURE_KADR },
   ],
 };
 
@@ -1555,6 +1625,7 @@ function durakAc(durak, index) {
     case "fill":      return oyunBosluk(durak, index);
     case "kelime":    return oyunKelime(durak, index);
     case "avla":      return oyunAvla(durak, index);
+    case "catch":     return oyunYakala(durak, index);
     case "dizi":      return oyunDizi(durak, index);
     case "weak":      return oyunZayif(durak, index);
     case "timed":     return oyunSimsek(durak, index);
@@ -1570,7 +1641,7 @@ function tipEtiketi(type) {
     lesson: "📖 Öğren", quiz: "🏅 Sınav", match: "🧩 Eşleştir", listen: "👂 Dinle-Bul",
     memory: "🃏 Hafıza", trace: "🖊️ Çizme", balloon: "🎈 Balon", mole: "🐹 Köstebek",
     truefalse: "⚡ Doğru mu?", riddle: "🧠 Bilmece", fill: "📝 Boşluk", kelime: "🏙️ Kelime",
-    avla: "🔎 Harf Avı", dizi: "🚂 Tren", weak: "🔁 Tekrar", timed: "⚡ Yarış", sure: "📖 Sure",
+    avla: "🔎 Harf Avı", catch: "🪂 Yakala", dizi: "🚂 Tren", weak: "🔁 Tekrar", timed: "⚡ Yarış", sure: "📖 Sure",
   }[type] || "📚 Ders";
 }
 
@@ -2973,6 +3044,65 @@ function oyunDizi(durak, index) {
     konus({ glyph: k.tam, name: k.okunus });
   }
   ciz();
+  window.scrollTo(0, 0);
+}
+
+// ---- KAYAN YAKALA (düşen harflerden hedefi yakala) ----
+function oyunYakala(durak, index) {
+  const pool = durak.pool || durak.letters;
+  const harfler = durak.letters;
+  const hedefSayisi = Math.max(6, harfler.length);
+  let vurus = 0, kacan = 0, hedef = rastgele(harfler);
+
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const hedefBar = document.createElement("div");
+  hedefBar.className = "hedef-bar";
+  wrap.appendChild(hedefBar);
+  const alan = document.createElement("div");
+  alan.className = "yakala-alan";
+  wrap.appendChild(alan);
+  app.appendChild(wrap);
+
+  function yeniHedef() {
+    hedef = rastgele(harfler);
+    hedefBar.innerHTML = `🪂 Yakala: <b>${hedef.glyph}</b> ${hedef.name} <button class="mini-dinle">🔊</button> <span class="sayac">${vurus}/${hedefSayisi}</span>`;
+    hedefBar.querySelector(".mini-dinle").addEventListener("click", () => konus(hedef));
+    konus(hedef);
+  }
+  function dus() {
+    const harf = Math.random() < 0.5 ? hedef : rastgele(pool);
+    const el = document.createElement("button");
+    el.className = "dusen";
+    el.style.left = (4 + Math.random() * 84) + "%";
+    el.style.background = rastgeleRenk();
+    el.style.animationDuration = (3.4 + Math.random() * 1.7) + "s";
+    el.textContent = harf.glyph;
+    el.addEventListener("click", () => {
+      if (el.dataset.done) return;
+      el.dataset.done = "1";
+      if (harf.name === hedef.name) {
+        el.classList.add("yakalandi"); sesDogru(); vurus++;
+        if (vurus >= hedefSayisi) { bitir(); return; }
+        yeniHedef();
+      } else { sesYanlis(); el.classList.add("kacti-x"); }
+    });
+    el.addEventListener("animationend", () => {
+      if (!el.dataset.done && harf.name === hedef.name) { kacan++; hataEkle(hedef.name); }
+      el.remove();
+    });
+    alan.appendChild(el);
+  }
+
+  function bitir() {
+    const yildiz = kacan <= 1 ? 3 : kacan <= 3 ? 2 : 1;
+    tamamla(durak, index, yildiz, vurus, hedefSayisi);
+  }
+
+  yeniHedef();
+  _ara(dus, 850);
   window.scrollTo(0, 0);
 }
 

@@ -200,6 +200,7 @@ function durakAc(durak, index) {
     case "fill":      return oyunBosluk(durak, index);
     case "kelime":    return oyunKelime(durak, index);
     case "avla":      return oyunAvla(durak, index);
+    case "catch":     return oyunYakala(durak, index);
     case "dizi":      return oyunDizi(durak, index);
     case "weak":      return oyunZayif(durak, index);
     case "timed":     return oyunSimsek(durak, index);
@@ -215,7 +216,7 @@ function tipEtiketi(type) {
     lesson: "📖 Öğren", quiz: "🏅 Sınav", match: "🧩 Eşleştir", listen: "👂 Dinle-Bul",
     memory: "🃏 Hafıza", trace: "🖊️ Çizme", balloon: "🎈 Balon", mole: "🐹 Köstebek",
     truefalse: "⚡ Doğru mu?", riddle: "🧠 Bilmece", fill: "📝 Boşluk", kelime: "🏙️ Kelime",
-    avla: "🔎 Harf Avı", dizi: "🚂 Tren", weak: "🔁 Tekrar", timed: "⚡ Yarış", sure: "📖 Sure",
+    avla: "🔎 Harf Avı", catch: "🪂 Yakala", dizi: "🚂 Tren", weak: "🔁 Tekrar", timed: "⚡ Yarış", sure: "📖 Sure",
   }[type] || "📚 Ders";
 }
 
@@ -1618,6 +1619,65 @@ function oyunDizi(durak, index) {
     konus({ glyph: k.tam, name: k.okunus });
   }
   ciz();
+  window.scrollTo(0, 0);
+}
+
+// ---- KAYAN YAKALA (düşen harflerden hedefi yakala) ----
+function oyunYakala(durak, index) {
+  const pool = durak.pool || durak.letters;
+  const harfler = durak.letters;
+  const hedefSayisi = Math.max(6, harfler.length);
+  let vurus = 0, kacan = 0, hedef = rastgele(harfler);
+
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "ders-wrap";
+  wrap.appendChild(ustBaslik(durak));
+  const hedefBar = document.createElement("div");
+  hedefBar.className = "hedef-bar";
+  wrap.appendChild(hedefBar);
+  const alan = document.createElement("div");
+  alan.className = "yakala-alan";
+  wrap.appendChild(alan);
+  app.appendChild(wrap);
+
+  function yeniHedef() {
+    hedef = rastgele(harfler);
+    hedefBar.innerHTML = `🪂 Yakala: <b>${hedef.glyph}</b> ${hedef.name} <button class="mini-dinle">🔊</button> <span class="sayac">${vurus}/${hedefSayisi}</span>`;
+    hedefBar.querySelector(".mini-dinle").addEventListener("click", () => konus(hedef));
+    konus(hedef);
+  }
+  function dus() {
+    const harf = Math.random() < 0.5 ? hedef : rastgele(pool);
+    const el = document.createElement("button");
+    el.className = "dusen";
+    el.style.left = (4 + Math.random() * 84) + "%";
+    el.style.background = rastgeleRenk();
+    el.style.animationDuration = (3.4 + Math.random() * 1.7) + "s";
+    el.textContent = harf.glyph;
+    el.addEventListener("click", () => {
+      if (el.dataset.done) return;
+      el.dataset.done = "1";
+      if (harf.name === hedef.name) {
+        el.classList.add("yakalandi"); sesDogru(); vurus++;
+        if (vurus >= hedefSayisi) { bitir(); return; }
+        yeniHedef();
+      } else { sesYanlis(); el.classList.add("kacti-x"); }
+    });
+    el.addEventListener("animationend", () => {
+      if (!el.dataset.done && harf.name === hedef.name) { kacan++; hataEkle(hedef.name); }
+      el.remove();
+    });
+    alan.appendChild(el);
+  }
+
+  function bitir() {
+    const yildiz = kacan <= 1 ? 3 : kacan <= 3 ? 2 : 1;
+    tamamla(durak, index, yildiz, vurus, hedefSayisi);
+  }
+
+  yeniHedef();
+  _ara(dus, 850);
   window.scrollTo(0, 0);
 }
 

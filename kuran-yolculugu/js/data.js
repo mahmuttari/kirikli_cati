@@ -139,8 +139,9 @@ const ARCADE = {
   truefalse: { title: "Doğru mu?",    emoji: "⚡" },
   memory:    { title: "Hafıza",       emoji: "🃏" },
   avla:      { title: "Harf Avı",     emoji: "🔎" },
+  catch:     { title: "Kayan Yakala", emoji: "🪂" },
 };
-const ARCADE_SIRA = ["balloon", "avla", "mole", "truefalse", "memory"];
+const ARCADE_SIRA = ["balloon", "avla", "mole", "catch", "truefalse", "memory"];
 
 function arcadeDurak(sid, model, grup) {
   const m = ARCADE[model];
@@ -362,6 +363,54 @@ const SURE_ASR = {
     { glyph: "اِلَّا الَّذِينَ اٰمَنُوا وَعَمِلُوا الصَّالِحَاتِ", okunus: "İlle'llezîne âmenû ve amilu's-sâlihât...", meal: "Ancak iman edip iyi işler yapanlar hariç..." },
   ],
 };
+const SURE_KADR = {
+  ad: "Kadir Sûresi", sureNo: 97, bilgi: "Kur'an'ın indirildiği Kadir gecesini anlatır.",
+  ayetler: [
+    { glyph: "اِنَّٓا اَنْزَلْنَاهُ فِي لَيْلَةِ الْقَدْرِ", okunus: "İnnâ enzelnâhü fî leyleti'l-kadr", meal: "Biz onu Kadir gecesinde indirdik." },
+    { glyph: "وَمَٓا اَدْرٰيكَ مَا لَيْلَةُ الْقَدْرِ", okunus: "Ve mâ edrâke mâ leyletü'l-kadr", meal: "Kadir gecesinin ne olduğunu bilir misin?" },
+    { glyph: "لَيْلَةُ الْقَدْرِ خَيْرٌ مِنْ اَلْفِ شَهْرٍ", okunus: "Leyletü'l-kadri hayrun min elfi şehr", meal: "Kadir gecesi bin aydan hayırlıdır." },
+    { glyph: "تَنَزَّلُ الْمَلٰٓئِكَةُ وَالرُّوحُ فِيهَا بِاِذْنِ رَبِّهِمْ", okunus: "Tenezzelü'l-melâiketü ve'r-rûhu fîhâ bi-izni rabbihim", meal: "Melekler ve Ruh, Rablerinin izniyle iner." },
+    { glyph: "سَلَامٌ هِيَ حَتّٰى مَطْلَعِ الْفَجْرِ", okunus: "Selâmün hiye hattâ matlai'l-fecr", meal: "O gece tan yeri ağarana dek selâmettir." },
+  ],
+};
+const SURE_FIL = {
+  ad: "Fîl Sûresi", sureNo: 105, bilgi: "Kâbe'yi yıkmak isteyen fil ordusunun helâkını anlatır.",
+  ayetler: [
+    { glyph: "اَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ بِاَصْحَابِ الْفِيلِ", okunus: "Elem tera keyfe feale rabbüke bi-ashâbi'l-fîl", meal: "Rabbinin fil sahiplerine ne yaptığını görmedin mi?" },
+    { glyph: "اَلَمْ يَجْعَلْ كَيْدَهُمْ فِي تَضْلِيلٍ", okunus: "Elem yec'al keydehüm fî tadlîl", meal: "Tuzaklarını boşa çıkarmadı mı?" },
+    { glyph: "وَاَرْسَلَ عَلَيْهِمْ طَيْرًا اَبَابِيلَ", okunus: "Ve ersele aleyhim tayran ebâbîl", meal: "Üzerlerine sürü sürü kuşlar gönderdi." },
+    { glyph: "تَرْمِيهِمْ بِحِجَارَةٍ مِنْ سِجِّيلٍ", okunus: "Termîhim bi-hicâratin min siccîl", meal: "Onlara pişmiş çamurdan taşlar atıyorlardı." },
+    { glyph: "فَجَعَلَهُمْ كَعَصْفٍ مَأْكُولٍ", okunus: "Fe-cealehüm ke-asfin me'kûl", meal: "Onları yenmiş ekin gibi yaptı." },
+  ],
+};
+const SURE_KUREYS = {
+  ad: "Kureyş Sûresi", sureNo: 106, bilgi: "Kureyş'e verilen nimetleri ve şükrü anlatır.",
+  ayetler: [
+    { glyph: "لِاِيلَافِ قُرَيْشٍ", okunus: "Li-îlâfi Kureyş", meal: "Kureyş'i alıştırdığı için," },
+    { glyph: "اٖيلَافِهِمْ رِحْلَةَ الشِّتَٓاءِ وَالصَّيْفِ", okunus: "Îlâfihim rihlete'ş-şitâi ve's-sayf", meal: "kış ve yaz yolculuğuna alıştırdığı için," },
+    { glyph: "فَلْيَعْبُدُوا رَبَّ هٰذَا الْبَيْتِ", okunus: "Felya'büdû rabbe hâze'l-beyt", meal: "bu evin (Kâbe'nin) Rabbine kulluk etsinler." },
+    { glyph: "اَلَّذٖٓي اَطْعَمَهُمْ مِنْ جُوعٍ وَاٰمَنَهُمْ مِنْ خَوْفٍ", okunus: "Ellezî at'amehüm min cûin ve âmenehüm min havf", meal: "O ki onları açlıktan doyurdu, korkudan emin kıldı." },
+  ],
+};
+const SURE_KAFIRUN = {
+  ad: "Kâfirûn Sûresi", sureNo: 109, bilgi: "Tevhidi ve inançta netliği anlatır.",
+  ayetler: [
+    { glyph: "قُلْ يَٓا اَيُّهَا الْكَافِرُونَ", okunus: "Kul yâ eyyühe'l-kâfirûn", meal: "De ki: Ey kâfirler!" },
+    { glyph: "لَٓا اَعْبُدُ مَا تَعْبُدُونَ", okunus: "Lâ a'büdü mâ ta'büdûn", meal: "Sizin taptıklarınıza tapmam." },
+    { glyph: "وَلَٓا اَنْتُمْ عَابِدُونَ مَٓا اَعْبُدُ", okunus: "Ve lâ entüm âbidûne mâ a'büd", meal: "Siz de benim taptığıma tapmazsınız." },
+    { glyph: "وَلَٓا اَنَا۠ عَابِدٌ مَا عَبَدْتُمْ", okunus: "Ve lâ ene âbidün mâ abedtüm", meal: "Ben sizin taptıklarınıza tapacak değilim." },
+    { glyph: "وَلَٓا اَنْتُمْ عَابِدُونَ مَٓا اَعْبُدُ", okunus: "Ve lâ entüm âbidûne mâ a'büd", meal: "Siz de benim taptığıma tapacak değilsiniz." },
+    { glyph: "لَكُمْ دٖينُكُمْ وَلِيَ دٖينِ", okunus: "Leküm dînüküm ve liye dîn", meal: "Sizin dininiz size, benim dinim bana." },
+  ],
+};
+const SURE_NASR = {
+  ad: "Nasr Sûresi", sureNo: 110, bilgi: "Allah'ın yardımı ve fethi müjdeler.",
+  ayetler: [
+    { glyph: "اِذَا جَٓاءَ نَصْرُ اللّٰهِ وَالْفَتْحُ", okunus: "İzâ câe nasrullâhi ve'l-feth", meal: "Allah'ın yardımı ve fetih geldiğinde," },
+    { glyph: "وَرَاَيْتَ النَّاسَ يَدْخُلُونَ فٖي دٖينِ اللّٰهِ اَفْوَاجًا", okunus: "Ve raeyte'n-nâse yedhulûne fî dînillâhi efvâcâ", meal: "insanların Allah'ın dinine akın akın girdiğini gördüğünde," },
+    { glyph: "فَسَبِّحْ بِحَمْدِ رَبِّكَ وَاسْتَغْفِرْهُ اِنَّهُ كَانَ تَوَّابًا", okunus: "Fe-sebbih bi-hamdi rabbike vestağfirh, innehû kâne tevvâbâ", meal: "Rabbini hamd ile tesbih et, O'ndan bağışlanma dile. O, tövbeleri çok kabul edendir." },
+  ],
+};
 const SURE_BOLGE = {
   id: "bolgeSure", name: "Sure Sarayı 📖", color: "#818cf8",
   duraklar: [
@@ -369,8 +418,13 @@ const SURE_BOLGE = {
     { id: "v1", title: "İhlâs Sûresi", emoji: "📜", type: "sure", sure: SURELER.ihlas },
     { id: "v4", title: "Felak Sûresi", emoji: "🌅", type: "sure", sure: SURE_FELAK },
     { id: "v3", title: "Nâs Sûresi", emoji: "📖", type: "sure", sure: SURELER.nas },
-    { id: "v5", title: "Asr Sûresi", emoji: "⏳", type: "sure", sure: SURE_ASR },
     { id: "v2", title: "Kevser Sûresi", emoji: "📃", type: "sure", sure: SURELER.kevser },
+    { id: "v5", title: "Asr Sûresi", emoji: "⏳", type: "sure", sure: SURE_ASR },
+    { id: "v6", title: "Fîl Sûresi", emoji: "🐘", type: "sure", sure: SURE_FIL },
+    { id: "v7", title: "Kureyş Sûresi", emoji: "🕋", type: "sure", sure: SURE_KUREYS },
+    { id: "v8", title: "Kâfirûn Sûresi", emoji: "☝️", type: "sure", sure: SURE_KAFIRUN },
+    { id: "v9", title: "Nasr Sûresi", emoji: "🏳️", type: "sure", sure: SURE_NASR },
+    { id: "v10", title: "Kadir Sûresi", emoji: "🌙", type: "sure", sure: SURE_KADR },
   ],
 };
 

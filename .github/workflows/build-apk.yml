@@ -46,8 +46,8 @@ jobs:
           OUT=mobile/www/audio/sure
           mkdir -p "$OUT"
           BASE="https://everyayah.com/data/Husary_128kbps"
-          # sure_no:ayet_sayisi  (Fâtiha, İhlâs, Felak, Nâs, Asr, Kevser)
-          for pair in 1:7 112:4 113:5 114:6 103:3 108:3; do
+          # sure_no:ayet_sayisi  (Fâtiha, İhlâs, Felak, Nâs, Asr, Kevser, Kadir, Fîl, Kureyş, Kâfirûn, Nasr)
+          for pair in 1:7 112:4 113:5 114:6 103:3 108:3 97:5 105:5 106:4 109:6 110:3; do
             sure="${pair%%:*}"; adet="${pair##*:}"
             ss=$(printf "%03d" "$sure")
             for a in $(seq 1 "$adet"); do
@@ -67,6 +67,20 @@ jobs:
         working-directory: mobile
         run: |
           npx cap add android
+          npx cap sync android
+
+      - name: Uygulama ikonu & açılış ekranı (best-effort)
+        continue-on-error: true
+        working-directory: mobile
+        run: |
+          sudo apt-get update && sudo apt-get install -y librsvg2-bin
+          rsvg-convert -w 1024 -h 1024 assets/icon.svg -o assets/icon-only.png
+          cp assets/icon-only.png assets/icon.png
+          rsvg-convert -w 1024 -h 1024 assets/icon.svg -o assets/icon-foreground.png
+          rsvg-convert -w 1024 -h 1024 assets/bg.svg -o assets/icon-background.png
+          rsvg-convert -w 2732 -h 2732 assets/splash.svg -o assets/splash.png
+          cp assets/splash.png assets/splash-dark.png
+          npx --yes @capacitor/assets generate --android
           npx cap sync android
 
       - name: APK derle (debug)
