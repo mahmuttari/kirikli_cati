@@ -1394,19 +1394,46 @@ function bolgeTestOgeleri(bolge) {
 function atlamaSinavi(hedefIndex, bolge) {
   zamanlayicilariTemizle();
   AKTIF_DURAK = null;
-  // Havuz: hedef bölge dâhil, ondan önceki çekirdek "okuma" bölgeleri
-  const havuzMap = new Map();
+  // Hedef seviyeden ÖNCEKİ çekirdek "okuma" bölgeleri, sırasıyla.
+  // Bu sınavı geçmek = hedef seviyenin önündeki aşamalara hâkim olmak demek.
+  const oncekiBolgeler = []; // her biri o bölgenin öğeleri
   for (let bi = 0; bi < BOLGELER.length; bi++) {
     const b = BOLGELER[bi];
-    if (idArapca(b.id)) bolgeTestOgeleri(b).forEach((it) => { if (!havuzMap.has(it.name)) havuzMap.set(it.name, it); });
-    if (b.id === bolge.id) break;
+    if (b.id === bolge.id) break;        // hedef bölgenin kendisi hariç (henüz öğrenilmedi)
+    if (idArapca(b.id)) {
+      const items = bolgeTestOgeleri(b);
+      if (items.length) oncekiBolgeler.push(items);
+    }
   }
-  const havuz = [...havuzMap.values()];
+  // Hiç önceki yoksa (hedef ilk Arapça bölge) hedef bölgenin kendisinden sor.
+  if (oncekiBolgeler.length === 0) {
+    const its = bolgeTestOgeleri(bolge);
+    if (its.length) oncekiBolgeler.push(its);
+  }
+
+  // YAKIN havuz: hedefe en yakın son 2 aşama → soruların %80'i buradan.
+  // UZAK havuz: daha önceki tüm aşamalar → kalan %20.
+  const yakinSayi = Math.min(2, oncekiBolgeler.length);
+  const benzersiz = (arr) => { const m = new Map(); arr.forEach((it) => { if (!m.has(it.name)) m.set(it.name, it); }); return [...m.values()]; };
+  const yakinHavuz = benzersiz(oncekiBolgeler.slice(-yakinSayi).flat());
+  const yakinAdlar = new Set(yakinHavuz.map((it) => it.name));
+  const uzakHavuz = benzersiz(oncekiBolgeler.slice(0, -yakinSayi).flat()).filter((it) => !yakinAdlar.has(it.name));
+  const havuz = benzersiz([...yakinHavuz, ...uzakHavuz]); // şıklar (çeldiriciler) için tüm öğeler
   if (havuz.length < 3) { alert("Bu bölüm için sınav oluşturulamadı."); return; }
+
   // Daha kapsayıcı ve zor: çok soru + 4 şık + toplam süre
   const soruSay = Math.min(24, Math.max(15, havuz.length));
-  const secilen = (havuz.length >= soruSay ? shuffleArr(havuz).slice(0, soruSay)
-                                            : Array.from({ length: soruSay }, () => rastgele(havuz)));
+  // %80 yakın (son aşamalar), %20 uzak — uzak yoksa hepsi yakından.
+  let yakinSoru = uzakHavuz.length ? Math.round(soruSay * 0.8) : soruSay;
+  let uzakSoru = soruSay - yakinSoru;
+  // Bir havuzdan benzersiz çek; yetmezse tekrar (rastgele) ile tamamla.
+  const cek = (kaynak, adet) => {
+    if (!kaynak.length || adet <= 0) return [];
+    const karma = shuffleArr(kaynak);
+    if (karma.length >= adet) return karma.slice(0, adet);
+    return Array.from({ length: adet }, (_, k) => karma[k % karma.length] || rastgele(kaynak));
+  };
+  const secilen = shuffleArr([...cek(yakinHavuz, yakinSoru), ...cek(uzakHavuz, uzakSoru)]);
   const sorular = secilen.map((it) => {
     const yanlis = shuffleArr(havuz.filter((h) => h.name !== it.name)).slice(0, 3).map((h) => h.name);
     return { glyph: it.glyph, a: it.name, options: shuffleArr([it.name, ...yanlis]) };
@@ -1434,7 +1461,7 @@ function atlamaSinavi(hedefIndex, bolge) {
         <span class="sinav-sure">⏱️ ${kalan}s</span>
         <span>${i + 1}/${sorular.length}</span>
       </div>
-      <p class="oyun-aciklama">⏭️ Atlama Sınavı — geçmek için %95 (en çok 1 yanlış) ve süreyi geçmemek</p>
+      <p class="oyun-aciklama">⏭️ Atlama Sınavı — sorular ağırlıkla son aşamalardan • geçmek için %95 ve süreyi geçmemek</p>
       <div class="soru"><div class="soru-harf">${s.glyph}</div><p>Bu nedir?</p></div>
       <div class="secenekler"></div>
       <div class="geri-bildirim"></div>`;
