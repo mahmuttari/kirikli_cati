@@ -706,7 +706,14 @@ function arcadeDurak(sid, model, grup) {
   };
 }
 
-// Her aşama için oyun duraklarını üretir (sade: 5 durak; aşamalar arası dönüşümlü arcade)
+// Sürpriz durak: her açılışta rastgele bir oyun + rastgele içerik
+const SURPRIZ_OYUN_LISTE = ["balloon", "mole", "avla", "catch", "truefalse", "memory", "listen", "match", "riddle"];
+function surprizDurak(id, baslik, havuz, adet, oyunlar) {
+  return { id, title: baslik || "Sürpriz Oyun", emoji: "🎲", type: "random",
+    havuz, adet: adet || 8, pool: havuz, oyunlar: oyunlar || SURPRIZ_OYUN_LISTE };
+}
+
+// Her aşama için oyun duraklarını üretir (5 ders + 1 Sürpriz; aşamalar arası dönüşümlü arcade)
 function elifBaBolgeleri() {
   return ELIFBA_GRUPLARI.map((grup, i) => {
     const sid = `a${i + 1}`;
@@ -717,6 +724,7 @@ function elifBaBolgeleri() {
       { id: `${sid}_dinle`, title: "Dinle & Bul", emoji: "👂", type: "listen", items: grup, pool: HARFLER },
       arcadeDurak(sid, ARCADE_SIRA[i % ARCADE_SIRA.length], grup), // aşamaya göre değişen oyun (çeşitlilik)
       { id: `${sid}_sinav`, title: "Sınav",       emoji: "🏅", type: "quiz",   quiz: makeLetterQuiz(grup, HARFLER) },
+      surprizDurak(`${sid}_surpriz`, "Sürpriz Oyun", grup, grup.length),
     ];
     return {
       id: `bolge_${sid}`,
@@ -1366,6 +1374,20 @@ const SIMSEK_BOLGE = {
   ],
 };
 
+/* ---------- Eğlence Bahçesi: her durağa her tıkta FARKLI oyun (sürpriz) ---------- */
+const HECEKELIME_HEPSI = HECE_HEPSI.concat(KURAN_KELIMELER);
+const TUM_OKUMA_HAVUZ = HARFLER.concat(HECE_HEPSI).concat(KURAN_KELIMELER);
+const EGLENCE_BOLGE = {
+  id: "bolgeEglence", name: "Eğlence Bahçesi 🎡", color: "#fb7185",
+  duraklar: [
+    surprizDurak("eg1", "Hece Sürprizi", HECE_HEPSI, 9),
+    surprizDurak("eg2", "Kelime Sürprizi", KURAN_KELIMELER, 9),
+    surprizDurak("eg3", "Okuma Sürprizi", HECEKELIME_HEPSI, 10),
+    surprizDurak("eg4", "Büyük Sürpriz", TUM_OKUMA_HAVUZ, 10),
+    surprizDurak("eg5", "Sonsuz Eğlence", TUM_OKUMA_HAVUZ, 10),
+  ],
+};
+
 /* ---------- Tüm bölgeleri sırala (aşamalar + araya pekiştirme) ---------- */
 function tumBolgeler() {
   const a = elifBaBolgeleri();
@@ -1377,7 +1399,7 @@ function tumBolgeler() {
   out.push(SEKIL_BOLGE, ...HECE_BOLGELERI);
   out.push(MED_BOLGE, TENVIN_BOLGE, YILDIZ_BOLGE);
   out.push(LAMTARIF_BOLGE, KALKALE_BOLGE, MEDCESIT_BOLGE, NUNSAKIN_BOLGE, MIMSAKIN_BOLGE, VAKIF_BOLGE, INCELIK_BOLGE);
-  out.push(OKUMA_BOLGE, KELIME_BOLGE, RAKAM_BOLGE, DUA_BOLGE, TEKRAR_BOLGE, SIMSEK_BOLGE, SURE_BOLGE);
+  out.push(OKUMA_BOLGE, KELIME_BOLGE, RAKAM_BOLGE, DUA_BOLGE, TEKRAR_BOLGE, EGLENCE_BOLGE, SIMSEK_BOLGE, SURE_BOLGE);
   return out;
 }
 
@@ -1633,10 +1655,25 @@ function durakAc(durak, index) {
     case "dizi":      return oyunDizi(durak, index);
     case "weak":      return oyunZayif(durak, index);
     case "timed":     return oyunSimsek(durak, index);
+    case "random":    return oyunRandom(durak, index);
     case "quiz":      return testeGir(durak, index);
     case "sure":      return sureEkrani(durak, index);
     default:          return derseGir(durak, index);
   }
+}
+
+// 🎲 SÜRPRİZ: her açılışta rastgele bir oyunla (ve durakHazirla ile rastgele içerikle) çalışır
+const SURPRIZ_OYUNLAR_VAR = {
+  balloon: oyunBalon, mole: oyunKostebek, avla: oyunAvla, catch: oyunYakala,
+  truefalse: oyunDogruYanlis, memory: oyunMemory, listen: oyunListen,
+  match: oyunMatch, riddle: oyunBilmece,
+};
+function oyunRandom(durak, index) {
+  const liste = (durak.oyunlar && durak.oyunlar.length ? durak.oyunlar : Object.keys(SURPRIZ_OYUNLAR_VAR))
+    .filter((t) => SURPRIZ_OYUNLAR_VAR[t]);
+  const tip = liste[Math.floor(Math.random() * liste.length)] || "balloon";
+  if (!durak.pool) durak.pool = durak.havuz || durak.letters || durak.pairs;
+  return SURPRIZ_OYUNLAR_VAR[tip](durak, index);
 }
 
 // Durak tipine göre küçük etiket
@@ -1645,7 +1682,8 @@ function tipEtiketi(type) {
     lesson: "📖 Öğren", quiz: "🏅 Sınav", match: "🧩 Eşleştir", listen: "👂 Dinle-Bul",
     memory: "🃏 Hafıza", trace: "🖊️ Çizme", balloon: "🎈 Balon", mole: "🐹 Köstebek",
     truefalse: "⚡ Doğru mu?", riddle: "🧠 Bilmece", fill: "📝 Boşluk", kelime: "🏙️ Kelime",
-    avla: "🔎 Harf Avı", catch: "🪂 Yakala", dizi: "🚂 Tren", weak: "🔁 Tekrar", timed: "⚡ Yarış", sure: "📖 Sure",
+    avla: "🔎 Harf Avı", catch: "🪂 Yakala", dizi: "🚂 Tren", weak: "🔁 Tekrar",
+    random: "🎲 Sürpriz", timed: "⚡ Yarış", sure: "📖 Sure",
   }[type] || "📚 Ders";
 }
 
@@ -2487,7 +2525,7 @@ function oyunDogruYanlis(durak, index) {
     const gb = wrap.querySelector(".geri-bildirim");
     const doruMu = secim === t.dogruMu;
     if (doruMu) { dogru++; sesDogru(); gb.innerHTML = `<span class="iyi">Aferin! 🎉</span>`; }
-    else { sesYanlis(); gb.innerHTML = `<span class="kotu">Doğrusu: ${t.glyph} = <b>${t.gercek}</b></span>`; }
+    else { sesYanlis(); hataEkle(t.gercek); gb.innerHTML = `<span class="kotu">Doğrusu: ${t.glyph} = <b>${t.gercek}</b></span>`; }
     const ileri = document.createElement("button");
     ileri.className = "devam";
     ileri.textContent = turNo === turSayisi - 1 ? "Bitir 🏁" : "Devam ▶";
@@ -2615,7 +2653,7 @@ function oyunBosluk(durak, index) {
       kutu.textContent = opt.hece; kutu.classList.add("dolu");
       gb.innerHTML = `<span class="iyi">${opt.hece} = ${t.hedefHece} 🎉</span>`;
     } else {
-      btn.classList.add("yanlis"); sesYanlis();
+      btn.classList.add("yanlis"); sesYanlis(); hataEkle(t.hedefHece);
       alan.querySelectorAll(".fill-chip").forEach((b) => { if (b.querySelector(".fill-chip-oku").textContent === t.hedefHece) b.classList.add("dogru"); });
       gb.innerHTML = `<span class="kotu">Doğrusu: <b>${t.hedefHece}</b></span>`;
     }
@@ -2685,7 +2723,7 @@ function oyunKelime(durak, index) {
       konus({ glyph: k.tam, name: k.okunus });
       gb.innerHTML = `<span class="iyi">${k.tam} = ${k.okunus} 🎉</span>`;
     } else {
-      btn.classList.add("yanlis"); sesYanlis();
+      btn.classList.add("yanlis"); sesYanlis(); hataEkle(k.okunus);
       alan.querySelectorAll(".listen-hucre").forEach((b) => { if (b.textContent === dogruGlyph) b.classList.add("dogru"); });
       gb.innerHTML = `<span class="kotu">Doğru harf: <b>${dogruGlyph}</b> → ${k.tam}</span>`;
     }

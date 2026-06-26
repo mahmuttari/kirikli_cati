@@ -151,7 +151,14 @@ function arcadeDurak(sid, model, grup) {
   };
 }
 
-// Her aşama için oyun duraklarını üretir (sade: 5 durak; aşamalar arası dönüşümlü arcade)
+// Sürpriz durak: her açılışta rastgele bir oyun + rastgele içerik
+const SURPRIZ_OYUN_LISTE = ["balloon", "mole", "avla", "catch", "truefalse", "memory", "listen", "match", "riddle"];
+function surprizDurak(id, baslik, havuz, adet, oyunlar) {
+  return { id, title: baslik || "Sürpriz Oyun", emoji: "🎲", type: "random",
+    havuz, adet: adet || 8, pool: havuz, oyunlar: oyunlar || SURPRIZ_OYUN_LISTE };
+}
+
+// Her aşama için oyun duraklarını üretir (5 ders + 1 Sürpriz; aşamalar arası dönüşümlü arcade)
 function elifBaBolgeleri() {
   return ELIFBA_GRUPLARI.map((grup, i) => {
     const sid = `a${i + 1}`;
@@ -162,6 +169,7 @@ function elifBaBolgeleri() {
       { id: `${sid}_dinle`, title: "Dinle & Bul", emoji: "👂", type: "listen", items: grup, pool: HARFLER },
       arcadeDurak(sid, ARCADE_SIRA[i % ARCADE_SIRA.length], grup), // aşamaya göre değişen oyun (çeşitlilik)
       { id: `${sid}_sinav`, title: "Sınav",       emoji: "🏅", type: "quiz",   quiz: makeLetterQuiz(grup, HARFLER) },
+      surprizDurak(`${sid}_surpriz`, "Sürpriz Oyun", grup, grup.length),
     ];
     return {
       id: `bolge_${sid}`,
@@ -811,6 +819,20 @@ const SIMSEK_BOLGE = {
   ],
 };
 
+/* ---------- Eğlence Bahçesi: her durağa her tıkta FARKLI oyun (sürpriz) ---------- */
+const HECEKELIME_HEPSI = HECE_HEPSI.concat(KURAN_KELIMELER);
+const TUM_OKUMA_HAVUZ = HARFLER.concat(HECE_HEPSI).concat(KURAN_KELIMELER);
+const EGLENCE_BOLGE = {
+  id: "bolgeEglence", name: "Eğlence Bahçesi 🎡", color: "#fb7185",
+  duraklar: [
+    surprizDurak("eg1", "Hece Sürprizi", HECE_HEPSI, 9),
+    surprizDurak("eg2", "Kelime Sürprizi", KURAN_KELIMELER, 9),
+    surprizDurak("eg3", "Okuma Sürprizi", HECEKELIME_HEPSI, 10),
+    surprizDurak("eg4", "Büyük Sürpriz", TUM_OKUMA_HAVUZ, 10),
+    surprizDurak("eg5", "Sonsuz Eğlence", TUM_OKUMA_HAVUZ, 10),
+  ],
+};
+
 /* ---------- Tüm bölgeleri sırala (aşamalar + araya pekiştirme) ---------- */
 function tumBolgeler() {
   const a = elifBaBolgeleri();
@@ -822,7 +844,7 @@ function tumBolgeler() {
   out.push(SEKIL_BOLGE, ...HECE_BOLGELERI);
   out.push(MED_BOLGE, TENVIN_BOLGE, YILDIZ_BOLGE);
   out.push(LAMTARIF_BOLGE, KALKALE_BOLGE, MEDCESIT_BOLGE, NUNSAKIN_BOLGE, MIMSAKIN_BOLGE, VAKIF_BOLGE, INCELIK_BOLGE);
-  out.push(OKUMA_BOLGE, KELIME_BOLGE, RAKAM_BOLGE, DUA_BOLGE, TEKRAR_BOLGE, SIMSEK_BOLGE, SURE_BOLGE);
+  out.push(OKUMA_BOLGE, KELIME_BOLGE, RAKAM_BOLGE, DUA_BOLGE, TEKRAR_BOLGE, EGLENCE_BOLGE, SIMSEK_BOLGE, SURE_BOLGE);
   return out;
 }
 

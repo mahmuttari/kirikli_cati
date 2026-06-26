@@ -204,10 +204,25 @@ function durakAc(durak, index) {
     case "dizi":      return oyunDizi(durak, index);
     case "weak":      return oyunZayif(durak, index);
     case "timed":     return oyunSimsek(durak, index);
+    case "random":    return oyunRandom(durak, index);
     case "quiz":      return testeGir(durak, index);
     case "sure":      return sureEkrani(durak, index);
     default:          return derseGir(durak, index);
   }
+}
+
+// 🎲 SÜRPRİZ: her açılışta rastgele bir oyunla (ve durakHazirla ile rastgele içerikle) çalışır
+const SURPRIZ_OYUNLAR_VAR = {
+  balloon: oyunBalon, mole: oyunKostebek, avla: oyunAvla, catch: oyunYakala,
+  truefalse: oyunDogruYanlis, memory: oyunMemory, listen: oyunListen,
+  match: oyunMatch, riddle: oyunBilmece,
+};
+function oyunRandom(durak, index) {
+  const liste = (durak.oyunlar && durak.oyunlar.length ? durak.oyunlar : Object.keys(SURPRIZ_OYUNLAR_VAR))
+    .filter((t) => SURPRIZ_OYUNLAR_VAR[t]);
+  const tip = liste[Math.floor(Math.random() * liste.length)] || "balloon";
+  if (!durak.pool) durak.pool = durak.havuz || durak.letters || durak.pairs;
+  return SURPRIZ_OYUNLAR_VAR[tip](durak, index);
 }
 
 // Durak tipine göre küçük etiket
@@ -216,7 +231,8 @@ function tipEtiketi(type) {
     lesson: "📖 Öğren", quiz: "🏅 Sınav", match: "🧩 Eşleştir", listen: "👂 Dinle-Bul",
     memory: "🃏 Hafıza", trace: "🖊️ Çizme", balloon: "🎈 Balon", mole: "🐹 Köstebek",
     truefalse: "⚡ Doğru mu?", riddle: "🧠 Bilmece", fill: "📝 Boşluk", kelime: "🏙️ Kelime",
-    avla: "🔎 Harf Avı", catch: "🪂 Yakala", dizi: "🚂 Tren", weak: "🔁 Tekrar", timed: "⚡ Yarış", sure: "📖 Sure",
+    avla: "🔎 Harf Avı", catch: "🪂 Yakala", dizi: "🚂 Tren", weak: "🔁 Tekrar",
+    random: "🎲 Sürpriz", timed: "⚡ Yarış", sure: "📖 Sure",
   }[type] || "📚 Ders";
 }
 
@@ -1058,7 +1074,7 @@ function oyunDogruYanlis(durak, index) {
     const gb = wrap.querySelector(".geri-bildirim");
     const doruMu = secim === t.dogruMu;
     if (doruMu) { dogru++; sesDogru(); gb.innerHTML = `<span class="iyi">Aferin! 🎉</span>`; }
-    else { sesYanlis(); gb.innerHTML = `<span class="kotu">Doğrusu: ${t.glyph} = <b>${t.gercek}</b></span>`; }
+    else { sesYanlis(); hataEkle(t.gercek); gb.innerHTML = `<span class="kotu">Doğrusu: ${t.glyph} = <b>${t.gercek}</b></span>`; }
     const ileri = document.createElement("button");
     ileri.className = "devam";
     ileri.textContent = turNo === turSayisi - 1 ? "Bitir 🏁" : "Devam ▶";
@@ -1186,7 +1202,7 @@ function oyunBosluk(durak, index) {
       kutu.textContent = opt.hece; kutu.classList.add("dolu");
       gb.innerHTML = `<span class="iyi">${opt.hece} = ${t.hedefHece} 🎉</span>`;
     } else {
-      btn.classList.add("yanlis"); sesYanlis();
+      btn.classList.add("yanlis"); sesYanlis(); hataEkle(t.hedefHece);
       alan.querySelectorAll(".fill-chip").forEach((b) => { if (b.querySelector(".fill-chip-oku").textContent === t.hedefHece) b.classList.add("dogru"); });
       gb.innerHTML = `<span class="kotu">Doğrusu: <b>${t.hedefHece}</b></span>`;
     }
@@ -1256,7 +1272,7 @@ function oyunKelime(durak, index) {
       konus({ glyph: k.tam, name: k.okunus });
       gb.innerHTML = `<span class="iyi">${k.tam} = ${k.okunus} 🎉</span>`;
     } else {
-      btn.classList.add("yanlis"); sesYanlis();
+      btn.classList.add("yanlis"); sesYanlis(); hataEkle(k.okunus);
       alan.querySelectorAll(".listen-hucre").forEach((b) => { if (b.textContent === dogruGlyph) b.classList.add("dogru"); });
       gb.innerHTML = `<span class="kotu">Doğru harf: <b>${dogruGlyph}</b> → ${k.tam}</span>`;
     }
