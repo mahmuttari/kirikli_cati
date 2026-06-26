@@ -550,3 +550,18 @@ body {
 /* ---- Besmele kartı (sure başı) ---- */
 .besmele-kart { background: linear-gradient(180deg, #fff, #f5f3ff); border: 3px solid #ddd6fe; }
 .besmele-kart .sure-no { color: #7c3aed; }
+
+/* ---- Yarış ---- */
+.yaris-ust { margin-bottom: 16px; }
+.yaris-ust .geri { margin-bottom: 10px; }
+.yaris-pistler { display: flex; flex-direction: column; gap: 10px; }
+.yaris-pist {
+  position: relative; height: 46px; background: #eef2ff; border-radius: 14px;
+  border: 2px dashed #c7d2fe; overflow: hidden;
+}
+.yaris-kos { position: absolute; top: 4px; font-size: 1.9rem; transition: left .35s ease; }
+.yaris-bayrak { position: absolute; right: 6px; top: 8px; font-size: 1.5rem; }
+
+/* ---- Atlama sınavı süre ---- */
+.sinav-sure { background: #dbeafe; color: #1d4ed8; padding: 4px 10px; border-radius: 12px; font-size: .9rem; }
+.sinav-sure.az { background: #fee2e2; color: #b91c1c; }

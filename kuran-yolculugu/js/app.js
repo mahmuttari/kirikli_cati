@@ -204,6 +204,7 @@ function durakAc(durak, index) {
     case "dizi":      return oyunDizi(durak, index);
     case "weak":      return oyunZayif(durak, index);
     case "timed":     return oyunSimsek(durak, index);
+    case "yaris":     return oyunYaris(durak, index);
     case "random":    return oyunRandom(durak, index);
     case "quiz":      return testeGir(durak, index);
     case "sure":      return sureEkrani(durak, index);
@@ -211,10 +212,10 @@ function durakAc(durak, index) {
   }
 }
 
-// 🎲 SÜRPRİZ: her açılışta rastgele bir oyunla (ve durakHazirla ile rastgele içerikle) çalışır
+// 🎁 SÜRPRİZ: tek dokunuşta rastgele EĞLENCELİ bir oyun gelir (içerik de rastgele)
 const SURPRIZ_OYUNLAR_VAR = {
-  balloon: oyunBalon, mole: oyunKostebek, avla: oyunAvla, catch: oyunYakala,
-  truefalse: oyunDogruYanlis, memory: oyunMemory, listen: oyunListen,
+  yaris: oyunYaris, catch: oyunYakala, balloon: oyunBalon, mole: oyunKostebek,
+  avla: oyunAvla, truefalse: oyunDogruYanlis, memory: oyunMemory, listen: oyunListen,
   match: oyunMatch, riddle: oyunBilmece,
 };
 function oyunRandom(durak, index) {
@@ -229,10 +230,10 @@ function oyunRandom(durak, index) {
 function tipEtiketi(type) {
   return {
     lesson: "📖 Öğren", quiz: "🏅 Sınav", match: "🧩 Eşleştir", listen: "👂 Dinle-Bul",
-    memory: "🃏 Hafıza", trace: "🖊️ Çizme", balloon: "🎈 Balon", mole: "🐹 Köstebek",
-    truefalse: "⚡ Doğru mu?", riddle: "🧠 Bilmece", fill: "📝 Boşluk", kelime: "🏙️ Kelime",
+    memory: "🧠 Hafıza", trace: "🖊️ Çizme", balloon: "🎈 Balon", mole: "🐹 Köstebek",
+    truefalse: "⚡ Doğru mu?", riddle: "💭 Bilmece", fill: "📝 Boşluk", kelime: "🏙️ Kelime",
     avla: "🔎 Harf Avı", catch: "🪂 Yakala", dizi: "🚂 Tren", weak: "🔁 Tekrar",
-    random: "🎲 Sürpriz", timed: "⚡ Yarış", sure: "📖 Sure",
+    random: "🎁 Sürpriz", yaris: "🏁 Yarış", timed: "⚡ Yarış", sure: "📖 Sure",
   }[type] || "📚 Ders";
 }
 
@@ -617,7 +618,7 @@ function oyunMemory(durak, index) {
   wrap.appendChild(ustBaslik(durak));
   const aciklama = document.createElement("p");
   aciklama.className = "oyun-aciklama";
-  aciklama.textContent = "Kartları çevir, harfi ismiyle eşleştir! 🃏";
+  aciklama.textContent = "Kartları çevir, harfi ismiyle eşleştir! 🧠";
   wrap.appendChild(aciklama);
   const grid = document.createElement("div");
   grid.className = "memory-grid";
@@ -1385,14 +1386,27 @@ function atlamaSinavi(hedefIndex, bolge) {
   }
   const havuz = [...havuzMap.values()];
   if (havuz.length < 3) { alert("Bu bölüm için sınav oluşturulamadı."); return; }
-  const soruSay = Math.min(16, Math.max(8, havuz.length));
-  const sorular = makeLetterQuiz(shuffleArr(havuz).slice(0, soruSay), havuz, soruSay, "Bu nedir?");
-  let i = 0, dogru = 0;
+  // Daha kapsayıcı ve zor: çok soru + 4 şık + toplam süre
+  const soruSay = Math.min(24, Math.max(15, havuz.length));
+  const secilen = (havuz.length >= soruSay ? shuffleArr(havuz).slice(0, soruSay)
+                                            : Array.from({ length: soruSay }, () => rastgele(havuz)));
+  const sorular = secilen.map((it) => {
+    const yanlis = shuffleArr(havuz.filter((h) => h.name !== it.name)).slice(0, 3).map((h) => h.name);
+    return { glyph: it.glyph, a: it.name, options: shuffleArr([it.name, ...yanlis]) };
+  });
+  const toplamSure = soruSay * 4; // saniye (belli sürede bitirilmeli)
+  let i = 0, dogru = 0, kalan = toplamSure, bittiBayrak = false;
 
   app.innerHTML = "";
   const wrap = document.createElement("div");
   wrap.className = "test-wrap";
   app.appendChild(wrap);
+
+  function sureGuncelle() {
+    const el = wrap.querySelector(".sinav-sure");
+    if (el) { el.textContent = `⏱️ ${kalan}s`; el.classList.toggle("az", kalan <= 10); }
+  }
+  _ara(() => { if (bittiBayrak) return; kalan--; sureGuncelle(); if (kalan <= 0) bitir(true); }, 1000);
 
   function ciz() {
     const s = sorular[i];
@@ -1400,15 +1414,16 @@ function atlamaSinavi(hedefIndex, bolge) {
       <div class="test-ust">
         <button class="geri">← Çık</button>
         <div class="ilerleme-cubuk"><div style="width:${(i / sorular.length) * 100}%"></div></div>
+        <span class="sinav-sure">⏱️ ${kalan}s</span>
         <span>${i + 1}/${sorular.length}</span>
       </div>
-      <p class="oyun-aciklama">⏭️ Atlama Sınavı — geçmek için %95 (en çok 1 yanlış)</p>
-      <div class="soru">${s.glyph ? `<div class="soru-harf">${s.glyph}</div>` : ""}<p>${s.q.replace(s.glyph || "@@@", "")}</p></div>
+      <p class="oyun-aciklama">⏭️ Atlama Sınavı — geçmek için %95 (en çok 1 yanlış) ve süreyi geçmemek</p>
+      <div class="soru"><div class="soru-harf">${s.glyph}</div><p>Bu nedir?</p></div>
       <div class="secenekler"></div>
       <div class="geri-bildirim"></div>`;
     wrap.querySelector(".geri").addEventListener("click", render);
     const sec = wrap.querySelector(".secenekler");
-    shuffleArr(s.options).forEach((opt) => {
+    s.options.forEach((opt) => {
       const b = document.createElement("button");
       b.className = "secenek";
       b.textContent = opt;
@@ -1425,16 +1440,15 @@ function atlamaSinavi(hedefIndex, bolge) {
       wrap.querySelectorAll(".secenek").forEach((b) => { if (b.textContent === s.a) b.classList.add("dogru"); });
       gb.innerHTML = `<span class="kotu">Doğrusu: <b>${s.a}</b></span>`;
     }
-    const ileri = document.createElement("button");
-    ileri.className = "devam";
-    ileri.textContent = i === sorular.length - 1 ? "Bitir 🏁" : "Devam ▶";
-    ileri.addEventListener("click", () => { i++; if (i < sorular.length) ciz(); else bitir(); });
-    gb.appendChild(ileri);
+    _gec(() => { if (bittiBayrak) return; i++; if (i < sorular.length) ciz(); else bitir(false); }, 650); // otomatik ilerle (süre baskısı)
   }
-  function bitir() {
+  function bitir(zamanBitti) {
+    if (bittiBayrak) return;
+    bittiBayrak = true;
+    zamanlayicilariTemizle();
     const oran = dogru / sorular.length;
     const yuzde = Math.round(oran * 100);
-    const gecti = oran >= 0.95;
+    const gecti = !zamanBitti && oran >= 0.95;
     if (gecti) {
       for (let j = 0; j < hedefIndex; j++) ILERLEME.tamamlanan[DURAKLAR[j].id] = true;
       ilerlemeKaydet(ILERLEME);
@@ -1448,7 +1462,7 @@ function atlamaSinavi(hedefIndex, bolge) {
         <div class="sonuc-emoji">${gecti ? "⏭️" : "📚"}</div>
         <h2>${gecti ? "Tebrikler, geçtin!" : "Henüz olmadı"}</h2>
         <p>${dogru} / ${sorular.length} doğru — <b>%${yuzde}</b></p>
-        <p>${gecti ? `“${bolge.name}” bölümüne kadar olan kısım açıldı!` : "Geçmek için %95 gerekiyor. Önce dersleri çalış 💪"}</p>
+        <p>${gecti ? `“${bolge.name}” bölümüne kadar olan kısım açıldı!` : (zamanBitti ? "⏱️ Süre doldu! %95 ve süre içinde bitirmen gerek 💪" : "Geçmek için %95 gerekiyor. Önce dersleri çalış 💪")}</p>
         <div class="sonuc-butonlar">
           ${gecti ? `<button class="sonraki-btn">Bölüme Git ▶</button>` : `<button class="tekrar-btn">🔁 Tekrar Dene</button>`}
           <button class="harita-btn">🗺️ Haritaya Dön</button>
@@ -1724,6 +1738,76 @@ function oyunYakala(durak, index) {
 
   yeniHedef();
   _ara(dus, 850);
+  window.scrollTo(0, 0);
+}
+
+// ---- YARIŞ (rakibe karşı: doğru cevapla koş, önce bitire ulaş) ----
+function oyunYaris(durak, index) {
+  const havuz = durak.letters || durak.havuz || durak.pairs || [];
+  const pool = durak.pool || havuz;
+  const HEDEF = 8;            // bitişe kaç adım
+  let sen = 0, rakip = 0, bitti = false;
+
+  app.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "test-wrap";
+  app.appendChild(wrap);
+  const ust = document.createElement("div");
+  ust.className = "yaris-ust";
+  wrap.appendChild(ust);
+  const alan = document.createElement("div");
+  wrap.appendChild(alan);
+
+  function pist() {
+    const sy = (sen / HEDEF) * 100, ry = (rakip / HEDEF) * 100;
+    ust.innerHTML = `
+      <button class="geri">← Çık</button>
+      <div class="yaris-pistler">
+        <div class="yaris-pist"><div class="yaris-kos" style="left:${Math.min(sy, 92)}%">🧒</div><span class="yaris-bayrak">🏁</span></div>
+        <div class="yaris-pist"><div class="yaris-kos rakip" style="left:${Math.min(ry, 92)}%">🤖</div><span class="yaris-bayrak">🏁</span></div>
+      </div>`;
+    ust.querySelector(".geri").addEventListener("click", render);
+  }
+
+  function soru() {
+    if (bitti) return;
+    const hedef = rastgele(havuz);
+    const yanlis = shuffleArr(pool.filter((x) => x.name !== hedef.name)).slice(0, 2).map((x) => x.name);
+    const secenekler = shuffleArr([hedef.name, ...yanlis]);
+    alan.innerHTML = `
+      <div class="soru"><div class="soru-harf">${hedef.glyph}</div><p>Hangisi?</p></div>
+      <div class="secenekler"></div>`;
+    const sec = alan.querySelector(".secenekler");
+    secenekler.forEach((opt) => {
+      const b = document.createElement("button");
+      b.className = "secenek";
+      b.textContent = opt;
+      b.addEventListener("click", () => {
+        if (bitti) return;
+        if (opt === hedef.name) { sen++; sesDogru(); }
+        else { rakip++; sesYanlis(); hataEkle(hedef.name); b.classList.add("yanlis"); }
+        pist();
+        if (sen >= HEDEF || rakip >= HEDEF) bitir();
+        else soru();
+      });
+      sec.appendChild(b);
+    });
+  }
+
+  // rakip zamanla ilerler (heyecan): her ~2.6 sn bir adım
+  _ara(() => { if (bitti) return; rakip++; pist(); if (rakip >= HEDEF) bitir(); }, 2600);
+
+  function bitir() {
+    if (bitti) return;
+    bitti = true;
+    zamanlayicilariTemizle();
+    const kazandi = sen >= HEDEF && sen >= rakip;
+    const yildiz = kazandi ? 3 : sen >= HEDEF - 3 ? 2 : 1;
+    tamamla(durak, index, yildiz, sen, HEDEF, kazandi ? "🏆 Yarışı kazandın!" : "🤖 Rakip önde bitirdi, tekrar dene!");
+  }
+
+  pist();
+  soru();
   window.scrollTo(0, 0);
 }
 

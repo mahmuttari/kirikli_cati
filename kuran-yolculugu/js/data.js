@@ -137,7 +137,7 @@ const ARCADE = {
   balloon:   { title: "Balon Patlat", emoji: "🎈" },
   mole:      { title: "Köstebek",     emoji: "🐹" },
   truefalse: { title: "Doğru mu?",    emoji: "⚡" },
-  memory:    { title: "Hafıza",       emoji: "🃏" },
+  memory:    { title: "Hafıza",       emoji: "🧠" },
   avla:      { title: "Harf Avı",     emoji: "🔎" },
   catch:     { title: "Kayan Yakala", emoji: "🪂" },
 };
@@ -152,9 +152,9 @@ function arcadeDurak(sid, model, grup) {
 }
 
 // Sürpriz durak: her açılışta rastgele bir oyun + rastgele içerik
-const SURPRIZ_OYUN_LISTE = ["balloon", "mole", "avla", "catch", "truefalse", "memory", "listen", "match", "riddle"];
+const SURPRIZ_OYUN_LISTE = ["yaris", "catch", "balloon", "mole", "avla", "truefalse", "memory", "listen", "match", "riddle"];
 function surprizDurak(id, baslik, havuz, adet, oyunlar) {
-  return { id, title: baslik || "Sürpriz Oyun", emoji: "🎲", type: "random",
+  return { id, title: baslik || "Sürpriz Oyun", emoji: "🎁", type: "random",
     havuz, adet: adet || 8, pool: havuz, oyunlar: oyunlar || SURPRIZ_OYUN_LISTE };
 }
 
@@ -186,13 +186,13 @@ function pekistirmeBolge(no, harfler, renk, buyuk) {
   const sid = `pk${no}`;
   const ad = Math.min(buyuk ? 12 : 8, harfler.length); // her açılışta bu kadar RASTGELE harf
   const d = [
-    { id: `${sid}_bilmece`,  title: "Bilmece",     emoji: "🧠", type: "riddle",   havuz: harfler, adet: ad, pool: HARFLER },
+    { id: `${sid}_bilmece`,  title: "Bilmece",     emoji: "💭", type: "riddle",   havuz: harfler, adet: ad, pool: HARFLER },
     { id: `${sid}_balon`,    title: "Balon",       emoji: "🎈", type: "balloon",  havuz: harfler, adet: ad, pool: HARFLER },
     { id: `${sid}_kostebek`, title: "Köstebek",    emoji: "🐹", type: "mole",     havuz: harfler, adet: ad, pool: HARFLER },
     { id: `${sid}_dinle`,    title: "Dinle & Bul", emoji: "👂", type: "listen",   havuz: harfler, adet: ad, pool: HARFLER },
     { id: `${sid}_sinav`,    title: "Sınav",       emoji: "🏅", type: "quiz",     havuz: harfler, adet: ad, pool: HARFLER },
   ];
-  if (buyuk) d.splice(4, 0, { id: `${sid}_hafiza`, title: "Hafıza", emoji: "🃏", type: "memory", havuz: harfler, adet: 6, pool: HARFLER });
+  if (buyuk) d.splice(4, 0, { id: `${sid}_hafiza`, title: "Hafıza", emoji: "🧠", type: "memory", havuz: harfler, adet: 6, pool: HARFLER });
   return {
     id: `bolge_${sid}`,
     name: `🎯 Pekiştirme ${no}${buyuk ? " · Büyük Tekrar" : ""}  (${harfler.length} harf)`,
@@ -825,11 +825,8 @@ const TUM_OKUMA_HAVUZ = HARFLER.concat(HECE_HEPSI).concat(KURAN_KELIMELER);
 const EGLENCE_BOLGE = {
   id: "bolgeEglence", name: "Eğlence Bahçesi 🎡", color: "#fb7185",
   duraklar: [
-    surprizDurak("eg1", "Hece Sürprizi", HECE_HEPSI, 9),
-    surprizDurak("eg2", "Kelime Sürprizi", KURAN_KELIMELER, 9),
-    surprizDurak("eg3", "Okuma Sürprizi", HECEKELIME_HEPSI, 10),
-    surprizDurak("eg4", "Büyük Sürpriz", TUM_OKUMA_HAVUZ, 10),
-    surprizDurak("eg5", "Sonsuz Eğlence", TUM_OKUMA_HAVUZ, 10),
+    surprizDurak("eg1", "Eğlenceli Oyun", HECEKELIME_HEPSI, 10),
+    surprizDurak("eg2", "Büyük Eğlence", TUM_OKUMA_HAVUZ, 10),
   ],
 };
 
