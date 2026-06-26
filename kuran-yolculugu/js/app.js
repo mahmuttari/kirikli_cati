@@ -149,7 +149,13 @@ function render() {
   ILERLEME = ilerlemeYukle();
   app.innerHTML = "";
   app.appendChild(haritaEkrani());
-  window.scrollTo(0, 0);
+  // Haritaya dönünce başa değil, BULUNULAN durağa kaydır
+  const hedef = app.querySelector(".durak.guncel");
+  if (hedef && hedef.scrollIntoView) {
+    requestAnimationFrame(() => { try { hedef.scrollIntoView({ block: "center" }); } catch { hedef.scrollIntoView(); } });
+  } else {
+    window.scrollTo(0, 0);
+  }
 }
 
 function toplamYildiz() {
@@ -167,6 +173,7 @@ function zamanlayicilariTemizle() {
 
 const RENKLER = ["#f87171", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa", "#f472b6", "#fb923c", "#22d3ee"];
 function rastgeleRenk() { return RENKLER[Math.floor(Math.random() * RENKLER.length)]; }
+const HARITA_FIGURLER = ["🕌", "🌙", "⭐", "🕋", "📿", "🏮", "🌟", "✨", "📖", "🕯️", "🌷", "☪️", "🪔", "🧭"];
 
 // Havuzdan taze rastgele örnek (her açılışta farklı içerik)
 function ornekle(havuz, adet) {
@@ -260,6 +267,10 @@ function haritaEkrani() {
   const yol = document.createElement("div");
   yol.className = "yol";
 
+  // "Bulunulan durak": açık ama tamamlanmamış ilk durak (yoksa son açık durak)
+  let guncelIndex = DURAKLAR.findIndex((d, i) => durakAcikMi(i) && !ILERLEME.tamamlanan[d.id]);
+  if (guncelIndex < 0) { for (let i = DURAKLAR.length - 1; i >= 0; i--) { if (durakAcikMi(i)) { guncelIndex = i; break; } } }
+
   let sonBolgeId = null;
   DURAKLAR.forEach((durak, i) => {
     if (durak.bolge.id !== sonBolgeId) {
@@ -267,7 +278,6 @@ function haritaEkrani() {
       bb.className = "bolge-baslik";
       bb.style.background = durak.bolge.color;
       bb.innerHTML = `<span>${durak.bolge.name}</span>`;
-      // Bölüm kilitliyse "Sınavla Atla" butonu (iyi bilenler için)
       if (i > 0 && !durakAcikMi(i)) {
         const atla = document.createElement("button");
         atla.className = "atla-btn";
@@ -284,11 +294,16 @@ function haritaEkrani() {
     const tamam = !!ILERLEME.tamamlanan[durak.id];
     const yildiz = ILERLEME.yildiz[durak.id] || 0;
 
+    // sağa-sola kıvrılan (dolanan) yol
+    const off = Math.round(74 * Math.sin(i * 0.8) + ((i % 3) - 1) * 22);
+
     const node = document.createElement("button");
-    node.className = "durak " + (i % 2 === 0 ? "sol" : "sag");
-    node.classList.add(tamam ? "tamam" : acik ? "acik" : "kilitli");
+    node.className = "durak " + (tamam ? "tamam" : acik ? "acik" : "kilitli");
+    if (i === guncelIndex) node.classList.add("guncel");
+    node.style.transform = `translateX(${off}px)`;
     node.disabled = !acik;
     node.innerHTML = `
+      ${i === guncelIndex ? `<span class="guncel-rozet">📍 Buradasın</span>` : ""}
       <span class="durak-tip">${tipEtiketi(durak.type)}</span>
       <span class="durak-emoji">${acik ? durak.emoji : "🔒"}</span>
       <span class="durak-isim">${durak.title}</span>
@@ -296,6 +311,15 @@ function haritaEkrani() {
     `;
     node.addEventListener("click", () => { if (acik) durakAc(durak, i); });
     yol.appendChild(node);
+
+    // araya İslami figürler serpiştir (kaotik, neşeli his)
+    if (i % 3 === 1) {
+      const fig = document.createElement("div");
+      fig.className = "harita-figur";
+      fig.textContent = HARITA_FIGURLER[Math.floor(i / 3) % HARITA_FIGURLER.length];
+      fig.style.transform = `translateX(${-off * 1.3}px)`;
+      yol.appendChild(fig);
+    }
   });
 
   wrap.appendChild(yol);
