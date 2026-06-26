@@ -522,7 +522,7 @@ function oyunMatch(durak, index) {
     solSutun.querySelectorAll(".match-hucre").forEach((x) => x.classList.remove("secili"));
     btn.classList.add("secili");
     seciliHarf = { btn, p };
-    konus(p);
+    // alıştırma: cevabı seslendirme, çocuk kendi bilsin
   }
   function isimSec(btn, p) {
     if (!seciliHarf || btn.classList.contains("eslesti")) return;
@@ -1175,16 +1175,13 @@ function oyunBosluk(durak, index) {
         <div class="ilerleme-cubuk"><div style="width:${(turNo / tur.length) * 100}%"></div></div>
         <span>${turNo + 1}/${tur.length}</span>
       </div>
-      <p class="oyun-aciklama">Boşluğu doldur: <b>“${t.hedefHece}”</b> diye okunsun
-        <button class="mini-dinle">🔊</button></p>
+      <p class="oyun-aciklama">Boşluğu doldur: <b>“${t.hedefHece}”</b> diye okunsun</p>
       <div class="fill-satir">
         <span class="fill-govde">${t.govde}</span>
         <span class="fill-kutu">?</span>
       </div>
       <div class="fill-secenekler"></div>
       <div class="geri-bildirim"></div>`;
-    alan.querySelector(".mini-dinle").addEventListener("click", () => konus({ glyph: (t.secenekler.find((o) => o.ses === t.dogruSes) || {}).hece, name: t.hedefHece }));
-    konus({ glyph: (t.secenekler.find((o) => o.ses === t.dogruSes) || {}).hece, name: t.hedefHece });
     const sec = alan.querySelector(".fill-secenekler");
     shuffleArr(t.secenekler).forEach((opt) => {
       const b = document.createElement("button");
@@ -1248,13 +1245,10 @@ function oyunKelime(durak, index) {
         <div class="ilerleme-cubuk"><div style="width:${(turNo / tur.length) * 100}%"></div></div>
         <span>${turNo + 1}/${tur.length}</span>
       </div>
-      <p class="oyun-aciklama">Eksik harfi bul: <b>“${k.okunus}”</b> (${k.anlam})
-        <button class="mini-dinle">🔊</button></p>
+      <p class="oyun-aciklama">Eksik harfi bul: <b>“${k.okunus}”</b> (${k.anlam})</p>
       <div class="kelime-satir">${parcalar}</div>
       <div class="listen-grid kelime-secenekler"></div>
       <div class="geri-bildirim"></div>`;
-    alan.querySelector(".mini-dinle").addEventListener("click", () => konus({ glyph: k.tam, name: k.okunus }));
-    konus({ glyph: k.tam, name: k.okunus });
     const grid = alan.querySelector(".kelime-secenekler");
     secenekler.forEach((g) => {
       const b = document.createElement("button");
@@ -1270,7 +1264,6 @@ function oyunKelime(durak, index) {
     if (g === dogruGlyph) {
       btn.classList.add("dogru"); dogru++; sesDogru();
       kutu.textContent = dogruGlyph; kutu.classList.add("dolu");
-      konus({ glyph: k.tam, name: k.okunus });
       gb.innerHTML = `<span class="iyi">${k.tam} = ${k.okunus} 🎉</span>`;
     } else {
       btn.classList.add("yanlis"); sesYanlis(); hataEkle(k.okunus);
@@ -1636,12 +1629,10 @@ function oyunDizi(durak, index) {
         <div class="ilerleme-cubuk"><div style="width:${(turNo / tur.length) * 100}%"></div></div>
         <span>${turNo + 1}/${tur.length}</span>
       </div>
-      <p class="oyun-aciklama">🚂 Harfleri sırayla diz: <b>“${k.okunus}”</b> (${k.anlam})
-        <button class="mini-dinle">🔊</button></p>
+      <p class="oyun-aciklama">🚂 Harfleri sırayla diz: <b>“${k.okunus}”</b> (${k.anlam})</p>
       <div class="tren" dir="rtl"></div>
       <div class="tren-havuz"></div>
       <div class="geri-bildirim"></div>`;
-    alan.querySelector(".mini-dinle").addEventListener("click", () => konus({ glyph: k.tam, name: k.okunus }));
     const tren = alan.querySelector(".tren");
     hedef.forEach(() => { const s = document.createElement("span"); s.className = "tren-slot"; tren.appendChild(s); });
     const slotlar = [...tren.querySelectorAll(".tren-slot")];
@@ -1656,7 +1647,6 @@ function oyunDizi(durak, index) {
           slotlar[pos].textContent = t.g; slotlar[pos].classList.add("dolu");
           b.disabled = true; b.classList.add("kullanildi"); sesDogru(); pos++;
           if (pos === hedef.length) {
-            konus({ glyph: k.tam, name: k.okunus });
             const gb = alan.querySelector(".geri-bildirim");
             gb.innerHTML = `<span class="iyi">${k.tam} = ${k.okunus} 🎉</span>`;
             const ileri = document.createElement("button");
@@ -1676,7 +1666,6 @@ function oyunDizi(durak, index) {
       });
       havuz.appendChild(b);
     });
-    konus({ glyph: k.tam, name: k.okunus });
   }
   ciz();
   window.scrollTo(0, 0);
