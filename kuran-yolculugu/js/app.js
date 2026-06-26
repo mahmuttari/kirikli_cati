@@ -798,9 +798,26 @@ function tilavetCal(sureNo, ayetNo, okunusYedek) {
   dene();
 }
 
+// Her sure okumadan önce çekilen Besmele (Fâtiha hariç; onun 1. âyeti zaten Besmele'dir).
+const BESMELE = {
+  glyph: "بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحٖيمِ",
+  okunus: "Bismillâhi'r-rahmâni'r-rahîm",
+  meal: "Rahmân ve Rahîm olan Allah'ın adıyla.",
+  sureNo: 1, ayetNo: 1, // sesi Fâtiha'nın besmelesinden (gömülü 001001) çalınır
+  besmele: true,
+};
+
 function sureEkrani(durak, index) {
   const s = durak.sure;
-  let ayetNo = 0;
+  // Parça listesi: (Besmele) + âyetler. Fâtiha'da besmele eklenmez (1. âyeti zaten odur).
+  const parcalar = [];
+  if (s.sureNo !== 1) parcalar.push(BESMELE);
+  s.ayetler.forEach((a, k) => parcalar.push({
+    glyph: a.glyph, okunus: a.okunus, meal: a.meal, sureNo: s.sureNo, ayetNo: k + 1,
+  }));
+  const ayetSayisi = s.ayetler.length;
+  let pos = 0;
+
   app.innerHTML = "";
   const wrap = document.createElement("div");
   wrap.className = "ders-wrap";
@@ -814,25 +831,26 @@ function sureEkrani(durak, index) {
   app.appendChild(wrap);
 
   function ciz() {
-    const a = s.ayetler[ayetNo];
+    const p = parcalar[pos];
+    const etiket = p.besmele ? "Besmele 🌸" : `${p.ayetNo}. âyet`;
     alan.innerHTML = `
-      <div class="sure-kart">
-        <div class="sure-no">${ayetNo + 1}. âyet</div>
-        <div class="sure-arapca">${a.glyph}</div>
-        <div class="sure-okunus">${a.okunus}</div>
-        <div class="sure-meal">“${a.meal}”</div>
+      <div class="sure-kart ${p.besmele ? "besmele-kart" : ""}">
+        <div class="sure-no">${etiket}</div>
+        <div class="sure-arapca">${p.glyph}</div>
+        <div class="sure-okunus">${p.okunus}</div>
+        <div class="sure-meal">“${p.meal}”</div>
         <button class="dinle">🔊 Dinle</button>
       </div>
       <div class="kart-nav">
-        <button class="onceki" ${ayetNo === 0 ? "disabled" : ""}>◀ Geri</button>
-        <span class="kart-sayac">${ayetNo + 1} / ${s.ayetler.length}</span>
-        <button class="sonraki">${ayetNo === s.ayetler.length - 1 ? "Bitir 🏁" : "İleri ▶"}</button>
+        <button class="onceki" ${pos === 0 ? "disabled" : ""}>◀ Geri</button>
+        <span class="kart-sayac">${pos + 1} / ${parcalar.length}</span>
+        <button class="sonraki">${pos === parcalar.length - 1 ? "Bitir 🏁" : "İleri ▶"}</button>
       </div>`;
-    alan.querySelector(".dinle").addEventListener("click", () => tilavetCal(s.sureNo, ayetNo + 1, a.okunus));
-    tilavetCal(s.sureNo, ayetNo + 1, a.okunus);
-    alan.querySelector(".onceki").addEventListener("click", () => { if (ayetNo > 0) { ayetNo--; ciz(); } });
+    alan.querySelector(".dinle").addEventListener("click", () => tilavetCal(p.sureNo, p.ayetNo, p.okunus));
+    tilavetCal(p.sureNo, p.ayetNo, p.okunus);
+    alan.querySelector(".onceki").addEventListener("click", () => { if (pos > 0) { pos--; ciz(); } });
     alan.querySelector(".sonraki").addEventListener("click", () => {
-      if (ayetNo < s.ayetler.length - 1) { ayetNo++; ciz(); }
+      if (pos < parcalar.length - 1) { pos++; ciz(); }
       else tamamla(durak, index, 3, 0, 0, `${s.ad}'ni okudun! 📖🎉`);
     });
   }

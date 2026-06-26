@@ -546,3 +546,7 @@ body {
 .dusen.yakalandi { animation: yakala-pat .35s forwards; }
 @keyframes yakala-pat { to { transform: scale(1.6); opacity: 0; } }
 .dusen.kacti-x { outline: 4px solid #f87171; }
+
+/* ---- Besmele kartı (sure başı) ---- */
+.besmele-kart { background: linear-gradient(180deg, #fff, #f5f3ff); border: 3px solid #ddd6fe; }
+.besmele-kart .sure-no { color: #7c3aed; }
