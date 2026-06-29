@@ -1483,6 +1483,85 @@ const EGLENCE_BOLGE = {
   ],
 };
 
+/* ---------- Diyanet Elif-Bâ (2024) kitabındaki ALIŞTIRMALAR ----------
+   Konu 3-9'daki okuma alıştırmaları; her kelime Kur'an'dan örnektir.
+   Okuma dersi (read-along) olarak sunulur: çocuk okur, doğru telaffuzu dinleyebilir. */
+function diyanetKonu(id, emoji, title, ciftler) {
+  return { id: "diyanet_" + id, type: "lesson", emoji, title,
+    cards: ciftler.map((c) => ({ glyph: c[0], name: c[1] })) };
+}
+const DIYANET_BOLGE = {
+  id: "bolgeDiyanet", name: "📕 Diyanet Elif-Bâ Alıştırmaları", color: "#0284c7",
+  duraklar: [
+    diyanetKonu("hareke", "✸", "Harekeler Alıştırması", [
+      ["ضَرَبَ", "darabe"], ["صَبَرَ", "sabera"], ["حَمِدَ", "hamide"], ["صَعِدَ", "saide"],
+      ["قَرَاَ", "karae"], ["رَفَعَ", "rafea"], ["سَمِعَ", "semia"], ["طَفِقَ", "tafika"],
+      ["ثُلُثُ", "sülüsü"], ["كُتُبُ", "kütübü"], ["صَمَدُ", "samedü"], ["فَهُوَ", "fehüve"],
+      ["رَجَعَ", "racea"], ["يَدَكَ", "yedeke"], ["عَمِلَ", "amile"], ["اَمِنَ", "emine"],
+      ["خُلُقُ", "huluku"], ["سُئِلَ", "süile"], ["جُمِعَ", "cümia"], ["مَرَضُ", "maradu"],
+      ["غُفِرَ", "gufira"], ["رَزَقَ", "razeka"], ["ظَهَرَ", "zahera"], ["شَهِدَ", "şehide"],
+      ["فَرِحَ", "feriha"], ["رُسُلُ", "rusulü"], ["قُتِلَ", "kutile"], ["ذُكِرَ", "zükira"],
+    ]),
+    diyanetKonu("cezm", "ـْ", "Cezm Alıştırması", [
+      ["مِنْ", "min"], ["لَكُمْ", "leküm"], ["اَنْزَلَ", "enzele"], ["هُمْ", "hüm"],
+      ["كَيْفَ", "keyfe"], ["اَكْبَرُ", "ekberu"], ["لَمْ", "lem"], ["يَوْمَ", "yevme"],
+      ["قُلْ", "kul"], ["قَبْلَ", "kable"], ["اَرْسَلَ", "ersele"], ["كُنْتُمْ", "küntüm"],
+      ["اَلَسْتُ", "elestü"], ["لَمْ يَلِدْ", "lem yelid"], ["نَعْبُدُ", "na'büdü"],
+      ["اِسْتَكْبَرَ", "istekbera"], ["رَبِحَتْ", "rabihat"], ["مَثَلُهُمْ", "meselühüm"],
+      ["اَنْفُسَهُمْ", "enfüsehüm"], ["مَعَكُمْ", "meaküm"], ["كَيْدُهُمْ", "keydühüm"],
+      ["اَرَاَيْتَ", "eraeyte"], ["اِسْتَوْقَدَ", "istevkade"], ["عَلَيْهِمْ", "aleyhim"],
+      ["اَلَمْ تَرَ", "elem tera"], ["اَلْحَمْدُ", "elhamdü"], ["قَوْلِهِمْ", "kavlihim"],
+      ["لَمْ تُنْذِرْ", "lem tünzir"],
+    ]),
+    diyanetKonu("sedde", "ـّ", "Şedde Alıştırması", [
+      ["زَيَّنَ", "zeyyene"], ["نَزَّلَ", "nezzele"], ["عَلَّمَ", "alleme"], ["يَظُنُّ", "yezunnü"],
+      ["حَقُّ", "hakku"], ["نُسَبِّحُ", "nüsebbihu"], ["كُلُّ", "küllü"], ["جَنَّةَ", "cennete"],
+      ["مُدَّثِّر", "müddessir"], ["جَهَنَّمَ", "cehenneme"], ["فَصَّلَ", "fassale"],
+      ["يَمُدُّهُمْ", "yemüddühüm"], ["مِنْ شَرِّ", "min şerri"], ["فُصِّلَتْ", "fussilet"],
+      ["اِتَّبِعْ", "ittebi'"], ["يُبَشِّرُ", "yübeşşiru"], ["مُحَمَّدُ", "muhammedü"],
+      ["وَجَّهْتُ", "veccehtü"], ["تَوَكَّلْ", "tevekkel"], ["يُكَذِّبُ", "yükezzibü"],
+      ["يُبَشِّرُكَ", "yübeşşiruke"], ["اِتَّخَذْتُمْ", "ittehaztüm"], ["بَيِّنَةُ", "beyyinetü"],
+      ["نُنَبِّئُهُمْ", "nünebbiühüm"], ["لَاُدْخِلَنَّكُمْ", "leüdhilenneküm"],
+      ["يُبَيِّنُ لَكُمْ", "yübeyyinü leküm"], ["لَعَلَّكُمْ", "lealleküm"], ["مُطْمَئِنّ", "mutmainn"],
+    ]),
+    diyanetKonu("med", "اٰ", "Med Harfleri Alıştırması", [
+      ["جَوَاب", "cevab"], ["كِتَابُ", "kitabü"], ["كَانَ", "kane"], ["قَالَ", "kale"],
+      ["رَمَضَانَ", "ramadane"], ["جِبَالَ", "cibale"], ["سُبْحَانَ", "sübhane"], ["مَا دَامَ", "ma dame"],
+      ["عَظِيمُ", "azimü"], ["قَدِيرُ", "kadirü"], ["دِينُ", "dinü"], ["اَخِي", "ahi"],
+      ["مُسْتَقِيمُ", "müstakimü"], ["مُؤْمِنِينَ", "mü'minine"], ["صَادِقِينَ", "sadikine"],
+      ["عَالَمِينَ", "alemine"], ["رَسُولُ", "rasulü"], ["اَعُوذُ", "euzü"], ["كُونُوا", "kunu"],
+      ["قَالُوا", "kalu"], ["عَابِدُونَ", "abidune"], ["تَعْبُدُونَ", "ta'büdune"],
+      ["يَشْكُرُونَ", "yeşkürune"], ["يَعْلَمُونَ", "ya'lemune"], ["يَسْتَطِيعُونَ", "yestatiune"],
+      ["مُهَاجِرُونَ", "mühacirune"], ["مُجَاهِدُونَ", "mücahidune"], ["يَمِيلُونَ", "yemilune"],
+    ]),
+    diyanetKonu("tenvin", "ـً", "Tenvin Alıştırması", [
+      ["مَالًا", "malen"], ["رِزْقًا", "rızkan"], ["اَجْرٍ", "ecrin"], ["نُورًا", "nuran"],
+      ["حَكِيمًا", "hakimen"], ["عَادٍ", "adin"], ["سَكَنًا", "sekenen"], ["قَصَصًا", "kasasan"],
+      ["تَوْبَةً", "tevbeten"], ["حَسَنَةً", "haseneten"], ["سَفَرٍ", "seferin"], ["اَيَّامٍ", "eyyamin"],
+      ["ذَرَّةٍ", "zerretin"], ["خَطِيئَةٍ", "hatietin"], ["سَبِيلٍ", "sebilin"], ["صَدَقَةٍ", "sadakatin"],
+      ["فِدْيَةٌ", "fidyetün"], ["كِتَابٌ", "kitabün"], ["رُسُلٌ", "rusulün"], ["كَثِيرٌ", "kesirün"],
+      ["اَزْوَاجٌ", "ezvacün"], ["عَدْلٌ", "adlün"], ["اَحَدٌ", "ehadün"], ["عِدَّةٌ", "iddetün"],
+      ["وَلَا خَوْفٌ", "ve la havfün"], ["اُمَّةً وَاحِدَةً", "ümmeten vahideten"],
+      ["بِغَيْرِ حِسَابٍ", "bigayri hisabin"], ["قَرْضًا حَسَنًا", "kardan hasenen"],
+    ]),
+    diyanetKonu("asar", "ٰ", "Asar-Med-Kasr Alıştırması", [
+      ["هَارُونَ", "harune"], ["تَقْوٰى", "takva"], ["اٰدَمَ", "ademe"], ["مُوسٰى", "musa"],
+      ["اٰمَنَ", "amene"], ["هٰذَا", "haza"], ["رَحْمٰنُ", "rahmanü"], ["اٰيَةٌ", "ayetün"],
+      ["مَسْـُٔولًا", "mes'ulen"], ["رُؤُسَكُمْ", "ruuseküm"], ["اُولٰٓئِكَ", "ulaike"], ["جَزٰٓؤُا", "cezaü"],
+    ]),
+    diyanetKonu("lafza", "ﷲ", "Zamir ve Lafzatullah", [
+      ["كُتُبِهٖ", "kütübihi"], ["كُلُّهُ", "küllühü"], ["لَدُنْهُ", "ledünhü"], ["رَبَّهُ", "rabbehü"],
+      ["وَحْدَهُ", "vahdehü"], ["اِلَيْهِ", "ileyhi"], ["لَهُ", "lehü"], ["نُورِهٖ", "nurihi"],
+      ["فِيهِ", "fihi"], ["جَعَلْنٰهُ", "cealnahü"], ["بِهٖ", "bihi"], ["نَفْسِهٖ", "nefsihi"],
+      ["عَنْهُ", "anhü"], ["عَلَّمْنٰهُ", "allemnahü"],
+      ["بِسْمِ اللّٰهِ", "bismillahi"], ["خَلْقِ اللّٰهِ", "halkıllahi"], ["لِلّٰهِ", "lillahi"],
+      ["بِاللّٰهِ", "billahi"], ["اِلَى اللّٰهِ", "ilallahi"], ["رَسُولُ اللّٰهِ", "rasulüllahi"],
+      ["وَاللّٰهُ", "vallahü"], ["مِنَ اللّٰهِ", "minallahi"], ["مِنْ دُونِ اللّٰهِ", "min dunillahi"],
+      ["مَعَ اللّٰهِ", "meallahi"], ["قُلِ اللّٰهُ", "kulillahü"], ["فَاِنَّ اللّٰهَ", "feinnallahe"],
+    ]),
+  ],
+};
+
 /* ---------- Bölüm sonu eğlence: klasik retro oyunlar (sadece eğlence) ----------
    Her bölümün sonuna 1 retro oyun eklenir. Oynamak için "kredi" gerekir;
    kredi yeni leveller (duraklar) geçtikçe kazanılır. Öğretici değildir. */
@@ -1510,6 +1589,7 @@ function tumBolgeler() {
   out.push(SEKIL_BOLGE, ...HECE_BOLGELERI);
   out.push(MED_BOLGE, TENVIN_BOLGE, YILDIZ_BOLGE);
   out.push(LAMTARIF_BOLGE, KALKALE_BOLGE, MEDCESIT_BOLGE, NUNSAKIN_BOLGE, MIMSAKIN_BOLGE, VAKIF_BOLGE, INCELIK_BOLGE);
+  out.push(DIYANET_BOLGE); // Diyanet Elif-Bâ kitabı alıştırmaları
   out.push(OKUMA_BOLGE, KELIME_BOLGE, RAKAM_BOLGE, DUA_BOLGE, TEKRAR_BOLGE, EGLENCE_BOLGE, SIMSEK_BOLGE, SURE_BOLGE);
   // Her bölümün sonuna bir retro eğlence oyunu ekle (sadece eğlence, krediyle oynanır)
   out.forEach((b, i) => { b.duraklar = b.duraklar.concat(retroDurak(b.id, i)); });
