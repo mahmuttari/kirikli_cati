@@ -830,6 +830,22 @@ const EGLENCE_BOLGE = {
   ],
 };
 
+/* ---------- Bölüm sonu eğlence: klasik retro oyunlar (sadece eğlence) ----------
+   Her bölümün sonuna 1 retro oyun eklenir. Oynamak için "kredi" gerekir;
+   kredi yeni leveller (duraklar) geçtikçe kazanılır. Öğretici değildir. */
+const RETRO_OYUN_SIRA = ["snake", "flappy", "breakout", "shooter", "simon"];
+const RETRO_ISIM = {
+  snake: "🐍 Yılan", flappy: "🐤 Uçan Kuş", breakout: "🧱 Tuğla Kır",
+  shooter: "🚀 Uzay Atışı", simon: "🎵 Hafıza Dizisi",
+};
+function retroDurak(bolgeId, sira) {
+  const key = RETRO_OYUN_SIRA[sira % RETRO_OYUN_SIRA.length];
+  return {
+    id: bolgeId + "_retro", type: "retro", retro: key, eglence: true,
+    emoji: "🎮", title: RETRO_ISIM[key] || "🎮 Oyun Molası",
+  };
+}
+
 /* ---------- Tüm bölgeleri sırala (aşamalar + araya pekiştirme) ---------- */
 function tumBolgeler() {
   const a = elifBaBolgeleri();
@@ -842,6 +858,8 @@ function tumBolgeler() {
   out.push(MED_BOLGE, TENVIN_BOLGE, YILDIZ_BOLGE);
   out.push(LAMTARIF_BOLGE, KALKALE_BOLGE, MEDCESIT_BOLGE, NUNSAKIN_BOLGE, MIMSAKIN_BOLGE, VAKIF_BOLGE, INCELIK_BOLGE);
   out.push(OKUMA_BOLGE, KELIME_BOLGE, RAKAM_BOLGE, DUA_BOLGE, TEKRAR_BOLGE, EGLENCE_BOLGE, SIMSEK_BOLGE, SURE_BOLGE);
+  // Her bölümün sonuna bir retro eğlence oyunu ekle (sadece eğlence, krediyle oynanır)
+  out.forEach((b, i) => { b.duraklar = b.duraklar.concat(retroDurak(b.id, i)); });
   return out;
 }
 

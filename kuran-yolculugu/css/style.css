@@ -585,3 +585,60 @@ body {
   0%,100% { box-shadow: 0 0 0 3px rgba(251,191,36,.55), 0 6px 0 rgba(0,0,0,.18); }
   50%     { box-shadow: 0 0 0 10px rgba(251,191,36,.12), 0 6px 0 rgba(0,0,0,.18); }
 }
+
+/* ---- Sayaçlar (üst çubuk: kredi + yıldız) ---- */
+.sayaclar { display: flex; gap: 8px; align-items: center; }
+.kredi-sayac, .yildiz-sayac {
+  background: rgba(255,255,255,.85); border-radius: 14px; padding: 4px 10px;
+  font-weight: 800; font-size: .9rem; color: #1e3a5f; white-space: nowrap;
+}
+.kredi-sayac { background: #ede9fe; color: #6d28d9; }
+
+/* ---- Retro eğlence oyunları ---- */
+.retro-wrap { padding: 12px 14px 30px; }
+.retro-ust {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-bottom: 8px;
+}
+.retro-ust .geri {
+  background: #fff; border: none; border-radius: 12px; padding: 8px 12px;
+  font-weight: 700; color: #1e3a5f; box-shadow: 0 2px 0 rgba(0,0,0,.12);
+}
+.retro-baslik { font-weight: 800; font-size: 1.05rem; color: #1e3a5f; }
+.retro-kredi {
+  background: #ede9fe; color: #6d28d9; border-radius: 12px; padding: 6px 10px; font-weight: 800;
+}
+.retro-alt { text-align: center; color: #475569; font-size: .85rem; margin: 4px 0 10px; }
+.retro-alan { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.retro-canvas {
+  width: min(92vw, 360px); height: auto; image-rendering: pixelated;
+  border-radius: 14px; box-shadow: 0 6px 18px rgba(0,0,0,.25); touch-action: none;
+  background: #0f172a;
+}
+.retro-skor { font-weight: 800; color: #1e3a5f; font-size: 1.05rem; }
+
+/* Dokunmatik yön tuşları */
+.retro-dpad {
+  display: grid; grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(3, 56px);
+  gap: 6px; justify-content: center;
+}
+.retro-dpad .dbtn {
+  border: none; border-radius: 14px; font-size: 1.4rem; font-weight: 800;
+  background: #1e3a5f; color: #fff; box-shadow: 0 3px 0 rgba(0,0,0,.25); touch-action: manipulation;
+}
+.retro-dpad .dbtn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.25); }
+.retro-dpad .d-up { grid-column: 2; grid-row: 1; }
+.retro-dpad .d-left { grid-column: 1; grid-row: 2; }
+.retro-dpad .d-right { grid-column: 3; grid-row: 2; }
+.retro-dpad .d-down { grid-column: 2; grid-row: 3; }
+
+/* Simon (hafıza dizisi) */
+.simon-izgara {
+  display: grid; grid-template-columns: repeat(2, 110px); grid-template-rows: repeat(2, 110px);
+  gap: 10px;
+}
+.simon-pad {
+  border: none; border-radius: 18px; opacity: .55; transition: opacity .12s, transform .12s;
+  box-shadow: 0 4px 0 rgba(0,0,0,.2); touch-action: manipulation;
+}
+.simon-pad.aktif { opacity: 1; transform: scale(1.05); }
