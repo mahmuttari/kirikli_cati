@@ -100,7 +100,7 @@ function sesKes() {
 function arapcaAcik() { return ILERLEME.arapca !== false; } // varsayılan: açık
 function idArapca(id) {
   // SINAVLA ATLA havuzu için çekirdek "okuma" bölgeleri (harf/hece/kelime)
-  return !/bolgeRakam|bolgeDua|bolgeSure|bolgeVakif|bolgeMim|bolgeNun|bolgeMedC|bolgeIncelik|bolgeSekil|bolge_hcint/.test(id || "");
+  return !/bolgeRakam|bolgeDua|bolgeNamaz|bolgeSure|bolgeVakif|bolgeMim|bolgeNun|bolgeMedC|bolgeIncelik|bolgeSekil|bolge_hcint/.test(id || "");
 }
 function durakArapcaMi(d) {
   // SESLENDİRME: ileri okuma örnekleri de Arapça okunsun.
@@ -469,7 +469,7 @@ function sonucGoster(durak, index, yildiz, dogru, toplam, mesaj) {
 // ---- DERS EKRANI (kartlar + test) ----
 function derseGir(durak, index) {
   let kartNo = 0;
-  const kartlar = shuffleArr(durak.cards); // her açılışta kartlar karışık sırada
+  const kartlar = durak.sirali ? durak.cards.slice() : shuffleArr(durak.cards); // dua gibi sıralı içerikte karıştırma
   app.innerHTML = "";
   const wrap = document.createElement("div");
   wrap.className = "ders-wrap";

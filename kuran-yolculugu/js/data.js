@@ -453,6 +453,49 @@ const DUA_BOLGE = {
       soru: "Bu ismin okunuşu nedir?" },
   ],
 };
+
+/* ---------- Namaz Duaları (Diyanet Elif-Bâ kitabından) ---------- */
+const NAMAZ_DUALARI = [
+  { id: "nd_subhaneke", title: "Sübhâneke", emoji: "🤲", parcalar: [
+    ["سُبْحَانَكَ اللّٰهُمَّ وَبِحَمْدِكَ", "Sübhânekellâhümme ve bi-hamdik", "Allah'ım! Seni her eksiklikten tenzih eder, hamdinle anarım."],
+    ["وَتَبَارَكَ اسْمُكَ وَتَعَالٰى جَدُّكَ وَلَا اِلٰهَ غَيْرُكَ", "ve tebârekesmük ve teâlâ ceddük ve lâ ilâhe ğayruk", "Adın mübarek, şanın yücedir; senden başka ilah yoktur."],
+  ]},
+  { id: "nd_tahiyyat", title: "Tahiyyât", emoji: "🤲", parcalar: [
+    ["اَلتَّحِيَّاتُ لِلّٰهِ وَالصَّلَوَاتُ وَالطَّيِّبَاتُ", "Ettehiyyâtü lillâhi ve's-salavâtü ve't-tayyibât", "Bütün hürmetler, dualar ve güzellikler Allah'a aittir."],
+    ["اَلسَّلَامُ عَلَيْكَ اَيُّهَا النَّبِيُّ وَرَحْمَةُ اللّٰهِ وَبَرَكَاتُهُ", "Esselâmü aleyke eyyühe'n-nebiyyü ve rahmetullâhi ve berakâtüh", "Selam sana ey Peygamber, Allah'ın rahmeti ve bereketi üzerine olsun."],
+    ["اَلسَّلَامُ عَلَيْنَا وَعَلٰى عِبَادِ اللّٰهِ الصَّالِحِينَ", "Esselâmü aleynâ ve alâ ibâdillâhi's-sâlihîn", "Selam bize ve Allah'ın salih kullarına olsun."],
+    ["اَشْهَدُ اَنْ لَا اِلٰهَ اِلَّا اللّٰهُ وَاَشْهَدُ اَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ", "Eşhedü en lâ ilâhe illallâh ve eşhedü enne Muhammeden abdühû ve rasûlüh", "Şahitlik ederim ki Allah'tan başka ilah yoktur ve Muhammed O'nun kulu ve elçisidir."],
+  ]},
+  { id: "nd_salli", title: "Salli", emoji: "🤲", parcalar: [
+    ["اَللّٰهُمَّ صَلِّ عَلٰى مُحَمَّدٍ وَعَلٰى اٰلِ مُحَمَّدٍ", "Allâhümme salli alâ Muhammedin ve alâ âli Muhammed", "Allah'ım! Muhammed'e ve Muhammed'in âline rahmet et."],
+    ["كَمَا صَلَّيْتَ عَلٰى اِبْرَاهِيمَ وَعَلٰى اٰلِ اِبْرَاهِيمَ اِنَّكَ حَمِيدٌ مَجِيدٌ", "kemâ salleyte alâ İbrâhîme ve alâ âli İbrâhîm, inneke hamîdün mecîd", "İbrahim'e ve âline rahmet ettiğin gibi. Şüphesiz sen övgüye lâyık ve şanı yücesin."],
+  ]},
+  { id: "nd_barik", title: "Bârik", emoji: "🤲", parcalar: [
+    ["اَللّٰهُمَّ بَارِكْ عَلٰى مُحَمَّدٍ وَعَلٰى اٰلِ مُحَمَّدٍ", "Allâhümme bârik alâ Muhammedin ve alâ âli Muhammed", "Allah'ım! Muhammed'i ve âlini mübarek kıl."],
+    ["كَمَا بَارَكْتَ عَلٰى اِبْرَاهِيمَ وَعَلٰى اٰلِ اِبْرَاهِيمَ اِنَّكَ حَمِيدٌ مَجِيدٌ", "kemâ bârekte alâ İbrâhîme ve alâ âli İbrâhîm, inneke hamîdün mecîd", "İbrahim'i ve âlini mübarek kıldığın gibi. Şüphesiz sen övgüye lâyık ve şanı yücesin."],
+  ]},
+  { id: "nd_rabbenaatina", title: "Rabbenâ Âtinâ", emoji: "🤲", parcalar: [
+    ["رَبَّنَا اٰتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْاٰخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ", "Rabbenâ âtinâ fi'd-dünyâ haseneten ve fi'l-âhirati haseneten ve kınâ azâbe'n-nâr", "Rabbimiz! Bize dünyada da ahirette de iyilik ver; bizi ateş azabından koru."],
+  ]},
+  { id: "nd_rabbenagfirli", title: "Rabbenağfirlî", emoji: "🤲", parcalar: [
+    ["رَبَّنَا اغْفِرْ لِي وَلِوَالِدَيَّ وَلِلْمُؤْمِنِينَ يَوْمَ يَقُومُ الْحِسَابُ", "Rabbenağfirlî ve li-vâlideyye ve li'l-mü'minîne yevme yekûmü'l-hisâb", "Rabbimiz! Hesabın görüleceği gün beni, anne-babamı ve müminleri bağışla."],
+  ]},
+  { id: "nd_kunut1", title: "Kunut Duası 1", emoji: "🤲", parcalar: [
+    ["اَللّٰهُمَّ اِنَّا نَسْتَعِينُكَ وَنَسْتَغْفِرُكَ وَنَسْتَهْدِيكَ وَنُؤْمِنُ بِكَ وَنَتُوبُ اِلَيْكَ", "Allâhümme innâ nesteînüke ve nestağfirüke ve nestehdîke ve nü'minü bike ve netûbü ileyk", "Allah'ım! Senden yardım, bağışlanma ve hidayet dileriz; sana inanır, sana tövbe ederiz."],
+    ["وَنَتَوَكَّلُ عَلَيْكَ وَنُثْنِي عَلَيْكَ الْخَيْرَ كُلَّهُ نَشْكُرُكَ وَلَا نَكْفُرُكَ وَنَخْلَعُ وَنَتْرُكُ مَنْ يَفْجُرُكَ", "ve netevekkelü aleyke ve nüsnî aleyke'l-hayra küllehû, neşkürüke ve lâ nekfürüke ve nahleu ve netrükü men yefcürük", "Sana güveniriz, seni hayırla anarız; sana şükreder, nankörlük etmeyiz; sana isyan edeni bırakırız."],
+  ]},
+  { id: "nd_kunut2", title: "Kunut Duası 2", emoji: "🤲", parcalar: [
+    ["اَللّٰهُمَّ اِيَّاكَ نَعْبُدُ وَلَكَ نُصَلِّي وَنَسْجُدُ وَاِلَيْكَ نَسْعٰى وَنَحْفِدُ", "Allâhümme iyyâke na'büdü ve leke nüsallî ve nescüd ve ileyke nes'â ve nahfid", "Allah'ım! Yalnız sana kulluk eder, senin için namaz kılar ve secde ederiz; sana koşar ve hizmete yöneliriz."],
+    ["نَرْجُو رَحْمَتَكَ وَنَخْشٰى عَذَابَكَ اِنَّ عَذَابَكَ بِالْكُفَّارِ مُلْحِقٌ", "nercû rahmeteke ve nahşâ azâbek, inne azâbeke bi'l-küffâri mülhik", "Rahmetini umar, azabından korkarız. Şüphesiz azabın kâfirlere ulaşır."],
+  ]},
+];
+const NAMAZ_BOLGE = {
+  id: "bolgeNamaz", name: "Namaz Duaları 🤲", color: "#34d399",
+  duraklar: NAMAZ_DUALARI.map((d) => ({
+    id: d.id, title: d.title, emoji: d.emoji, type: "lesson", sirali: true,
+    cards: d.parcalar.map((p) => ({ glyph: p[0], name: p[1], hint: p[2] })),
+  })),
+};
 const SURE_FATIHA = {
   ad: "Fâtiha Sûresi", sureNo: 1, bilgi: "Kur'an'ın açılış suresi, her namazda okunur.",
   ayetler: [
@@ -1049,7 +1092,7 @@ function tumBolgeler() {
   out.push(MED_BOLGE, TENVIN_BOLGE, YILDIZ_BOLGE);
   out.push(LAMTARIF_BOLGE, KALKALE_BOLGE, MEDCESIT_BOLGE, NUNSAKIN_BOLGE, MIMSAKIN_BOLGE, VAKIF_BOLGE, INCELIK_BOLGE);
   out.push(DIYANET_BOLGE); // Diyanet Elif-Bâ kitabı alıştırmaları
-  out.push(OKUMA_BOLGE, KELIME_BOLGE, RAKAM_BOLGE, DUA_BOLGE, TEKRAR_BOLGE, EGLENCE_BOLGE, SIMSEK_BOLGE, SURE_BOLGE);
+  out.push(OKUMA_BOLGE, KELIME_BOLGE, RAKAM_BOLGE, DUA_BOLGE, NAMAZ_BOLGE, TEKRAR_BOLGE, EGLENCE_BOLGE, SIMSEK_BOLGE, SURE_BOLGE);
   // Her bölümün sonuna bir retro eğlence oyunu ekle (sadece eğlence, krediyle oynanır)
   out.forEach((b, i) => { b.duraklar = b.duraklar.concat(retroDurak(b.id, i)); });
   return out;
