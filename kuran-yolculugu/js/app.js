@@ -156,6 +156,50 @@ const sesBasari = () => tonCal([523, 659, 784, 1046], 0.15);
 // ---- Ekran yönetimi ----
 const app = document.getElementById("app");
 
+// ---- Harekeleri farklı renkte göster (kırmızı) ----
+// Arapça birleşik harekeler (üstün/esre/ötre/cezm/şedde/tenvin/med işaretleri vb.)
+const HAREKE_RE = /[ؐ-ًؚ-ٰٟۖ-ۜ۟-۪ۤۧۨ-ۭ]/;
+function harekeBoyaKok(kok) {
+  if (!kok || !kok.nodeType) return;
+  const walker = document.createTreeWalker(kok, NodeFilter.SHOW_TEXT, {
+    acceptNode(n) {
+      if (!n.nodeValue || !HAREKE_RE.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+      const p = n.parentNode;
+      if (!p || (p.classList && p.classList.contains("hareke-renk"))) return NodeFilter.FILTER_REJECT;
+      const tag = p.nodeName;
+      if (tag === "SCRIPT" || tag === "STYLE" || tag === "TEXTAREA") return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+  const hedefler = [];
+  let t; while ((t = walker.nextNode())) hedefler.push(t);
+  hedefler.forEach((tn) => {
+    const frag = document.createDocumentFragment();
+    let buf = "";
+    const flush = () => { if (buf) { frag.appendChild(document.createTextNode(buf)); buf = ""; } };
+    for (const ch of tn.nodeValue) {
+      if (HAREKE_RE.test(ch)) { flush(); const sp = document.createElement("span"); sp.className = "hareke-renk"; sp.textContent = ch; frag.appendChild(sp); }
+      else buf += ch;
+    }
+    flush();
+    tn.parentNode.replaceChild(frag, tn);
+  });
+}
+let _hrkObs = null;
+function harekeBoyaBaslat() {
+  if (!("MutationObserver" in window)) return;
+  _hrkObs = new MutationObserver((muts) => {
+    _hrkObs.disconnect();
+    for (const m of muts) for (const n of m.addedNodes) {
+      if (n.nodeType === 1) harekeBoyaKok(n);
+      else if (n.nodeType === 3 && HAREKE_RE.test(n.nodeValue || "")) harekeBoyaKok(n.parentNode);
+    }
+    _hrkObs.observe(app, { childList: true, subtree: true });
+  });
+  _hrkObs.observe(app, { childList: true, subtree: true });
+  harekeBoyaKok(app);
+}
+
 function render() {
   zamanlayicilariTemizle();
   document.onkeydown = null; // retro oyunların klavye dinleyicisini temizle
@@ -2528,4 +2572,5 @@ function konfetiPatlat() {
 }
 
 // Başlat
+harekeBoyaBaslat(); // harekeleri kırmızı göster (gözlemci)
 render();
