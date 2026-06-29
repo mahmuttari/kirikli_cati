@@ -3013,8 +3013,8 @@ function atlamaSinavi(hedefIndex, bolge) {
   const havuz = benzersiz([...yakinHavuz, ...uzakHavuz]); // şıklar (çeldiriciler) için tüm öğeler
   if (havuz.length < 3) { alert("Bu bölüm için sınav oluşturulamadı."); return; }
 
-  // Daha kapsayıcı ve zor: çok soru + 4 şık + toplam süre
-  const soruSay = Math.min(24, Math.max(15, havuz.length));
+  // Daha kapsayıcı ve zor: daha çok soru + 4 şık + daha sıkı toplam süre
+  const soruSay = Math.min(30, Math.max(20, havuz.length));
   // %80 yakın (son aşamalar), %20 uzak — uzak yoksa hepsi yakından.
   let yakinSoru = uzakHavuz.length ? Math.round(soruSay * 0.8) : soruSay;
   let uzakSoru = soruSay - yakinSoru;
@@ -3030,7 +3030,7 @@ function atlamaSinavi(hedefIndex, bolge) {
     const yanlis = shuffleArr(havuz.filter((h) => h.name !== it.name)).slice(0, 3).map((h) => h.name);
     return { glyph: it.glyph, a: it.name, options: shuffleArr([it.name, ...yanlis]) };
   });
-  const toplamSure = soruSay * 4; // saniye (belli sürede bitirilmeli)
+  const toplamSure = Math.round(soruSay * 2.6); // saniye — daha sıkı süre baskısı
   let i = 0, dogru = 0, kalan = toplamSure, bittiBayrak = false;
 
   app.innerHTML = "";
@@ -3076,7 +3076,7 @@ function atlamaSinavi(hedefIndex, bolge) {
       wrap.querySelectorAll(".secenek").forEach((b) => { if (b.textContent === s.a) b.classList.add("dogru"); });
       gb.innerHTML = `<span class="kotu">Doğrusu: <b>${s.a}</b></span>`;
     }
-    _gec(() => { if (bittiBayrak) return; i++; if (i < sorular.length) ciz(); else bitir(false); }, 650); // otomatik ilerle (süre baskısı)
+    _gec(() => { if (bittiBayrak) return; i++; if (i < sorular.length) ciz(); else bitir(false); }, 480); // otomatik ilerle (süre baskısı)
   }
   function bitir(zamanBitti) {
     if (bittiBayrak) return;
@@ -3549,7 +3549,7 @@ function yonTuslari(alan, onYon) {
 
 // ---- 1) YILAN ----
 function retroYilan(durak, index) {
-  const alan = retroKabuk("🐍 Yılan", "Yemi (🍎) topla, kuyruğa ve duvara çarpma!");
+  const alan = retroKabuk("🐍 Yılan", "Yemi (🍎) topla — her yemde biraz hızlanır!");
   const N = 15, CELL = 20, BOY = N * CELL;
   const cv = document.createElement("canvas");
   cv.width = BOY; cv.height = BOY; cv.className = "retro-canvas";
@@ -3560,7 +3560,7 @@ function retroYilan(durak, index) {
   alan.appendChild(skorEl);
 
   let yilan = [{ x: 7, y: 7 }], dir = { x: 1, y: 0 }, nextDir = dir;
-  let yem = yemKoy(), skor = 0, bitti = false;
+  let yem = yemKoy(), skor = 0, bitti = false, bekle = 165;
   function yemKoy() {
     let p;
     do { p = { x: Math.floor(Math.random() * N), y: Math.floor(Math.random() * N) }; }
@@ -3586,8 +3586,10 @@ function retroYilan(durak, index) {
       return retroBitti(durak, index, "Oyun Bitti", `🍎 ${skor} yem topladın!`);
     }
     yilan.unshift(bas);
-    if (bas.x === yem.x && bas.y === yem.y) { skor++; skorEl.textContent = "Skor: " + skor; tonCal([660]); yem = yemKoy(); }
-    else yilan.pop();
+    if (bas.x === yem.x && bas.y === yem.y) {
+      skor++; skorEl.textContent = "Skor: " + skor; tonCal([660]); yem = yemKoy();
+      bekle = Math.max(70, 165 - skor * 6); // her yemde hızlan
+    } else yilan.pop();
     ciz();
   }
   function yon(y) {
@@ -3602,12 +3604,13 @@ function retroYilan(durak, index) {
     if (m[e.key]) { e.preventDefault(); yon(m[e.key]); }
   };
   ciz();
-  _ara(adim, 150);
+  function dongu() { if (bitti) return; adim(); if (!bitti) _gec(dongu, bekle); }
+  _gec(dongu, bekle);
 }
 
 // ---- 2) UÇAN KUŞ (flappy) ----
 function retroKus(durak, index) {
-  const alan = retroKabuk("🐤 Uçan Kuş", "Ekrana dokun, borulara çarpmadan geç!");
+  const alan = retroKabuk("🐤 Uçan Kuş", "Ekrana dokun; ilerledikçe borular hızlanır ve daralır!");
   const W = 300, H = 420;
   const cv = document.createElement("canvas");
   cv.width = W; cv.height = H; cv.className = "retro-canvas";
@@ -3615,24 +3618,27 @@ function retroKus(durak, index) {
   const ctx = cv.getContext("2d");
 
   let y = H / 2, vy = 0, skor = 0, bitti = false;
-  const G = 0.5, ZIPLA = -7.5, R = 14;
-  const ARALIK = 130, GENIS = 46;
-  let borular = [{ x: W, bos: 120 }];
+  const G = 0.5, ZIPLA = -7.5, R = 14, GENIS = 46;
+  const gapBoyu = () => Math.max(96, 150 - skor * 4);   // boşluk daralır
+  const hizBoyu = () => Math.min(6, 2.3 + skor * 0.18); // borular hızlanır
+  let borular = [{ x: W, bos: 130, gap: gapBoyu() }];
   function zipla() { if (!bitti) { vy = ZIPLA; tonCal([520]); } }
   cv.addEventListener("pointerdown", (e) => { e.preventDefault(); zipla(); });
   document.onkeydown = (e) => { if (e.key === " " || e.key === "ArrowUp") { e.preventDefault(); zipla(); } };
 
   function adim() {
     if (bitti) return;
+    const hiz = hizBoyu();
     vy += G; y += vy;
-    borular.forEach((b) => (b.x -= 2.4));
-    if (borular[borular.length - 1].x < W - 170)
-      borular.push({ x: W + 20, bos: 60 + Math.random() * (H - ARALIK - 120) });
+    borular.forEach((b) => (b.x -= hiz));
+    if (borular[borular.length - 1].x < W - 165) {
+      const g = gapBoyu();
+      borular.push({ x: W + 20, bos: 45 + Math.random() * (H - g - 95), gap: g });
+    }
     borular = borular.filter((b) => b.x > -GENIS);
     for (const b of borular) {
       if (!b.gecti && b.x + GENIS < 60) { b.gecti = true; skor++; tonCal([700]); }
-      const cx = 60;
-      if (cx + R > b.x && cx - R < b.x + GENIS && (y - R < b.bos || y + R > b.bos + ARALIK)) {
+      if (60 + R > b.x && 60 - R < b.x + GENIS && (y - R < b.bos || y + R > b.bos + b.gap)) {
         bitti = true; sesYanlis();
         return retroBitti(durak, index, "Oyun Bitti", `🐤 Skor: ${skor}`);
       }
@@ -3643,7 +3649,7 @@ function retroKus(durak, index) {
     }
     ctx.fillStyle = "#7dd3fc"; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = "#16a34a";
-    borular.forEach((b) => { ctx.fillRect(b.x, 0, GENIS, b.bos); ctx.fillRect(b.x, b.bos + ARALIK, GENIS, H); });
+    borular.forEach((b) => { ctx.fillRect(b.x, 0, GENIS, b.bos); ctx.fillRect(b.x, b.bos + b.gap, GENIS, H); });
     ctx.font = "26px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("🐤", 60, y);
     ctx.fillStyle = "#1e3a5f"; ctx.font = "bold 24px sans-serif";
@@ -3654,7 +3660,7 @@ function retroKus(durak, index) {
 
 // ---- 3) TUĞLA KIR (breakout) ----
 function retroTugla(durak, index) {
-  const alan = retroKabuk("🧱 Tuğla Kır", "Çubuğu sürükle, topu kaçırma, tüm tuğlaları kır!");
+  const alan = retroKabuk("🧱 Tuğla Kır", "Parmağını sağa-sola SÜRÜKLE — top kırdıkça hızlanır!");
   const W = 300, H = 380;
   const cv = document.createElement("canvas");
   cv.width = W; cv.height = H; cv.className = "retro-canvas";
@@ -3663,20 +3669,31 @@ function retroTugla(durak, index) {
 
   const PW = 64, PH = 12, BR = 7;
   let px = W / 2 - PW / 2;
-  let bx = W / 2, by = H - 40, bvx = 3, bvy = -3, skor = 0, bitti = false;
+  let bx = W / 2, by = H - 40, bvx = 2.6, bvy = -3.2, skor = 0, bitti = false;
   const renkSat = ["#ef4444", "#f59e0b", "#fbbf24", "#34d399", "#60a5fa"];
   let tuglalar = [];
   const SUT = 5, KOL = 6, TG = 44, TH = 16, UST = 30, BOSL = 4;
   for (let r = 0; r < SUT; r++) for (let c = 0; c < KOL; c++)
     tuglalar.push({ x: 8 + c * (TG + BOSL), y: UST + r * (TH + BOSL), r, kirik: false });
 
+  // Parmakla sürükleyerek çubuğu hareket ettir (çubuk merkezi parmağı takip eder)
+  let suruk = false;
   function tasi(clientX) {
     const rect = cv.getBoundingClientRect();
     px = (clientX - rect.left) * (W / rect.width) - PW / 2;
     px = Math.max(0, Math.min(W - PW, px));
   }
-  cv.addEventListener("pointerdown", (e) => { e.preventDefault(); tasi(e.clientX); });
-  cv.addEventListener("pointermove", (e) => { if (e.buttons || e.pressure) { e.preventDefault(); tasi(e.clientX); } });
+  cv.addEventListener("pointerdown", (e) => { e.preventDefault(); suruk = true; try { cv.setPointerCapture(e.pointerId); } catch {} tasi(e.clientX); });
+  cv.addEventListener("pointermove", (e) => { if (suruk) { e.preventDefault(); tasi(e.clientX); } });
+  cv.addEventListener("pointerup", () => { suruk = false; });
+  cv.addEventListener("pointercancel", () => { suruk = false; });
+
+  // Topun hızını (yönü koruyarak) belirli bir büyüklüğe çek
+  function hizla(faktor) {
+    const m = Math.hypot(bvx, bvy) || 1;
+    const yeni = Math.min(7.2, m * faktor);
+    bvx = (bvx / m) * yeni; bvy = (bvy / m) * yeni;
+  }
 
   function adim() {
     if (bitti) return;
@@ -3690,7 +3707,7 @@ function retroTugla(durak, index) {
     for (const t of tuglalar) {
       if (t.kirik) continue;
       if (bx + BR > t.x && bx - BR < t.x + TG && by + BR > t.y && by - BR < t.y + TH) {
-        t.kirik = true; bvy = -bvy; skor++; tonCal([600 + t.r * 40]); break;
+        t.kirik = true; bvy = -bvy; skor++; tonCal([600 + t.r * 40]); hizla(1.035); break;
       }
     }
     if (tuglalar.every((t) => t.kirik)) { bitti = true; return retroBitti(durak, index, "Kazandın! 🎉", `🧱 Tüm tuğlaları kırdın! Skor: ${skor}`); }
@@ -3704,7 +3721,7 @@ function retroTugla(durak, index) {
 
 // ---- 4) UZAY ATIŞI (shooter) ----
 function retroUzay(durak, index) {
-  const alan = retroKabuk("🚀 Uzay Atışı", "Gemiyi sürükle, dokununca ateş et, taşları vur!");
+  const alan = retroKabuk("🚀 Uzay Atışı", "Gemiyi parmağınla SÜRÜKLE — gemi otomatik ateş eder, taşları vur!");
   const W = 300, H = 420;
   const cv = document.createElement("canvas");
   cv.width = W; cv.height = H; cv.className = "retro-canvas";
@@ -3713,19 +3730,26 @@ function retroUzay(durak, index) {
 
   let gx = W / 2, skor = 0, can = 3, bitti = false;
   let mermiler = [], taslar = [], sayac = 0;
+  // Parmakla sürükleyerek gemiyi hareket ettir
+  let suruk = false;
   function tasi(clientX) {
     const rect = cv.getBoundingClientRect();
     gx = (clientX - rect.left) * (W / rect.width);
     gx = Math.max(16, Math.min(W - 16, gx));
   }
   function ates() { if (!bitti) { mermiler.push({ x: gx, y: H - 40 }); tonCal([880]); } }
-  cv.addEventListener("pointerdown", (e) => { e.preventDefault(); tasi(e.clientX); ates(); });
-  cv.addEventListener("pointermove", (e) => { if (e.buttons || e.pressure) { e.preventDefault(); tasi(e.clientX); } });
+  cv.addEventListener("pointerdown", (e) => { e.preventDefault(); suruk = true; try { cv.setPointerCapture(e.pointerId); } catch {} tasi(e.clientX); });
+  cv.addEventListener("pointermove", (e) => { if (suruk) { e.preventDefault(); tasi(e.clientX); } });
+  cv.addEventListener("pointerup", () => { suruk = false; });
+  cv.addEventListener("pointercancel", () => { suruk = false; });
 
   function adim() {
     if (bitti) return;
     sayac++;
-    if (sayac % 28 === 0) taslar.push({ x: 20 + Math.random() * (W - 40), y: -16, hiz: 1.4 + Math.random() * 1.6 });
+    const atesHer = 14;                                     // otomatik ateş aralığı
+    const spawnHer = Math.max(11, 28 - Math.floor(skor / 2)); // skor arttıkça sık taş
+    if (sayac % atesHer === 0) ates();
+    if (sayac % spawnHer === 0) taslar.push({ x: 20 + Math.random() * (W - 40), y: -16, hiz: 1.3 + Math.random() * 1.5 + skor * 0.04 });
     mermiler.forEach((m) => (m.y -= 7));
     mermiler = mermiler.filter((m) => m.y > -10);
     taslar.forEach((t) => (t.y += t.hiz));
@@ -3770,16 +3794,18 @@ function retroSimon(durak, index) {
   alan.appendChild(izgara); alan.appendChild(durum);
 
   let dizi = [], sira = 0, oyuncuSira = false, skor = 0;
-  function yak(i) {
+  function yak(i, sure) {
     const p = padlar[i]; p.classList.add("aktif"); tonCal([renkler[i].ton]);
-    _gec(() => p.classList.remove("aktif"), 320);
+    _gec(() => p.classList.remove("aktif"), sure || 320);
   }
   function gosterDizi() {
     oyuncuSira = false; let k = 0;
+    const araMs = Math.max(280, 640 - dizi.length * 28); // tur ilerledikçe hızlanır
+    const yanma = Math.max(180, araMs - 120);
     const t = _ara(() => {
-      yak(dizi[k]); k++;
-      if (k >= dizi.length) { clearInterval(t); _gec(() => { oyuncuSira = true; sira = 0; }, 500); }
-    }, 650);
+      yak(dizi[k], yanma); k++;
+      if (k >= dizi.length) { clearInterval(t); _gec(() => { oyuncuSira = true; sira = 0; }, 420); }
+    }, araMs);
   }
   function yeniTur() {
     dizi.push(Math.floor(Math.random() * 4));
