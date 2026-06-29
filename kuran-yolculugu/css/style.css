@@ -648,3 +648,29 @@ body {
   background: #ede9fe; color: #6d28d9; font-weight: 800;
   border-radius: 12px; padding: 6px 12px; display: inline-block; margin-top: 6px;
 }
+
+/* ---- Yeni öğretici alıştırmalar ---- */
+/* Aynı mı? */
+.ayni-kart { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 22px 0; }
+.ayni-harf { font-size: 3.4rem; background: #fff; border-radius: 20px; padding: 14px 22px; box-shadow: 0 6px 16px rgba(0,0,0,.12); min-width: 84px; text-align: center; }
+.ayni-vs { font-size: 1.6rem; color: #94a3b8; font-weight: 800; }
+
+/* Ses Yankısı */
+.yanki-izgara { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 16px 0; }
+.yanki-pad { font-size: 2.2rem; background: #ede9fe; border: none; border-radius: 18px; padding: 14px 18px; min-width: 72px; box-shadow: 0 4px 0 rgba(0,0,0,.15); transition: transform .1s, background .1s; }
+.yanki-pad.aktif { background: #fbbf24; transform: scale(1.12); }
+
+/* Harf Topla (yönlendirmeli) */
+.topla-grid { display: grid; gap: 5px; max-width: 320px; margin: 14px auto; }
+.topla-h { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: #e2e8f0; border-radius: 10px; font-size: 1.5rem; }
+.topla-h.dolu { background: #c7d2fe; }
+.topla-h.oyuncu { background: #4ade80; font-size: 1.7rem; }
+
+/* Kayıp Harf */
+.kayip-satir { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 18px 0; }
+.kayip-h { font-size: 2.6rem; background: #fff; border-radius: 16px; padding: 10px 16px; min-width: 64px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+.kayip-h.bos { background: #fde68a; }
+.kayip-secenekler { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
+.kayip-sec { font-size: 2.2rem; background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 14px; padding: 10px 16px; min-width: 64px; }
+.kayip-sec.dogru { background: #bbf7d0; border-color: #22c55e; }
+.kayip-sec.yanlis { background: #fecaca; border-color: #ef4444; }

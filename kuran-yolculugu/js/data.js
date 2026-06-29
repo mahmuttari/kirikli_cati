@@ -237,8 +237,13 @@ const ARCADE = {
   memory:    { title: "Hafıza",       emoji: "🧠" },
   avla:      { title: "Harf Avı",     emoji: "🔎" },
   catch:     { title: "Kayan Yakala", emoji: "🪂" },
+  ayni:      { title: "Aynı mı?",     emoji: "🔀" },
+  echo:      { title: "Ses Yankısı",  emoji: "🎧" },
+  collect:   { title: "Harf Topla",   emoji: "🧭" },
+  kayip:     { title: "Kayıp Harf",   emoji: "🫥" },
 };
-const ARCADE_SIRA = ["balloon", "avla", "mole", "catch", "truefalse", "memory"];
+// Aşamalar arası dönüşümlü oyunlar — 10 farklı tür, ardışık aşamalar tekrar etmesin
+const ARCADE_SIRA = ["balloon", "avla", "echo", "mole", "collect", "truefalse", "ayni", "catch", "kayip", "memory"];
 
 function arcadeDurak(sid, model, grup) {
   const m = ARCADE[model];
@@ -249,7 +254,7 @@ function arcadeDurak(sid, model, grup) {
 }
 
 // Sürpriz durak: her açılışta rastgele bir oyun + rastgele içerik
-const SURPRIZ_OYUN_LISTE = ["yaris", "catch", "balloon", "mole", "avla", "truefalse", "memory", "listen", "match", "riddle"];
+const SURPRIZ_OYUN_LISTE = ["yaris", "catch", "balloon", "mole", "avla", "truefalse", "memory", "listen", "match", "riddle", "ayni", "echo", "collect", "kayip"];
 function surprizDurak(id, baslik, havuz, adet, oyunlar) {
   return { id, title: baslik || "Sürpriz Oyun", emoji: "🎁", type: "random",
     havuz, adet: adet || 8, pool: havuz, oyunlar: oyunlar || SURPRIZ_OYUN_LISTE };
@@ -264,7 +269,8 @@ function elifBaBolgeleri() {
       { id: `${sid}_ogren`, title: "Öğren",       emoji: "📖", type: "lesson", cards: grup },
       { id: `${sid}_esles`, title: "Eşleştir",    emoji: "🧩", type: "match",  pairs: grup },
       { id: `${sid}_dinle`, title: "Dinle & Bul", emoji: "👂", type: "listen", items: grup, pool: HARFLER },
-      arcadeDurak(sid, ARCADE_SIRA[i % ARCADE_SIRA.length], grup), // aşamaya göre değişen oyun (çeşitlilik)
+      arcadeDurak(sid, ARCADE_SIRA[i % ARCADE_SIRA.length], grup),       // aşamaya göre değişen oyun (çeşitlilik)
+      arcadeDurak(sid, ARCADE_SIRA[(i + 5) % ARCADE_SIRA.length], grup), // farklı ikinci bir oyun
       { id: `${sid}_sinav`, title: "Sınav",       emoji: "🏅", type: "quiz",   quiz: makeLetterQuiz(grup, HARFLER) },
       surprizDurak(`${sid}_surpriz`, "Sürpriz Oyun", grup, grup.length),
     ];
@@ -282,9 +288,17 @@ function elifBaBolgeleri() {
 function pekistirmeBolge(no, harfler, renk, buyuk) {
   const sid = `pk${no}`;
   const ad = Math.min(buyuk ? 12 : 8, harfler.length); // her açılışta bu kadar RASTGELE harf
+  // her pekiştirmede farklı oyun türleri gelsin (no'ya göre dönüşümlü)
+  const C = [
+    { type: "ayni", title: "Aynı mı?", emoji: "🔀" },
+    { type: "echo", title: "Ses Yankısı", emoji: "🎧" },
+    { type: "collect", title: "Harf Topla", emoji: "🧭" },
+    { type: "kayip", title: "Kayıp Harf", emoji: "🫥" },
+  ];
+  const ekstra = C[(no - 1) % C.length];
   const d = [
     { id: `${sid}_bilmece`,  title: "Bilmece",     emoji: "💭", type: "riddle",   havuz: harfler, adet: ad, pool: HARFLER },
-    { id: `${sid}_balon`,    title: "Balon",       emoji: "🎈", type: "balloon",  havuz: harfler, adet: ad, pool: HARFLER },
+    { id: `${sid}_${ekstra.type}`, title: ekstra.title, emoji: ekstra.emoji, type: ekstra.type, havuz: harfler, adet: ad, pool: HARFLER },
     { id: `${sid}_kostebek`, title: "Köstebek",    emoji: "🐹", type: "mole",     havuz: harfler, adet: ad, pool: HARFLER },
     { id: `${sid}_dinle`,    title: "Dinle & Bul", emoji: "👂", type: "listen",   havuz: harfler, adet: ad, pool: HARFLER },
     { id: `${sid}_sinav`,    title: "Sınav",       emoji: "🏅", type: "quiz",     havuz: harfler, adet: ad, pool: HARFLER },
