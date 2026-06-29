@@ -1833,6 +1833,10 @@ function tumDuraklar() {
 
 const STORAGE_KEY = "kuranYolculugu_v1";
 
+// ⚠️ GELİŞTİRİCİ MODU: tüm aşamalar açık + en az 100 oyun kredisi (test için).
+// Yayına alırken bunu false yap.
+const GELISTIRICI_MOD = true;
+
 // ---- İlerleme (localStorage) ----
 function ilerlemeYukle() {
   let p;
@@ -1844,6 +1848,7 @@ function ilerlemeYukle() {
   if (!p.tamamlanan) p.tamamlanan = {};
   if (!p.yildiz) p.yildiz = {};
   if (typeof p.kredi !== "number") p.kredi = 0; // retro oyun kredisi
+  if (GELISTIRICI_MOD && p.kredi < 100) p.kredi = 100; // test için bol kredi
   return p;
 }
 function ilerlemeKaydet(p) {
@@ -1864,6 +1869,7 @@ const DURAKLAR = tumDuraklar();
 // Bir durağın kilidi açık mı? (ilk durak hep açık, sonrakiler önceki tamamlanınca açılır)
 // Retro (eğlence) duraklar ilerlemeyi KİLİTLEMEZ: kilit kontrolünde atlanırlar.
 function durakAcikMi(index) {
+  if (GELISTIRICI_MOD) return true; // geliştirici modunda her şey açık
   if (index === 0) return true;
   let j = index - 1;
   while (j >= 0 && DURAKLAR[j].eglence) j--; // retro duraklarını atla
@@ -2159,7 +2165,9 @@ function haritaEkrani() {
 
   const intro = document.createElement("p");
   intro.className = "intro";
-  intro.textContent = "Haritada ilerle, harfleri öğren, oyunlar oyna, yıldızları topla! 🎉";
+  intro.innerHTML = GELISTIRICI_MOD
+    ? "🛠️ <b>Geliştirici Modu</b> — tüm aşamalar açık, 100 🎮 kredi. Her şeyi deneyebilirsin!"
+    : "Haritada ilerle, harfleri öğren, oyunlar oyna, yıldızları topla! 🎉";
   wrap.appendChild(intro);
 
   const yol = document.createElement("div");
