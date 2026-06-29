@@ -368,15 +368,18 @@ function ustBaslik(durak, geriFn) {
 }
 
 // Bir durağı tamamlandı olarak işaretle + sonuç ekranı göster
+let SON_KREDI_KAZANDI = false;
 function tamamla(durak, index, yildiz, dogru, toplam, mesaj) {
   zamanlayicilariTemizle();
+  SON_KREDI_KAZANDI = false;
   if (yildiz >= 1) {
-    const ilkKez = !ILERLEME.tamamlanan[durak.id];
     ILERLEME.tamamlanan[durak.id] = true;
     ILERLEME.yildiz[durak.id] = Math.max(ILERLEME.yildiz[durak.id] || 0, yildiz);
-    // Kredi: yeni bir level geçmek 1 retro-oyun kredisi kazandırır.
-    // Her şey bittiyse, tekrar oynamak için aynı dersi tekrar yapmak da kredi verir.
-    if (ilkKez || herSeyBitti()) ILERLEME.kredi = (ILERLEME.kredi || 0) + 1;
+    // Kredi: her alıştırmayı İLK oynayışta 1 kredi; sonraki her 5 oynayışta 1 kredi.
+    if (!ILERLEME.oynanan) ILERLEME.oynanan = {};
+    const sayi = (ILERLEME.oynanan[durak.id] || 0) + 1;
+    ILERLEME.oynanan[durak.id] = sayi;
+    if ((sayi - 1) % 5 === 0) { ILERLEME.kredi = (ILERLEME.kredi || 0) + 1; SON_KREDI_KAZANDI = true; } // 1, 6, 11, 16...
     ilerlemeKaydet(ILERLEME);
     sesBasari();
   } else {
@@ -397,6 +400,7 @@ function sonucGoster(durak, index, yildiz, dogru, toplam, mesaj) {
       <h2>${gecti ? "Tebrikler!" : "Az Kaldı!"}</h2>
       <div class="sonuc-yildiz">${"⭐".repeat(yildiz)}${"☆".repeat(3 - yildiz)}</div>
       <p>${mesaj || (toplam ? `${dogru} / ${toplam} doğru` : "")}</p>
+      ${gecti && SON_KREDI_KAZANDI ? `<p class="kredi-kazanc">🎮 +1 oyun kredisi kazandın!</p>` : ""}
       <div class="sonuc-butonlar">
         <button class="tekrar-btn">🔁 Tekrar Dene</button>
         ${gecti && sonrakiVar ? `<button class="sonraki-btn">Sonraki Durak ▶</button>` : ""}
@@ -1920,9 +1924,7 @@ function retroKrediYok(durak, index) {
   app.innerHTML = "";
   const w = document.createElement("div");
   w.className = "test-wrap";
-  const sonHint = herSeyBitti()
-    ? "Tüm Kur'an'ı bitirdin! 🎉 Tekrar oynamak için bir dersi/alıştırmayı yeniden çöz, her geçişte 🎮 kredi kazan."
-    : "Kredi kazanmak için yeni bölümleri (levelleri) geç. Her geçtiğin level <b>1 🎮 kredi</b> verir.";
+  const sonHint = "Kredi kazanmak için alıştırma çöz: her alıştırmayı <b>ilk oynayışta 1 🎮</b>, sonra <b>her 5 oynayışta 1 🎮</b> kazanırsın. Yeni bölümler geçtikçe kredin artar.";
   w.innerHTML = `
     <div class="sonuc tekrar">
       <div class="sonuc-emoji">🎮</div>
