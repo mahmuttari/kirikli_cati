@@ -1831,11 +1831,12 @@ function tumDuraklar() {
  * Harita + farklı öğrenme biçimleri (ders, eşleştirme, dinle-bul, hafıza, harf izi, sure).
  */
 
-const STORAGE_KEY = "kuranYolculugu_v1";
+// v2: geliştirici modundan çıkışta eski kayıt (100 kredi + açık aşamalar) sıfırlansın
+const STORAGE_KEY = "kuranYolculugu_v2";
 
 // ⚠️ GELİŞTİRİCİ MODU: tüm aşamalar açık + en az 100 oyun kredisi (test için).
 // Yayına alırken bunu false yap.
-const GELISTIRICI_MOD = true;
+const GELISTIRICI_MOD = false;
 
 // ---- İlerleme (localStorage) ----
 function ilerlemeYukle() {
