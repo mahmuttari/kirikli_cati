@@ -296,7 +296,7 @@ const SURPRIZ_OYUNLAR_VAR = {
   avla: oyunAvla, truefalse: oyunDogruYanlis, memory: oyunMemory, listen: oyunListen,
   match: oyunMatch, riddle: oyunBilmece,
   ayni: oyunAyni, echo: oyunYanki, collect: oyunTopla, kayip: oyunKayip,
-  dino: oyunDinoSurpriz,
+  dino: oyunDinoSurpriz, tetris: oyunTetrisSurpriz, araba: oyunArabaSurpriz,
 };
 function oyunRandom(durak, index) {
   const liste = (durak.oyunlar && durak.oyunlar.length ? durak.oyunlar : Object.keys(SURPRIZ_OYUNLAR_VAR))
@@ -2114,6 +2114,7 @@ function oyunKayip(durak, index) {
 const RETRO_OYUNLAR = {
   snake: retroYilan, flappy: retroKus, breakout: retroTugla,
   shooter: retroUzay, simon: retroSimon, dino: retroDino,
+  tetris: retroTetris, araba: retroAraba,
 };
 
 // Ortak kabuk: üst çubuk + oyun alanı; "alan" elementini döndürür
@@ -2658,6 +2659,123 @@ function oyunDinoSurpriz(durak, index) {
     const y = skor >= 40 ? 3 : skor >= 15 ? 2 : 1;
     tamamla(durak, index, y, skor, 0, `🦖 Skor: ${skor}`);
   });
+  window.scrollTo(0, 0);
+}
+
+// ---- 7) TETRİS ----
+function tetrisCekirdek(mount, onEnd) {
+  const COLS = 10, ROWS = 16, CELL = 16, W = COLS * CELL, H = ROWS * CELL;
+  const cv = document.createElement("canvas");
+  cv.width = W; cv.height = H; cv.className = "retro-canvas";
+  mount.appendChild(cv);
+  const ctx = cv.getContext("2d");
+  const RENK = [null, "#22d3ee", "#fbbf24", "#a78bfa", "#4ade80", "#f87171", "#60a5fa", "#fb923c"];
+  const SEKIL = {
+    I: [[1, 1, 1, 1]], O: [[2, 2], [2, 2]], T: [[0, 3, 0], [3, 3, 3]],
+    S: [[0, 4, 4], [4, 4, 0]], Z: [[5, 5, 0], [0, 5, 5]], J: [[6, 0, 0], [6, 6, 6]], L: [[0, 0, 7], [7, 7, 7]],
+  };
+  const TIPLER = Object.keys(SEKIL);
+  const grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+  let parca = null, px = 0, py = 0, skor = 0, satir = 0, bitti = false, dusHiz = 34, sayac = 0;
+  function carp(m, ox, oy) {
+    for (let y = 0; y < m.length; y++) for (let x = 0; x < m[y].length; x++) {
+      if (m[y][x]) { const gx = ox + x, gy = oy + y; if (gx < 0 || gx >= COLS || gy >= ROWS || (gy >= 0 && grid[gy][gx])) return true; }
+    }
+    return false;
+  }
+  function dondur(m) { const R = m.length, C = m[0].length; const n = Array.from({ length: C }, () => Array(R).fill(0)); for (let y = 0; y < R; y++) for (let x = 0; x < C; x++) n[x][R - 1 - y] = m[y][x]; return n; }
+  function yeni() { const t = TIPLER[Math.floor(Math.random() * TIPLER.length)]; parca = SEKIL[t].map((r) => r.slice()); px = Math.floor((COLS - parca[0].length) / 2); py = 0; if (carp(parca, px, py)) { bitti = true; onEnd(skor); } }
+  function temizle() {
+    let n = 0;
+    for (let y = ROWS - 1; y >= 0; y--) { if (grid[y].every((c) => c)) { grid.splice(y, 1); grid.unshift(Array(COLS).fill(0)); n++; y++; } }
+    if (n) { satir += n; skor += [0, 10, 30, 60, 100][n]; tonCal([600, 800]); dusHiz = Math.max(8, 34 - satir * 1.2); }
+  }
+  function sabitle() { for (let y = 0; y < parca.length; y++) for (let x = 0; x < parca[y].length; x++) { if (parca[y][x] && py + y >= 0) grid[py + y][px + x] = parca[y][x]; } temizle(); yeni(); }
+  function dus() { if (!carp(parca, px, py + 1)) py++; else sabitle(); }
+  function hareket(yon) {
+    if (bitti || !parca) return;
+    if (yon === "left" && !carp(parca, px - 1, py)) px--;
+    else if (yon === "right" && !carp(parca, px + 1, py)) px++;
+    else if (yon === "down") dus();
+    else if (yon === "up") { const r = dondur(parca); if (!carp(r, px, py)) parca = r; else if (!carp(r, px - 1, py)) { parca = r; px--; } else if (!carp(r, px + 1, py)) { parca = r; px++; } }
+    ciz();
+  }
+  function ciz() {
+    ctx.fillStyle = "#0b1220"; ctx.fillRect(0, 0, W, H);
+    for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) { if (grid[y][x]) { ctx.fillStyle = RENK[grid[y][x]]; ctx.fillRect(x * CELL + 1, y * CELL + 1, CELL - 2, CELL - 2); } }
+    if (parca) for (let y = 0; y < parca.length; y++) for (let x = 0; x < parca[y].length; x++) { if (parca[y][x]) { ctx.fillStyle = RENK[parca[y][x]]; ctx.fillRect((px + x) * CELL + 1, (py + y) * CELL + 1, CELL - 2, CELL - 2); } }
+  }
+  function adim() { if (bitti) return; sayac++; if (sayac >= dusHiz) { sayac = 0; dus(); } ciz(); }
+  yonTuslari(mount, hareket); // ◀ ▶ • ▲ döndür • ▼ indir
+  yeni(); ciz();
+  _ara(adim, 24);
+}
+function retroTetris(durak, index) {
+  const alan = retroKabuk("🧩 Tetris", "◀ ▶ kaydır • ▲ döndür • ▼ indir • satırları doldur!");
+  tetrisCekirdek(alan, (skor) => retroBitti(durak, index, "Oyun Bitti", `🧩 Skor: ${skor}`));
+}
+function oyunTetrisSurpriz(durak, index) {
+  app.innerHTML = "";
+  const wrap = document.createElement("div"); wrap.className = "ders-wrap"; wrap.appendChild(ustBaslik(durak));
+  const bilgi = document.createElement("p"); bilgi.className = "oyun-aciklama"; bilgi.textContent = "🧩 Tetris — ◀ ▶ kaydır, ▲ döndür, ▼ indir!"; wrap.appendChild(bilgi);
+  const mount = document.createElement("div"); mount.style.display = "flex"; mount.style.flexDirection = "column"; mount.style.alignItems = "center"; wrap.appendChild(mount);
+  app.appendChild(wrap);
+  tetrisCekirdek(mount, (skor) => tamamla(durak, index, skor >= 60 ? 3 : skor >= 20 ? 2 : 1, skor, 0, `🧩 Skor: ${skor}`));
+  window.scrollTo(0, 0);
+}
+
+// ---- 8) ARABA YARIŞI ----
+function yarisCekirdek(mount, onEnd) {
+  const W = 200, H = 320;
+  const cv = document.createElement("canvas");
+  cv.width = W; cv.height = H; cv.className = "retro-canvas";
+  mount.appendChild(cv);
+  const ctx = cv.getContext("2d");
+  const RAKIP = ["🚙", "🚕", "🚚", "🚌"];
+  let cx = W / 2, skor = 0, bitti = false, basladi = false, sayac = 0, yolKay = 0, araclar = [], suruk = false;
+  function tasi(clientX) { const r = cv.getBoundingClientRect(); cx = (clientX - r.left) * (W / r.width); cx = Math.max(24, Math.min(W - 24, cx)); }
+  cv.addEventListener("pointerdown", (e) => { e.preventDefault(); suruk = true; basladi = true; try { cv.setPointerCapture(e.pointerId); } catch {} tasi(e.clientX); });
+  cv.addEventListener("pointermove", (e) => { if (suruk) { e.preventDefault(); tasi(e.clientX); } });
+  cv.addEventListener("pointerup", () => { suruk = false; });
+  cv.addEventListener("pointercancel", () => { suruk = false; });
+  function adim() {
+    if (bitti) return;
+    const hiz = 3 + Math.min(5, skor * 0.02);
+    ctx.fillStyle = "#334155"; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#a3a3a3"; ctx.fillRect(0, 0, 10, H); ctx.fillRect(W - 10, 0, 10, H);
+    yolKay = (yolKay + (basladi ? hiz : 2)) % 40;
+    ctx.fillStyle = "#fde047"; for (let y = -40 + yolKay; y < H; y += 40) ctx.fillRect(W / 2 - 3, y + 8, 6, 20);
+    if (!basladi) {
+      ctx.font = "30px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("🚗", cx, H - 40);
+      ctx.fillStyle = "#fff"; ctx.font = "bold 14px sans-serif"; ctx.fillText("Sürükleyerek başla", W / 2, H / 2);
+      return;
+    }
+    sayac++;
+    if (sayac % Math.max(24, 58 - Math.floor(skor * 0.1)) === 0) araclar.push({ x: 24 + Math.random() * (W - 48), y: -30, emoji: RAKIP[Math.floor(Math.random() * RAKIP.length)] });
+    araclar.forEach((a) => (a.y += hiz));
+    araclar = araclar.filter((a) => a.y < H + 30);
+    if (sayac % 2 === 0) skor++;
+    ctx.font = "28px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for (const a of araclar) {
+      ctx.fillText(a.emoji, a.x, a.y);
+      if (Math.abs(a.x - cx) < 26 && Math.abs(a.y - (H - 40)) < 26) { bitti = true; sesYanlis(); return onEnd(skor); }
+    }
+    ctx.font = "30px serif"; ctx.fillText("🚗", cx, H - 40);
+    ctx.fillStyle = "#fff"; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic"; ctx.fillText("Skor: " + skor, 14, 18);
+  }
+  _ara(adim, 24);
+}
+function retroAraba(durak, index) {
+  const alan = retroKabuk("🏎️ Araba Yarışı", "Parmağınla SÜRÜKLE • diğer arabalara çarpma, hızlan!");
+  yarisCekirdek(alan, (skor) => retroBitti(durak, index, "Oyun Bitti", `🏎️ Skor: ${skor}`));
+}
+function oyunArabaSurpriz(durak, index) {
+  app.innerHTML = "";
+  const wrap = document.createElement("div"); wrap.className = "ders-wrap"; wrap.appendChild(ustBaslik(durak));
+  const bilgi = document.createElement("p"); bilgi.className = "oyun-aciklama"; bilgi.textContent = "🏎️ Araba Yarışı — sürükle, çarpma!"; wrap.appendChild(bilgi);
+  const mount = document.createElement("div"); mount.style.display = "flex"; mount.style.justifyContent = "center"; wrap.appendChild(mount);
+  app.appendChild(wrap);
+  yarisCekirdek(mount, (skor) => tamamla(durak, index, skor >= 120 ? 3 : skor >= 40 ? 2 : 1, skor, 0, `🏎️ Skor: ${skor}`));
   window.scrollTo(0, 0);
 }
 
