@@ -936,7 +936,7 @@ function arcadeDurak(sid, model, grup) {
 }
 
 // Sürpriz durak: her açılışta rastgele bir oyun + rastgele içerik
-const SURPRIZ_OYUN_LISTE = ["yaris", "catch", "balloon", "mole", "avla", "truefalse", "memory", "listen", "match", "riddle", "ayni", "echo", "collect", "kayip"];
+const SURPRIZ_OYUN_LISTE = ["yaris", "catch", "balloon", "mole", "avla", "truefalse", "memory", "listen", "match", "riddle", "ayni", "echo", "collect", "kayip", "dino"];
 function surprizDurak(id, baslik, havuz, adet, oyunlar) {
   return { id, title: baslik || "Sürpriz Oyun", emoji: "🎁", type: "random",
     havuz, adet: adet || 8, pool: havuz, oyunlar: oyunlar || SURPRIZ_OYUN_LISTE };
@@ -1749,10 +1749,10 @@ const DIYANET_BOLGE = {
 /* ---------- Bölüm sonu eğlence: klasik retro oyunlar (sadece eğlence) ----------
    Her bölümün sonuna 1 retro oyun eklenir. Oynamak için "kredi" gerekir;
    kredi yeni leveller (duraklar) geçtikçe kazanılır. Öğretici değildir. */
-const RETRO_OYUN_SIRA = ["snake", "flappy", "breakout", "shooter", "simon"];
+const RETRO_OYUN_SIRA = ["snake", "flappy", "breakout", "shooter", "simon", "dino"];
 const RETRO_ISIM = {
   snake: "🐍 Yılan", flappy: "🐤 Uçan Kuş", breakout: "🧱 Tuğla Kır",
-  shooter: "🚀 Uzay Atışı", simon: "🎵 Hafıza Dizisi",
+  shooter: "🚀 Uzay Atışı", simon: "🎵 Hafıza Dizisi", dino: "🦖 Dino Koşusu",
 };
 function retroDurak(bolgeId, sira) {
   const key = RETRO_OYUN_SIRA[sira % RETRO_OYUN_SIRA.length];
@@ -2124,6 +2124,7 @@ const SURPRIZ_OYUNLAR_VAR = {
   avla: oyunAvla, truefalse: oyunDogruYanlis, memory: oyunMemory, listen: oyunListen,
   match: oyunMatch, riddle: oyunBilmece,
   ayni: oyunAyni, echo: oyunYanki, collect: oyunTopla, kayip: oyunKayip,
+  dino: oyunDinoSurpriz,
 };
 function oyunRandom(durak, index) {
   const liste = (durak.oyunlar && durak.oyunlar.length ? durak.oyunlar : Object.keys(SURPRIZ_OYUNLAR_VAR))
@@ -3940,7 +3941,7 @@ function oyunKayip(durak, index) {
 // =====================================================================
 const RETRO_OYUNLAR = {
   snake: retroYilan, flappy: retroKus, breakout: retroTugla,
-  shooter: retroUzay, simon: retroSimon,
+  shooter: retroUzay, simon: retroSimon, dino: retroDino,
 };
 
 // Ortak kabuk: üst çubuk + oyun alanı; "alan" elementini döndürür
@@ -4417,6 +4418,75 @@ function retroSimon(durak, index) {
     }
   }));
   yeniTur();
+}
+
+// ---- 6) DİNO KOŞUSU (Chrome/IE çevrimdışı oyunu) ----
+// Çekirdek: verilen kaba oyunu kurar, oyun bitince onEnd(skor) çağırır.
+function dinoCekirdek(mount, onEnd) {
+  const W = 320, H = 160, YER = H - 22;
+  const cv = document.createElement("canvas");
+  cv.width = W; cv.height = H; cv.className = "retro-canvas";
+  mount.appendChild(cv);
+  const ctx = cv.getContext("2d");
+  const G = 0.6, ZIP = -9.2;
+  let dy = 0, vy = 0, skor = 0, bitti = false, basladi = false, sayac = 0, engeller = [];
+  function ziplaYap() { if (bitti) return; if (!basladi) basladi = true; if (dy === 0) { vy = ZIP; tonCal([620]); } }
+  cv.addEventListener("pointerdown", (e) => { e.preventDefault(); ziplaYap(); });
+  document.onkeydown = (e) => { if (e.key === " " || e.key === "ArrowUp") { e.preventDefault(); ziplaYap(); } };
+  function engelKoy() {
+    if (skor > 18 && Math.random() < 0.3) engeller.push({ x: W + 10, y: YER - 48, w: 24, h: 20, emoji: "🦅" });
+    else { const buyuk = Math.random() < 0.4; engeller.push({ x: W + 10, y: YER - (buyuk ? 30 : 22), w: buyuk ? 24 : 17, h: buyuk ? 30 : 22, emoji: "🌵" }); }
+  }
+  function adim() {
+    if (bitti) return;
+    ctx.fillStyle = "#f8fafc"; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, YER); ctx.lineTo(W, YER); ctx.stroke();
+    if (!basladi) {
+      ctx.font = "26px serif"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.fillText("🦖", 40, YER);
+      ctx.fillStyle = "#1e3a5f"; ctx.font = "bold 15px sans-serif"; ctx.fillText("Başlamak için dokun (zıpla)", W / 2, H / 2);
+      return;
+    }
+    sayac++;
+    vy += G; dy += vy; if (dy > 0) { dy = 0; vy = 0; }
+    const dinoY = YER + dy;
+    if (sayac % 3 === 0) skor++;
+    const hiz = 4 + Math.min(6, skor * 0.03);
+    const son = engeller[engeller.length - 1];
+    if (!son || son.x < W - 130 - Math.random() * 80) engelKoy();
+    engeller.forEach((o) => (o.x -= hiz));
+    engeller = engeller.filter((o) => o.x > -34);
+    const dinoBox = { x: 28, y: dinoY - 24, w: 24, h: 24 };
+    for (const o of engeller) {
+      ctx.font = "24px serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+      ctx.fillText(o.emoji, o.x, o.y + o.h);
+      if (dinoBox.x < o.x + o.w - 5 && dinoBox.x + dinoBox.w - 5 > o.x && dinoBox.y + dinoBox.h > o.y + 5 && dinoBox.y < o.y + o.h) {
+        bitti = true; sesYanlis(); return onEnd(skor);
+      }
+    }
+    ctx.font = "26px serif"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.fillText("🦖", 40, dinoY);
+    ctx.fillStyle = "#1e3a5f"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "right"; ctx.fillText("Skor: " + skor, W - 8, 18);
+  }
+  _ara(adim, 24);
+}
+
+// Retro (kredili) sürüm
+function retroDino(durak, index) {
+  const alan = retroKabuk("🦖 Dino Koşusu", "Dokununca zıpla, kaktüs 🌵 ve kuşlara 🦅 çarpma! İnternet olmayınca çıkan oyun 😄");
+  dinoCekirdek(alan, (skor) => retroBitti(durak, index, "Oyun Bitti", `🦖 Skor: ${skor}`));
+}
+
+// Sürpriz (eğitim durağı) sürümü: bitince durağı tamamlar
+function oyunDinoSurpriz(durak, index) {
+  app.innerHTML = "";
+  const wrap = document.createElement("div"); wrap.className = "ders-wrap"; wrap.appendChild(ustBaslik(durak));
+  const bilgi = document.createElement("p"); bilgi.className = "oyun-aciklama"; bilgi.textContent = "🦖 Dino Koşusu — dokununca zıpla, engellere çarpma!"; wrap.appendChild(bilgi);
+  const mount = document.createElement("div"); mount.style.display = "flex"; mount.style.justifyContent = "center"; wrap.appendChild(mount);
+  app.appendChild(wrap);
+  dinoCekirdek(mount, (skor) => {
+    const y = skor >= 40 ? 3 : skor >= 15 ? 2 : 1;
+    tamamla(durak, index, y, skor, 0, `🦖 Skor: ${skor}`);
+  });
+  window.scrollTo(0, 0);
 }
 
 // ---- Konfeti efekti ----

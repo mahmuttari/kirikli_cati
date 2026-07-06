@@ -254,7 +254,7 @@ function arcadeDurak(sid, model, grup) {
 }
 
 // Sürpriz durak: her açılışta rastgele bir oyun + rastgele içerik
-const SURPRIZ_OYUN_LISTE = ["yaris", "catch", "balloon", "mole", "avla", "truefalse", "memory", "listen", "match", "riddle", "ayni", "echo", "collect", "kayip"];
+const SURPRIZ_OYUN_LISTE = ["yaris", "catch", "balloon", "mole", "avla", "truefalse", "memory", "listen", "match", "riddle", "ayni", "echo", "collect", "kayip", "dino"];
 function surprizDurak(id, baslik, havuz, adet, oyunlar) {
   return { id, title: baslik || "Sürpriz Oyun", emoji: "🎁", type: "random",
     havuz, adet: adet || 8, pool: havuz, oyunlar: oyunlar || SURPRIZ_OYUN_LISTE };
@@ -1067,10 +1067,10 @@ const DIYANET_BOLGE = {
 /* ---------- Bölüm sonu eğlence: klasik retro oyunlar (sadece eğlence) ----------
    Her bölümün sonuna 1 retro oyun eklenir. Oynamak için "kredi" gerekir;
    kredi yeni leveller (duraklar) geçtikçe kazanılır. Öğretici değildir. */
-const RETRO_OYUN_SIRA = ["snake", "flappy", "breakout", "shooter", "simon"];
+const RETRO_OYUN_SIRA = ["snake", "flappy", "breakout", "shooter", "simon", "dino"];
 const RETRO_ISIM = {
   snake: "🐍 Yılan", flappy: "🐤 Uçan Kuş", breakout: "🧱 Tuğla Kır",
-  shooter: "🚀 Uzay Atışı", simon: "🎵 Hafıza Dizisi",
+  shooter: "🚀 Uzay Atışı", simon: "🎵 Hafıza Dizisi", dino: "🦖 Dino Koşusu",
 };
 function retroDurak(bolgeId, sira) {
   const key = RETRO_OYUN_SIRA[sira % RETRO_OYUN_SIRA.length];
