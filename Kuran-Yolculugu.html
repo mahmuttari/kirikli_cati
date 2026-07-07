@@ -682,6 +682,21 @@ body {
 /* Dino: geniş (yan) ekran, daha ferah oynansın */
 .dino-canvas { width: min(96vw, 560px); }
 
+/* Tetris: taşmasın diye daha küçük + ani iniş butonu */
+.tetris-canvas { width: min(62vw, 208px); }
+.retro-hard {
+  margin-top: 10px; background: #1e3a5f; color: #fff; border: none; border-radius: 14px;
+  padding: 11px 26px; font-weight: 800; font-size: 1rem; box-shadow: 0 3px 0 rgba(0,0,0,.28);
+}
+.retro-hard:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.28); }
+
+/* Basılı tutunca metin seçimi/kopyalama menüsü çıkmasın (oyun kontrolleri) */
+.retro-dpad .dbtn, .retro-hard, .retro-canvas, .yanki-pad, .simon-pad,
+.kayip-sec, .dy-btn, .secenek, .topla-h {
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none; touch-action: manipulation;
+}
+
 </style></head><body><div id="app"></div><script>
 /*
  * Kur'an Yolculuğu - Müfredat Verisi
@@ -4498,7 +4513,7 @@ function oyunDinoSurpriz(durak, index) {
 function tetrisCekirdek(mount, onEnd) {
   const COLS = 10, ROWS = 16, CELL = 16, W = COLS * CELL, H = ROWS * CELL;
   const cv = document.createElement("canvas");
-  cv.width = W; cv.height = H; cv.className = "retro-canvas";
+  cv.width = W; cv.height = H; cv.className = "retro-canvas tetris-canvas";
   mount.appendChild(cv);
   const ctx = cv.getContext("2d");
   const RENK = [null, "#22d3ee", "#fbbf24", "#a78bfa", "#4ade80", "#f87171", "#60a5fa", "#fb923c"];
@@ -4529,6 +4544,7 @@ function tetrisCekirdek(mount, onEnd) {
     if (yon === "left" && !carp(parca, px - 1, py)) px--;
     else if (yon === "right" && !carp(parca, px + 1, py)) px++;
     else if (yon === "down") dus();
+    else if (yon === "hard") { while (!carp(parca, px, py + 1)) py++; tonCal([300]); dus(); } // ani iniş
     else if (yon === "up") { const r = dondur(parca); if (!carp(r, px, py)) parca = r; else if (!carp(r, px - 1, py)) { parca = r; px--; } else if (!carp(r, px + 1, py)) { parca = r; px++; } }
     ciz();
   }
@@ -4539,6 +4555,10 @@ function tetrisCekirdek(mount, onEnd) {
   }
   function adim() { if (bitti) return; sayac++; if (sayac >= dusHiz) { sayac = 0; dus(); } ciz(); }
   yonTuslari(mount, hareket); // ◀ ▶ • ▲ döndür • ▼ indir
+  const hd = document.createElement("button");
+  hd.className = "retro-hard"; hd.textContent = "⤓ Ani İniş";
+  hd.addEventListener("click", (e) => { e.preventDefault(); hareket("hard"); });
+  mount.appendChild(hd);
   yeni(); ciz();
   _ara(adim, 24);
 }
@@ -4564,18 +4584,32 @@ function yarisCekirdek(mount, onEnd) {
   mount.appendChild(cv);
   const ctx = cv.getContext("2d");
   const RAKIP = ["🚙", "🚕", "🚚", "🚌"];
-  let cx = W / 2, skor = 0, bitti = false, basladi = false, sayac = 0, yolKay = 0, araclar = [], suruk = false;
+  const ENGEL = ["🚧", "🛢️", "🧱", "⚠️"];
+  let cx = W / 2, skor = 0, bitti = false, basladi = false, sayac = 0, yolKay = 0, nesneler = [], suruk = false;
   function tasi(clientX) { const r = cv.getBoundingClientRect(); cx = (clientX - r.left) * (W / r.width); cx = Math.max(24, Math.min(W - 24, cx)); }
   cv.addEventListener("pointerdown", (e) => { e.preventDefault(); suruk = true; basladi = true; try { cv.setPointerCapture(e.pointerId); } catch {} tasi(e.clientX); });
   cv.addEventListener("pointermove", (e) => { if (suruk) { e.preventDefault(); tasi(e.clientX); } });
   cv.addEventListener("pointerup", () => { suruk = false; });
   cv.addEventListener("pointercancel", () => { suruk = false; });
-  // Araba emojileri sola bakar; 90° döndürüp gidiş yönüne çevir
-  // aci=+90° → yukarı bakar (oyuncu), aci=-90° → aşağı bakar (gelen trafik)
-  function cizArac(emoji, x, y, size, aci) {
-    ctx.save(); ctx.translate(x, y); ctx.rotate(aci);
+  // Emoji sola bakar; araçları 90° döndür, geyiği yatay çevir
+  function cizNesne(o, size) {
+    ctx.save(); ctx.translate(o.x, o.y);
+    if (o.tip === "geyik") { if (o.vx > 0) ctx.scale(-1, 1); }        // gittiği yöne baksın
+    else ctx.rotate(o.aci || 0);
     ctx.font = size + "px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(emoji, 0, 0); ctx.restore();
+    ctx.fillText(o.emoji, 0, 0); ctx.restore();
+  }
+  function uret() {
+    const r = Math.random();
+    if (skor > 60 && r < 0.16) { // yandan atlayan geyik
+      const soldan = Math.random() < 0.5;
+      nesneler.push({ x: soldan ? 8 : W - 8, y: 40 + Math.random() * 130, vx: (soldan ? 1 : -1) * (2.4 + Math.random() * 1.6), emoji: "🦌", tip: "geyik" });
+    } else if (skor > 30 && r < 0.4) { // yol engeli
+      nesneler.push({ x: 24 + Math.random() * (W - 48), y: -30, vx: 0, emoji: ENGEL[Math.floor(Math.random() * ENGEL.length)], tip: "engel", aci: 0 });
+    } else { // araba — ileri seviyede sağa-sola kayan
+      const kayan = skor > 45 && Math.random() < 0.5;
+      nesneler.push({ x: 24 + Math.random() * (W - 48), y: -30, vx: kayan ? (Math.random() < 0.5 ? -1 : 1) * (0.9 + Math.random() * 1.3) : 0, emoji: RAKIP[Math.floor(Math.random() * RAKIP.length)], tip: "araba", aci: -Math.PI / 2 });
+    }
   }
   function adim() {
     if (bitti) return;
@@ -4585,20 +4619,23 @@ function yarisCekirdek(mount, onEnd) {
     yolKay = (yolKay + (basladi ? hiz : 2)) % 40;
     ctx.fillStyle = "#fde047"; for (let y = -40 + yolKay; y < H; y += 40) ctx.fillRect(W / 2 - 3, y + 8, 6, 20);
     if (!basladi) {
-      cizArac("🚗", cx, H - 40, 30, Math.PI / 2);
+      cizNesne({ x: cx, y: H - 40, emoji: "🚗", tip: "araba", aci: Math.PI / 2 }, 30);
       ctx.fillStyle = "#fff"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("Sürükleyerek başla", W / 2, H / 2);
       return;
     }
     sayac++;
-    if (sayac % Math.max(24, 58 - Math.floor(skor * 0.1)) === 0) araclar.push({ x: 24 + Math.random() * (W - 48), y: -30, emoji: RAKIP[Math.floor(Math.random() * RAKIP.length)] });
-    araclar.forEach((a) => (a.y += hiz));
-    araclar = araclar.filter((a) => a.y < H + 30);
-    if (sayac % 2 === 0) skor++;
-    for (const a of araclar) {
-      cizArac(a.emoji, a.x, a.y, 28, -Math.PI / 2); // gelen trafik aşağı bakar
-      if (Math.abs(a.x - cx) < 26 && Math.abs(a.y - (H - 40)) < 26) { bitti = true; sesYanlis(); return onEnd(skor); }
+    if (sayac % Math.max(22, 56 - Math.floor(skor * 0.1)) === 0) uret();
+    for (const o of nesneler) {
+      if (o.tip === "geyik") { o.x += o.vx; o.y += hiz * 0.25; }       // yatay koşan geyik
+      else { o.y += hiz; if (o.vx) { o.x += o.vx; if (o.x < 18 || o.x > W - 18) o.vx = -o.vx; } } // kayan araç duvara çarpınca döner
     }
-    cizArac("🚗", cx, H - 40, 30, Math.PI / 2); // oyuncu yukarı bakar
+    nesneler = nesneler.filter((o) => o.y < H + 30 && o.x > -30 && o.x < W + 30);
+    if (sayac % 2 === 0) skor++;
+    for (const o of nesneler) {
+      cizNesne(o, o.tip === "geyik" ? 26 : 28);
+      if (Math.abs(o.x - cx) < 25 && Math.abs(o.y - (H - 40)) < 25) { bitti = true; sesYanlis(); return onEnd(skor); }
+    }
+    cizNesne({ x: cx, y: H - 40, emoji: "🚗", tip: "araba", aci: Math.PI / 2 }, 30); // oyuncu yukarı bakar
     ctx.fillStyle = "#fff"; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic"; ctx.fillText("Skor: " + skor, 14, 18);
   }
   _ara(adim, 24);
