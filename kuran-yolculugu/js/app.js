@@ -1469,7 +1469,7 @@ function oyunZayif(durak, index) {
   testeGir(durak, index);
 }
 
-// ---- SINAVLA ATLA (yeterlilik sınavı: %85+ ile bölüme atla) ----
+// ---- SINAVLA ATLA (3 yanlış yapmadan bitir → bölüme atla; süre yok) ----
 function bolgeTestOgeleri(bolge) {
   const set = new Map();
   bolge.duraklar.forEach((d) => {
@@ -1520,30 +1520,25 @@ function atlamaSinavi(hedefIndex, bolge) {
     const yanlis = shuffleArr(havuz.filter((h) => h.name !== it.name)).slice(0, 3).map((h) => h.name);
     return { glyph: it.glyph, a: it.name, options: shuffleArr([it.name, ...yanlis]) };
   });
-  const toplamSure = Math.round(soruSay * 2.6); // saniye — daha sıkı süre baskısı
-  let i = 0, dogru = 0, kalan = toplamSure, bittiBayrak = false;
+  const HAK = 3; // 3 yanlış hakkı; 3. yanlışta kalır
+  let i = 0, dogru = 0, yanlis = 0, bittiBayrak = false;
 
   app.innerHTML = "";
   const wrap = document.createElement("div");
   wrap.className = "test-wrap";
   app.appendChild(wrap);
 
-  function sureGuncelle() {
-    const el = wrap.querySelector(".sinav-sure");
-    if (el) { el.textContent = `⏱️ ${kalan}s`; el.classList.toggle("az", kalan <= 10); }
-  }
-  _ara(() => { if (bittiBayrak) return; kalan--; sureGuncelle(); if (kalan <= 0) bitir(true); }, 1000);
-
   function ciz() {
     const s = sorular[i];
+    const kalanHak = "❤️".repeat(Math.max(0, HAK - yanlis)) + "🖤".repeat(Math.min(HAK, yanlis));
     wrap.innerHTML = `
       <div class="test-ust">
         <button class="geri">← Çık</button>
         <div class="ilerleme-cubuk"><div style="width:${(i / sorular.length) * 100}%"></div></div>
-        <span class="sinav-sure">⏱️ ${kalan}s</span>
+        <span class="sinav-can">${kalanHak}</span>
         <span>${i + 1}/${sorular.length}</span>
       </div>
-      <p class="oyun-aciklama">⏭️ Atlama Sınavı — sorular yalnızca önceki son 3 bölümden • geçmek için %85 ve süreyi geçmemek</p>
+      <p class="oyun-aciklama">⏭️ Atlama Sınavı — sorular yalnızca önceki son 3 bölümden • 3 yanlış yapmadan bitir!</p>
       <div class="soru"><div class="soru-harf">${s.glyph}</div><p>Bu nedir?</p></div>
       <div class="secenekler"></div>
       <div class="geri-bildirim"></div>`;
@@ -1562,19 +1557,24 @@ function atlamaSinavi(hedefIndex, bolge) {
     const gb = wrap.querySelector(".geri-bildirim");
     if (opt === s.a) { btn.classList.add("dogru"); dogru++; sesDogru(); gb.innerHTML = `<span class="iyi">Doğru ✓</span>`; }
     else {
+      yanlis++;
       btn.classList.add("yanlis"); sesYanlis();
       wrap.querySelectorAll(".secenek").forEach((b) => { if (b.textContent === s.a) b.classList.add("dogru"); });
-      gb.innerHTML = `<span class="kotu">Doğrusu: <b>${s.a}</b></span>`;
+      const el = wrap.querySelector(".sinav-can"); if (el) el.textContent = "❤️".repeat(Math.max(0, HAK - yanlis)) + "🖤".repeat(Math.min(HAK, yanlis));
+      gb.innerHTML = `<span class="kotu">Doğrusu: <b>${s.a}</b> ${yanlis >= HAK ? "" : `(kalan hak: ${HAK - yanlis})`}</span>`;
     }
-    _gec(() => { if (bittiBayrak) return; i++; if (i < sorular.length) ciz(); else bitir(false); }, 480); // otomatik ilerle (süre baskısı)
+    _gec(() => {
+      if (bittiBayrak) return;
+      if (yanlis >= HAK) return bitir(true);  // 3 yanlış → kaldı
+      i++;
+      if (i < sorular.length) ciz(); else bitir(false);
+    }, 520);
   }
-  function bitir(zamanBitti) {
+  function bitir(hakBitti) {
     if (bittiBayrak) return;
     bittiBayrak = true;
     zamanlayicilariTemizle();
-    const oran = dogru / sorular.length;
-    const yuzde = Math.round(oran * 100);
-    const gecti = !zamanBitti && oran >= 0.85;
+    const gecti = !hakBitti; // 3 yanlış yapmadan tamamladıysa geçer
     if (gecti) {
       for (let j = 0; j < hedefIndex; j++) ILERLEME.tamamlanan[DURAKLAR[j].id] = true;
       ilerlemeKaydet(ILERLEME);
@@ -1587,8 +1587,8 @@ function atlamaSinavi(hedefIndex, bolge) {
       <div class="sonuc ${gecti ? "basarili" : "tekrar"}">
         <div class="sonuc-emoji">${gecti ? "⏭️" : "📚"}</div>
         <h2>${gecti ? "Tebrikler, geçtin!" : "Henüz olmadı"}</h2>
-        <p>${dogru} / ${sorular.length} doğru — <b>%${yuzde}</b></p>
-        <p>${gecti ? `“${bolge.name}” bölümüne kadar olan kısım açıldı!` : (zamanBitti ? "⏱️ Süre doldu! %85 ve süre içinde bitirmen gerek 💪" : "Geçmek için %85 gerekiyor. Önce dersleri çalış 💪")}</p>
+        <p>${dogru} doğru • ${yanlis} yanlış</p>
+        <p>${gecti ? `“${bolge.name}” bölümüne kadar olan kısım açıldı!` : "3 yanlış hakkın doldu 💪 Önce son bölümleri çalış, sonra tekrar dene."}</p>
         <div class="sonuc-butonlar">
           ${gecti ? `<button class="sonraki-btn">Bölüme Git ▶</button>` : `<button class="tekrar-btn">🔁 Tekrar Dene</button>`}
           <button class="harita-btn">🗺️ Haritaya Dön</button>
