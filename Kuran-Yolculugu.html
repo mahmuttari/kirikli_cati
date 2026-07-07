@@ -3298,7 +3298,7 @@ function oyunZayif(durak, index) {
   testeGir(durak, index);
 }
 
-// ---- SINAVLA ATLA (yeterlilik sınavı: %95+ ile bölüme atla) ----
+// ---- SINAVLA ATLA (yeterlilik sınavı: %85+ ile bölüme atla) ----
 function bolgeTestOgeleri(bolge) {
   const set = new Map();
   bolge.duraklar.forEach((d) => {
@@ -3372,7 +3372,7 @@ function atlamaSinavi(hedefIndex, bolge) {
         <span class="sinav-sure">⏱️ ${kalan}s</span>
         <span>${i + 1}/${sorular.length}</span>
       </div>
-      <p class="oyun-aciklama">⏭️ Atlama Sınavı — sorular yalnızca önceki son 3 bölümden • geçmek için %95 ve süreyi geçmemek</p>
+      <p class="oyun-aciklama">⏭️ Atlama Sınavı — sorular yalnızca önceki son 3 bölümden • geçmek için %85 ve süreyi geçmemek</p>
       <div class="soru"><div class="soru-harf">${s.glyph}</div><p>Bu nedir?</p></div>
       <div class="secenekler"></div>
       <div class="geri-bildirim"></div>`;
@@ -3403,7 +3403,7 @@ function atlamaSinavi(hedefIndex, bolge) {
     zamanlayicilariTemizle();
     const oran = dogru / sorular.length;
     const yuzde = Math.round(oran * 100);
-    const gecti = !zamanBitti && oran >= 0.95;
+    const gecti = !zamanBitti && oran >= 0.85;
     if (gecti) {
       for (let j = 0; j < hedefIndex; j++) ILERLEME.tamamlanan[DURAKLAR[j].id] = true;
       ilerlemeKaydet(ILERLEME);
@@ -3417,7 +3417,7 @@ function atlamaSinavi(hedefIndex, bolge) {
         <div class="sonuc-emoji">${gecti ? "⏭️" : "📚"}</div>
         <h2>${gecti ? "Tebrikler, geçtin!" : "Henüz olmadı"}</h2>
         <p>${dogru} / ${sorular.length} doğru — <b>%${yuzde}</b></p>
-        <p>${gecti ? `“${bolge.name}” bölümüne kadar olan kısım açıldı!` : (zamanBitti ? "⏱️ Süre doldu! %95 ve süre içinde bitirmen gerek 💪" : "Geçmek için %95 gerekiyor. Önce dersleri çalış 💪")}</p>
+        <p>${gecti ? `“${bolge.name}” bölümüne kadar olan kısım açıldı!` : (zamanBitti ? "⏱️ Süre doldu! %85 ve süre içinde bitirmen gerek 💪" : "Geçmek için %85 gerekiyor. Önce dersleri çalış 💪")}</p>
         <div class="sonuc-butonlar">
           ${gecti ? `<button class="sonraki-btn">Bölüme Git ▶</button>` : `<button class="tekrar-btn">🔁 Tekrar Dene</button>`}
           <button class="harita-btn">🗺️ Haritaya Dön</button>
