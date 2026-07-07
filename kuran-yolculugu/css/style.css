@@ -677,3 +677,6 @@ body {
 
 /* ---- Harekeleri farklı renkte göster (kırmızı) ---- */
 .hareke-renk { color: #e11d48; }
+
+/* Dino: geniş (yan) ekran, daha ferah oynansın */
+.dino-canvas { width: min(96vw, 560px); }

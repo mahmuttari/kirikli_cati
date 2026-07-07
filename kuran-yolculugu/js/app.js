@@ -2590,48 +2590,54 @@ function retroSimon(durak, index) {
 // ---- 6) DİNO KOŞUSU (Chrome/IE çevrimdışı oyunu) ----
 // Çekirdek: verilen kaba oyunu kurar, oyun bitince onEnd(skor) çağırır.
 function dinoCekirdek(mount, onEnd) {
-  const W = 320, H = 160, YER = H - 22;
+  const W = 560, H = 172, YER = H - 26; // geniş (yan) ekran, daha ferah
   const cv = document.createElement("canvas");
-  cv.width = W; cv.height = H; cv.className = "retro-canvas";
+  cv.width = W; cv.height = H; cv.className = "retro-canvas dino-canvas";
   mount.appendChild(cv);
   const ctx = cv.getContext("2d");
-  const G = 0.6, ZIP = -9.2;
+  const G = 0.62, ZIP = -10.6;
   let dy = 0, vy = 0, skor = 0, bitti = false, basladi = false, sayac = 0, engeller = [];
   function ziplaYap() { if (bitti) return; if (!basladi) basladi = true; if (dy === 0) { vy = ZIP; tonCal([620]); } }
   cv.addEventListener("pointerdown", (e) => { e.preventDefault(); ziplaYap(); });
   document.onkeydown = (e) => { if (e.key === " " || e.key === "ArrowUp") { e.preventDefault(); ziplaYap(); } };
+  // 🦖 emojisi sola bakar; yatay çevirip ileri (sağa, engellere) baktır
+  function cizDino(y, size) {
+    ctx.save(); ctx.translate(56, 0); ctx.scale(-1, 1);
+    ctx.font = size + "px serif"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+    ctx.fillText("🦖", 0, y); ctx.restore();
+  }
   function engelKoy() {
-    if (skor > 18 && Math.random() < 0.3) engeller.push({ x: W + 10, y: YER - 48, w: 24, h: 20, emoji: "🦅" });
-    else { const buyuk = Math.random() < 0.4; engeller.push({ x: W + 10, y: YER - (buyuk ? 30 : 22), w: buyuk ? 24 : 17, h: buyuk ? 30 : 22, emoji: "🌵" }); }
+    if (skor > 30 && Math.random() < 0.26) engeller.push({ x: W + 14, y: YER - 52, w: 26, h: 22, emoji: "🦅" });
+    else { const buyuk = Math.random() < 0.4; engeller.push({ x: W + 14, y: YER - (buyuk ? 34 : 24), w: buyuk ? 26 : 18, h: buyuk ? 34 : 24, emoji: "🌵" }); }
   }
   function adim() {
     if (bitti) return;
     ctx.fillStyle = "#f8fafc"; ctx.fillRect(0, 0, W, H);
     ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, YER); ctx.lineTo(W, YER); ctx.stroke();
     if (!basladi) {
-      ctx.font = "26px serif"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.fillText("🦖", 40, YER);
-      ctx.fillStyle = "#1e3a5f"; ctx.font = "bold 15px sans-serif"; ctx.fillText("Başlamak için dokun (zıpla)", W / 2, H / 2);
+      cizDino(YER, 34);
+      ctx.fillStyle = "#1e3a5f"; ctx.font = "bold 17px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.fillText("Başlamak için dokun (zıpla)", W / 2, H / 2);
       return;
     }
     sayac++;
     vy += G; dy += vy; if (dy > 0) { dy = 0; vy = 0; }
     const dinoY = YER + dy;
     if (sayac % 3 === 0) skor++;
-    const hiz = 4 + Math.min(6, skor * 0.03);
+    const hiz = 3.2 + Math.min(2.4, skor * 0.006); // ÇOK yavaş hızlanır
     const son = engeller[engeller.length - 1];
-    if (!son || son.x < W - 130 - Math.random() * 80) engelKoy();
+    if (!son || son.x < W - 220 - Math.random() * 150) engelKoy();
     engeller.forEach((o) => (o.x -= hiz));
-    engeller = engeller.filter((o) => o.x > -34);
-    const dinoBox = { x: 28, y: dinoY - 24, w: 24, h: 24 };
+    engeller = engeller.filter((o) => o.x > -40);
+    const dinoBox = { x: 42, y: dinoY - 30, w: 28, h: 30 };
     for (const o of engeller) {
-      ctx.font = "24px serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+      ctx.font = "30px serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
       ctx.fillText(o.emoji, o.x, o.y + o.h);
-      if (dinoBox.x < o.x + o.w - 5 && dinoBox.x + dinoBox.w - 5 > o.x && dinoBox.y + dinoBox.h > o.y + 5 && dinoBox.y < o.y + o.h) {
+      if (dinoBox.x < o.x + o.w - 6 && dinoBox.x + dinoBox.w - 6 > o.x && dinoBox.y + dinoBox.h > o.y + 6 && dinoBox.y < o.y + o.h) {
         bitti = true; sesYanlis(); return onEnd(skor);
       }
     }
-    ctx.font = "26px serif"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.fillText("🦖", 40, dinoY);
-    ctx.fillStyle = "#1e3a5f"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "right"; ctx.fillText("Skor: " + skor, W - 8, 18);
+    cizDino(dinoY, 34);
+    ctx.fillStyle = "#1e3a5f"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "right"; ctx.textBaseline = "alphabetic"; ctx.fillText("Skor: " + skor, W - 10, 20);
   }
   _ara(adim, 24);
 }
@@ -2732,6 +2738,13 @@ function yarisCekirdek(mount, onEnd) {
   cv.addEventListener("pointermove", (e) => { if (suruk) { e.preventDefault(); tasi(e.clientX); } });
   cv.addEventListener("pointerup", () => { suruk = false; });
   cv.addEventListener("pointercancel", () => { suruk = false; });
+  // Araba emojileri sola bakar; 90° döndürüp gidiş yönüne çevir
+  // aci=+90° → yukarı bakar (oyuncu), aci=-90° → aşağı bakar (gelen trafik)
+  function cizArac(emoji, x, y, size, aci) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(aci);
+    ctx.font = size + "px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(emoji, 0, 0); ctx.restore();
+  }
   function adim() {
     if (bitti) return;
     const hiz = 3 + Math.min(5, skor * 0.02);
@@ -2740,8 +2753,8 @@ function yarisCekirdek(mount, onEnd) {
     yolKay = (yolKay + (basladi ? hiz : 2)) % 40;
     ctx.fillStyle = "#fde047"; for (let y = -40 + yolKay; y < H; y += 40) ctx.fillRect(W / 2 - 3, y + 8, 6, 20);
     if (!basladi) {
-      ctx.font = "30px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("🚗", cx, H - 40);
-      ctx.fillStyle = "#fff"; ctx.font = "bold 14px sans-serif"; ctx.fillText("Sürükleyerek başla", W / 2, H / 2);
+      cizArac("🚗", cx, H - 40, 30, Math.PI / 2);
+      ctx.fillStyle = "#fff"; ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("Sürükleyerek başla", W / 2, H / 2);
       return;
     }
     sayac++;
@@ -2749,12 +2762,11 @@ function yarisCekirdek(mount, onEnd) {
     araclar.forEach((a) => (a.y += hiz));
     araclar = araclar.filter((a) => a.y < H + 30);
     if (sayac % 2 === 0) skor++;
-    ctx.font = "28px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     for (const a of araclar) {
-      ctx.fillText(a.emoji, a.x, a.y);
+      cizArac(a.emoji, a.x, a.y, 28, -Math.PI / 2); // gelen trafik aşağı bakar
       if (Math.abs(a.x - cx) < 26 && Math.abs(a.y - (H - 40)) < 26) { bitti = true; sesYanlis(); return onEnd(skor); }
     }
-    ctx.font = "30px serif"; ctx.fillText("🚗", cx, H - 40);
+    cizArac("🚗", cx, H - 40, 30, Math.PI / 2); // oyuncu yukarı bakar
     ctx.fillStyle = "#fff"; ctx.font = "bold 13px sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic"; ctx.fillText("Skor: " + skor, 14, 18);
   }
   _ara(adim, 24);
