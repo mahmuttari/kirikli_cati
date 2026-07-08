@@ -86,6 +86,12 @@ jobs:
           npx --yes @capacitor/assets generate --android
           npx cap sync android
 
+      - name: Sabit imza anahtarı (güncellemede ilerleme kaybolmasın)
+        run: |
+          mkdir -p ~/.android
+          cp mobile/debug.keystore ~/.android/debug.keystore
+          echo "Sabit debug.keystore kopyalandı → her derleme aynı imza; uygulama üstüne güncellenebilir, veri korunur."
+
       - name: APK derle (debug)
         working-directory: mobile/android
         run: |
