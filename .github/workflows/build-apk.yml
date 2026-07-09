@@ -86,11 +86,36 @@ jobs:
           npx --yes @capacitor/assets generate --android
           npx cap sync android
 
-      - name: Sabit imza anahtarı (güncellemede ilerleme kaybolmasın)
+      - name: Sabit imza + artan sürüm (güncellemede ilerleme kaybolmasın)
+        working-directory: mobile
         run: |
+          # 1) Sabit debug.keystore hem ~/.android'e hem app modülüne koy
           mkdir -p ~/.android
-          cp mobile/debug.keystore ~/.android/debug.keystore
-          echo "Sabit debug.keystore kopyalandı → her derleme aynı imza; uygulama üstüne güncellenebilir, veri korunur."
+          cp debug.keystore ~/.android/debug.keystore
+          cp debug.keystore android/app/debug.keystore
+          # 2) build.gradle'a debug signingConfig enjekte et + versionCode'u artır
+          python3 - android/app/build.gradle "${{ github.run_number }}" <<'PY'
+          import sys, re
+          path, run = sys.argv[1], sys.argv[2]
+          s = open(path).read()
+          if "signingConfigs" not in s:
+              block = (
+                  "\n    signingConfigs {\n"
+                  "        debug {\n"
+                  "            storeFile file('debug.keystore')\n"
+                  "            storePassword 'android'\n"
+                  "            keyAlias 'androiddebugkey'\n"
+                  "            keyPassword 'android'\n"
+                  "        }\n"
+                  "    }\n"
+              )
+              s = re.sub(r"android\s*\{", lambda m: m.group(0) + block, s, count=1)
+          s = re.sub(r"versionCode\s+\d+", "versionCode " + run, s, count=1)
+          s = re.sub(r'versionName\s+"[^"]*"', 'versionName "1.' + run + '"', s, count=1)
+          open(path, "w").write(s)
+          print("build.gradle güncellendi (imza + sürüm)")
+          PY
+          grep -nE "versionCode|versionName|signingConfigs|debug.keystore" android/app/build.gradle || true
 
       - name: APK derle (debug)
         working-directory: mobile/android
