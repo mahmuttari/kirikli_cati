@@ -2220,8 +2220,9 @@ function retroYilan(durak, index) {
   alan.appendChild(skorEl);
 
   const GOVDE = ["#22c55e", "#10b981", "#14b8a6", "#06b6d4", "#3b82f6", "#8b5cf6"]; // renkli gövde
+  const AVLAR = ["🐭", "🐀", "🐸", "🦎", "🐛", "🐣", "🥚"]; // yılanın sevdiği bonus avlar
   let yilan = [{ x: 7, y: 7 }], dir = { x: 1, y: 0 }, nextDir = dir;
-  let skor = 0, bitti = false, basladi = false, bekle = 165, renkKay = 0;
+  let skor = 0, bitti = false, basladi = false, bekle = 230, renkKay = 0;
   let bonus = null;          // yemKoy() bonus'a bakıyor; ondan ÖNCE tanımlı olmalı (TDZ hatasını önler)
   let yem = yemKoy();
   function yemKoy() {
@@ -2260,8 +2261,8 @@ function retroYilan(durak, index) {
     let yedi = false;
     if (bas.x === yem.x && bas.y === yem.y) {
       skor++; tonCal([660]); yem = yemKoy(); yedi = true; renkKay = (renkKay + 1) % GOVDE.length;
-      bekle = Math.max(70, 165 - skor * 6); // her yemde hızlan
-      if (!bonus && skor % 4 === 0) { const p = yemKoy(); bonus = { x: p.x, y: p.y, omur: 38, emoji: "⭐", puan: 5 }; }
+      bekle = Math.max(100, 230 - skor * 4); // yavaş başlar, yavaş yavaş hızlanır
+      if (!bonus && skor % 4 === 0) { const p = yemKoy(); bonus = { x: p.x, y: p.y, omur: 46, emoji: rastgele(AVLAR), puan: 5 }; }
     }
     if (bonus && bas.x === bonus.x && bas.y === bonus.y) { skor += bonus.puan; tonCal([880, 1040]); bonus = null; yedi = true; } // bonus = ekstra büyüme
     if (!yedi) yilan.pop();
