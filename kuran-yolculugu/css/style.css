@@ -678,8 +678,8 @@ body {
 /* ---- Harekeleri farklı renkte göster (kırmızı) ---- */
 .hareke-renk { color: #e11d48; }
 
-/* Dino: geniş (yan) ekran, daha ferah oynansın */
-.dino-canvas { width: min(96vw, 560px); }
+/* Dino: geniş (yan) ekran, Chrome dino görünümü (beyaz zemin) */
+.dino-canvas { width: min(98vw, 600px); background: #fff; }
 
 /* Tetris: taşmasın diye daha küçük + ani iniş butonu */
 .tetris-canvas { width: min(62vw, 208px); }

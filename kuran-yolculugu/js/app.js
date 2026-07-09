@@ -2588,57 +2588,112 @@ function retroSimon(durak, index) {
   yeniTur();
 }
 
-// ---- 6) DİNO KOŞUSU (Chrome/IE çevrimdışı oyunu) ----
-// Çekirdek: verilen kaba oyunu kurar, oyun bitince onEnd(skor) çağırır.
+// ---- 6) DİNO KOŞUSU (Chrome çevrimdışı oyununun birebir görünümlü yeniden yapımı) ----
+// Chrome T-Rex Runner'ın klasik tek renkli görünümü: beyaz zemin + koyu gri (#535353)
+// piksel sprite'lar; koşan bacaklar, kaktüsler, bulutlar, pterodaktil, 5 haneli skor.
+const DINO_GRI = "#535353";
+// Piksel sprite'lar (birim kareler; ölçekle çizilir). [x,y,w,h]
+const DINO_GOVDE = [
+  [0, 10, 4, 4], [2, 8, 4, 2],                 // kuyruk (sol, basamaklı)
+  [4, 9, 14, 8], [6, 14, 13, 4],               // gövde
+  [15, 7, 5, 3],                               // boyun
+  [17, 1, 10, 7], [24, 5, 5, 3],               // baş + çene
+  [18, 12, 3, 2],                              // ön kol
+];
+const DINO_BACAK = [
+  [[9, 17, 3, 7], [8, 24, 5, 2], [15, 17, 3, 5], [15, 22, 4, 2]],   // adım 1
+  [[9, 17, 3, 5], [9, 22, 4, 2], [15, 17, 3, 7], [15, 24, 5, 2]],   // adım 2
+];
+const DINO_ZIPLA = [[9, 17, 3, 8], [15, 17, 3, 8], [8, 24, 5, 2], [15, 24, 5, 2]];
+const KAKTUS_KUCUK = [[3, 0, 3, 20], [1, 8, 2, 2], [1, 4, 2, 4], [6, 6, 2, 2], [6, 2, 2, 4]];
+const KAKTUS_BUYUK = [[4, 0, 4, 26], [1, 11, 3, 2], [1, 6, 3, 5], [8, 9, 3, 2], [8, 4, 3, 5]];
+const KUS_KANAT = [
+  [[3, 0, 8, 3], [11, 1, 3, 2], [0, 0, 3, 2]],   // kanat yukarı
+  [[3, 4, 8, 3], [11, 3, 3, 2], [0, 5, 3, 2]],   // kanat aşağı
+];
+
 function dinoCekirdek(mount, onEnd) {
-  const W = 560, H = 172, YER = H - 26; // geniş (yan) ekran, daha ferah
+  const W = 600, H = 150, YER = H - 22;
   const cv = document.createElement("canvas");
   cv.width = W; cv.height = H; cv.className = "retro-canvas dino-canvas";
   mount.appendChild(cv);
   const ctx = cv.getContext("2d");
-  const G = 0.62, ZIP = -10.6;
-  let dy = 0, vy = 0, skor = 0, bitti = false, basladi = false, sayac = 0, engeller = [];
+  const G = 0.62, ZIP = -10.8, S = 2.0; // sprite ölçeği
+  let dy = 0, vy = 0, skor = 0, bitti = false, basladi = false, sayac = 0;
+  let engeller = [], bulutlar = [], yerNoktalar = [], goz = 0;
+  // zemin dokusu (küçük çakıllar)
+  for (let k = 0; k < 30; k++) yerNoktalar.push({ x: Math.random() * W, y: YER + 4 + Math.random() * 10, s: Math.random() < 0.5 ? 2 : 1 });
+  for (let k = 0; k < 3; k++) bulutlar.push({ x: Math.random() * W, y: 15 + Math.random() * 40 });
+
   function ziplaYap() { if (bitti) return; if (!basladi) basladi = true; if (dy === 0) { vy = ZIP; tonCal([620]); } }
   cv.addEventListener("pointerdown", (e) => { e.preventDefault(); ziplaYap(); });
   document.onkeydown = (e) => { if (e.key === " " || e.key === "ArrowUp") { e.preventDefault(); ziplaYap(); } };
-  // 🦖 emojisi sola bakar; yatay çevirip ileri (sağa, engellere) baktır
-  function cizDino(y, size) {
-    ctx.save(); ctx.translate(56, 0); ctx.scale(-1, 1);
-    ctx.font = size + "px serif"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
-    ctx.fillText("🦖", 0, y); ctx.restore();
+
+  function ciz(rects, ox, oy, s) { ctx.fillStyle = DINO_GRI; for (const r of rects) ctx.fillRect(ox + r[0] * s, oy + r[1] * s, r[2] * s, r[3] * s); }
+  function cizDino(feetY, kosuFrame, havada) {
+    const oy = feetY - 25 * S, ox = 44;
+    ciz(DINO_GOVDE, ox, oy, S);
+    ciz(havada ? DINO_ZIPLA : DINO_BACAK[kosuFrame], ox, oy, S);
+    // göz (beyaz delik) — ara sıra kırp
+    if (goz < 3) { ctx.fillStyle = "#fff"; ctx.fillRect(ox + 23 * S, oy + 2 * S, 2 * S, 2 * S); }
+    ctx.fillStyle = "#fff"; ctx.fillRect(ox + 25 * S, oy + 6 * S, 4 * S, 1 * S); // ağız çizgisi
+  }
+  function cizBulut(b) {
+    ctx.fillStyle = "#c9c9c9";
+    ctx.fillRect(b.x, b.y + 4, 30, 6); ctx.fillRect(b.x + 6, b.y, 18, 6); ctx.fillRect(b.x + 4, b.y + 8, 24, 4);
   }
   function engelKoy() {
-    if (skor > 30 && Math.random() < 0.26) engeller.push({ x: W + 14, y: YER - 52, w: 26, h: 22, emoji: "🦅" });
-    else { const buyuk = Math.random() < 0.4; engeller.push({ x: W + 14, y: YER - (buyuk ? 34 : 24), w: buyuk ? 26 : 18, h: buyuk ? 34 : 24, emoji: "🌵" }); }
+    if (skor > 60 && Math.random() < 0.25) { // pterodaktil
+      const yuks = [YER - 60, YER - 44, YER - 30][Math.floor(Math.random() * 3)];
+      engeller.push({ tip: "kus", x: W + 20, y: yuks, w: 28, h: 16 });
+    } else {
+      const buyuk = Math.random() < 0.4;
+      const harita = buyuk ? KAKTUS_BUYUK : KAKTUS_KUCUK;
+      const yuk = (buyuk ? 26 : 20) * S, gen = (buyuk ? 12 : 9) * S;
+      engeller.push({ tip: "kaktus", x: W + 20, y: YER - yuk, w: gen, h: yuk, harita, adet: !buyuk && Math.random() < 0.4 ? 2 : 1 });
+    }
   }
   function adim() {
     if (bitti) return;
-    ctx.fillStyle = "#f8fafc"; ctx.fillRect(0, 0, W, H);
-    ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, YER); ctx.lineTo(W, YER); ctx.stroke();
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+    // zemin çizgisi + çakıllar
+    ctx.fillStyle = DINO_GRI; ctx.fillRect(0, YER, W, 2);
+    const hiz = basladi ? 4 + Math.min(3.2, skor * 0.004) : 0; // yavaş başlar, çok yavaş hızlanır
+    yerNoktalar.forEach((n) => { n.x -= hiz; if (n.x < 0) n.x += W; ctx.fillRect(n.x, n.y, n.s, n.s); });
+    bulutlar.forEach((b) => { b.x -= hiz * 0.35; if (b.x < -32) { b.x = W + Math.random() * 40; b.y = 15 + Math.random() * 40; } cizBulut(b); });
+
     if (!basladi) {
-      cizDino(YER, 34);
-      ctx.fillStyle = "#1e3a5f"; ctx.font = "bold 17px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.fillText("Başlamak için dokun (zıpla)", W / 2, H / 2);
+      cizDino(YER, 0, false);
+      ctx.fillStyle = "#535353"; ctx.font = "bold 15px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+      ctx.fillText("BAŞLAMAK İÇİN DOKUN", W / 2, 40);
       return;
     }
     sayac++;
+    if (sayac % 6 === 0) goz = (goz + 1) % 24; // göz kırpma sayacı
     vy += G; dy += vy; if (dy > 0) { dy = 0; vy = 0; }
-    const dinoY = YER + dy;
-    if (sayac % 3 === 0) skor++;
-    const hiz = 3.2 + Math.min(2.4, skor * 0.006); // ÇOK yavaş hızlanır
+    const feetY = YER + dy, havada = dy < 0;
+    if (sayac % 4 === 0) skor++;
     const son = engeller[engeller.length - 1];
-    if (!son || son.x < W - 220 - Math.random() * 150) engelKoy();
+    if (!son || son.x < W - 260 - Math.random() * 200) engelKoy();
     engeller.forEach((o) => (o.x -= hiz));
     engeller = engeller.filter((o) => o.x > -40);
-    const dinoBox = { x: 42, y: dinoY - 30, w: 28, h: 30 };
+
+    // dino çarpışma kutusu (biraz içeri alınmış)
+    const db = { x: 44 + 4 * S, y: feetY - 25 * S + 2 * S, w: 20 * S, h: 22 * S };
     for (const o of engeller) {
-      ctx.font = "30px serif"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
-      ctx.fillText(o.emoji, o.x, o.y + o.h);
-      if (dinoBox.x < o.x + o.w - 6 && dinoBox.x + dinoBox.w - 6 > o.x && dinoBox.y + dinoBox.h > o.y + 6 && dinoBox.y < o.y + o.h) {
-        bitti = true; sesYanlis(); return onEnd(skor);
+      if (o.tip === "kus") {
+        const kf = Math.floor(sayac / 8) % 2; ciz(KUS_KANAT[kf], o.x, o.y, S);
+        if (db.x < o.x + o.w - 6 && db.x + db.w - 6 > o.x && db.y < o.y + o.h && db.y + db.h > o.y + 4) { bitti = true; sesYanlis(); return onEnd(skor); }
+      } else {
+        for (let a = 0; a < o.adet; a++) ciz(o.harita, o.x + a * 9 * S, o.y, S);
+        const ow = o.w + (o.adet - 1) * 9 * S;
+        if (db.x < o.x + ow - 6 && db.x + db.w - 6 > o.x && db.y + db.h > o.y + 4) { bitti = true; sesYanlis(); return onEnd(skor); }
       }
     }
-    cizDino(dinoY, 34);
-    ctx.fillStyle = "#1e3a5f"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "right"; ctx.textBaseline = "alphabetic"; ctx.fillText("Skor: " + skor, W - 10, 20);
+    cizDino(feetY, Math.floor(sayac / 6) % 2, havada);
+    // skor (5 hane, Chrome tarzı)
+    ctx.fillStyle = "#535353"; ctx.font = "bold 15px monospace"; ctx.textAlign = "right"; ctx.textBaseline = "alphabetic";
+    ctx.fillText(String(skor).padStart(5, "0"), W - 12, 22);
   }
   _ara(adim, 24);
 }
